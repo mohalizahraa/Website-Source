@@ -1,0 +1,22 @@
+# Haydari book scripts
+
+These are the five scripts for the real book workflow.
+
+1. `books_inventory.py` — makes the local book database.
+2. `process_book.py` — temporary page images, body/footnote split, Arabic reading, English draft, and footnote count check.
+3. `publish_book_to_google.py` — creates the Google Doc and saves its link. The three-book pilot is where we prove real Google Docs footnotes and the native table of contents.
+4. `sync_archive_data.py` — copies each book's status and Google Doc link into the website data file.
+5. `run_batch.py` — keeps taking the next ready book, one at a time.
+
+## Before a real run
+
+- Install Poppler (`pdftoppm`), Apple Vision OCR, Tesseract with Arabic data, Pillow, Ollama, Aya Expanse 8B, and the Google API libraries.
+- Set up a Google service account and share the target Drive folder with it.
+- Use `books_inventory.py` first.
+- Test exactly three books before using `run_batch.py`.
+
+## OCR decision during the three-book test
+
+Test the same mixed sample pages with Apple Vision and Tesseract. Compare Arabic accuracy, footnote-marker accuracy, header/footnote separation, and seconds per page. Use the better result for the full run; do not choose only by speed.
+
+The batch runner is intentionally one book at a time. OCR and translation should not fight for the same GPU/RAM.
