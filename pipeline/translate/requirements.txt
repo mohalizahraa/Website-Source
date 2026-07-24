@@ -1,0 +1,14 @@
+# Haydari — translate stage
+#
+# Runtime: NONE. The module and its offline mocks use only the Python standard
+# library (urllib, json, re, unicodedata, dataclasses). Real cloud/local engines
+# are called over plain HTTP via urllib, so no client SDK is required either.
+#
+# Development / tests:
+pytest>=7.4
+
+# Optional — only if you later prefer official SDKs over the stdlib HTTP calls
+# in adapters.py (not required to run anything here):
+#   anthropic>=0.39
+#   google-generativeai>=0.8
+#   ollama>=0.3

@@ -1,2 +1,20 @@
 .vercel
 .env*
+
+# Python
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/out/
+
+# Local data / databases (never commit books, scans, or the working DB)
+*.db
+*.sqlite3
+server/data/
+**/uploads/

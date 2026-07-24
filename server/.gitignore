@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+haydari.db
+haydari.db-wal
+haydari.db-shm
+data/uploads/
+.pytest_cache/

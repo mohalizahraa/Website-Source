@@ -1,0 +1,51 @@
+{
+  "_comment": "Fabricated Arabic page mirroring the review-workbench mockup: 8 logical segments (4 body, 2 sacred, 2 footnotes) plus one footnote-divider block. Body carries two footnote reference markers (١) and (٢) that the classifier turns into indexed [[FN-1]]/[[FN-2]] anchors. Sacred lines are a Qurʾan verse (57:3) and a Hadith. All text is intentionally realistic Kalam/theology prose so the whole pipeline runs offline.",
+  "page_confidence": 0.83,
+  "blocks": [
+    {
+      "text": "قال المصنّف رحمه الله: اعلمْ أنّ معرفة الله تعالى أوّلُ الواجبات على المكلَّف، وبها يصحّ سائرُ الاعتقادات.",
+      "region": "body",
+      "confidence": 0.94
+    },
+    {
+      "text": "فذهب المتكلّمون إلى أنّ النظر في الأدلّة واجبٌ عقليٌّ يُتوصَّل به إلى المعرفة، وخالفهم في ذلك جماعةٌ من أهل الحديث (١).",
+      "region": "body",
+      "confidence": 0.91
+    },
+    {
+      "text": "قال الله تعالى: ﴿هُوَ ٱلْأَوَّلُ وَٱلْآخِرُ وَٱلظَّاهِرُ وَٱلْبَاطِنُ ۖ وَهُوَ بِكُلِّ شَيْءٍ عَلِيمٌ﴾ [الحديد: ٣].",
+      "region": "body",
+      "confidence": 0.72
+    },
+    {
+      "text": "وفي هذه الآية دلالةٌ ظاهرةٌ على إحاطة علمه سبحانه بجميع الأشياء دقيقِها وجليلِها.",
+      "region": "body",
+      "confidence": 0.93
+    },
+    {
+      "text": "وقال النبيّ صلّى الله عليه وسلّم: «مَن عرف نفسه فقد عرف ربّه».",
+      "region": "body",
+      "confidence": 0.74
+    },
+    {
+      "text": "وهذا الحديث وإن تُكلِّم في سنده فإنّ معناه صحيحٌ عند أهل التحقيق من العلماء (٢).",
+      "region": "body",
+      "confidence": 0.9
+    },
+    {
+      "text": "________________",
+      "region": "divider",
+      "confidence": 0.99
+    },
+    {
+      "text": "(١) انظر: شرح المواقف للإيجي، المرصد الأوّل، ج١ ص٥٠.",
+      "region": "notes",
+      "confidence": 0.81
+    },
+    {
+      "text": "(٢) ذكره العجلوني في كشف الخفاء، وقال: لم يثبت مرفوعًا، وإنّما هو من كلام يحيى بن معاذ.",
+      "region": "notes",
+      "confidence": 0.79
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# QA stage runs fully offline on the Python standard library.
+# The only dependency is the test runner. Real model adapters (cloud embeddings,
+# Claude/Gemini translators, a real canonical store) are added here when swapped
+# in for the mocks.
+pytest>=7.4

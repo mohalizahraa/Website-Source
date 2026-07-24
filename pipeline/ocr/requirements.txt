@@ -1,0 +1,16 @@
+# Haydari OCR pipeline — Python dependencies.
+#
+# The core pipeline + mock engine run on the standard library alone, so the
+# whole system is testable OFFLINE with just pytest.
+pytest>=7.4
+
+# --- Optional, for real engines (installed when you wire them up) ----------
+# QARI-OCR (local VLM) inference:
+#   torch
+#   transformers
+#   pillow
+# Gemini (cloud escalation):
+#   google-generativeai
+#
+# System dependency (already present on the target Mac, not pip-installable):
+#   Poppler  ->  provides `pdftoppm` for PDF -> image rendering
