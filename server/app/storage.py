@@ -28,7 +28,7 @@ def safe_key(key: str) -> str:
     """
     if not key or not isinstance(key, str):
         raise ValueError("empty storage key")
-    if key.startswith("/") or "\\" in key or "\x00" in key:
+    if key.startswith("/") or "\\" in key or any(ord(c) < 32 for c in key):
         raise ValueError(f"unsafe storage key: {key!r}")
     parts = key.split("/")
     if any(p in ("", ".", "..") for p in parts):
@@ -37,6 +37,10 @@ def safe_key(key: str) -> str:
 
 
 class Storage:
+    # True when materialize() returns a throwaway TEMP copy that the caller must
+    # clean up (S3); False when it returns the real persistent file (local).
+    materialize_is_temp: bool = False
+
     def save_bytes(self, key: str, data: bytes, content_type: str | None = None) -> None:
         raise NotImplementedError
 
@@ -94,6 +98,8 @@ class LocalStorage(Storage):
 class S3Storage(Storage):
     """S3-compatible object storage (AWS S3 or Cloudflare R2 via endpoint_url)."""
 
+    materialize_is_temp = True  # materialize() downloads to a temp file
+
     def __init__(self, bucket: str, endpoint_url: str | None, region: str | None,
                  access_key: str | None, secret_key: str | None):
         import boto3  # lazy: only needed when STORAGE_BACKEND=s3
@@ -110,16 +116,16 @@ class S3Storage(Storage):
         self.client.put_object(Bucket=self.bucket, Key=key, Body=data, **extra)
 
     def read_bytes(self, key: str) -> bytes:
-        return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
+        return self.client.get_object(Bucket=self.bucket, Key=safe_key(key))["Body"].read()
 
     def delete(self, key: str) -> None:
-        self.client.delete_object(Bucket=self.bucket, Key=key)
+        self.client.delete_object(Bucket=self.bucket, Key=safe_key(key))
 
     def exists(self, key: str) -> bool:
         from botocore.exceptions import ClientError
 
         try:
-            self.client.head_object(Bucket=self.bucket, Key=key)
+            self.client.head_object(Bucket=self.bucket, Key=safe_key(key))
             return True
         except ClientError as exc:
             code = str(exc.response.get("Error", {}).get("Code", ""))
@@ -137,8 +143,9 @@ class S3Storage(Storage):
         return path
 
     def cleanup_local(self, path: str) -> None:
-        # Only remove the temp copies WE created (never a real local file).
-        if path and os.path.basename(path).startswith("haydari-blob-"):
+        # Ownership is decided by the caller (only called for a temp we made),
+        # but stay guarded to the temp dir so we can never remove a real file.
+        if path and os.path.realpath(path).startswith(os.path.realpath(tempfile.gettempdir())):
             try:
                 os.unlink(path)
             except OSError:

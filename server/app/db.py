@@ -131,6 +131,19 @@ def _insert_id(conn: Conn, sql: str, params: Iterable) -> int:
     return int(conn.execute(sql, params).lastrowid)
 
 
+def _is_unique_violation(exc: Exception) -> bool:
+    """True for a UNIQUE-constraint failure on either backend (SQLite
+    IntegrityError / Postgres SQLSTATE 23505). Used so upsert_tm only recovers
+    from a lost race and lets every other error propagate."""
+    if isinstance(exc, sqlite3.IntegrityError):
+        return "unique" in str(exc).lower()
+    sqlstate = getattr(exc, "sqlstate", None)
+    if sqlstate is None:
+        diag = getattr(exc, "diag", None)
+        sqlstate = getattr(diag, "sqlstate", None)
+    return sqlstate == "23505"
+
+
 def _migrate(conn: Conn) -> None:
     """Additive, idempotent column migrations for pre-existing databases.
 
@@ -458,7 +471,11 @@ def upsert_tm(
             (book_id, h, ar, en_approved, embedding),
         )
         return new_id, True
-    except Exception:  # noqa: BLE001 — lost a concurrent race on the unique index
+    except Exception as exc:  # noqa: BLE001
+        # Only recover from a lost race on the unique index; let every other
+        # error propagate (so a real failure never gets silently swallowed).
+        if not _is_unique_violation(exc):
+            raise
         # Clear the aborted-transaction state (Postgres) then update the row the
         # winner inserted. Callers isolate upsert_tm in its own transaction, so a
         # rollback here never discards other committed work.

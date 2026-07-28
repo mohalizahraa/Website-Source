@@ -136,25 +136,26 @@ def _pipeline_mode() -> str:
     return "mock"
 
 
-def _resolve_pdf(source_pdf: str | None) -> str | None:
-    """Return a LOCAL path to the book's PDF for rendering.
+def _resolve_pdf(source_pdf: str | None) -> tuple[str | None, bool]:
+    """Return ``(local_path, is_temp)`` for the book's PDF.
 
     Handles legacy absolute/relative paths (still on disk) AND the new storage
-    keys (``books/<id>/<file>``), materializing from local disk or S3/R2 as
-    needed so pdftoppm always gets a real file.
+    keys (``books/<id>/<file>``). ``is_temp`` is True only when the path is a
+    throwaway copy the caller must clean up (S3/R2 materialization) — ownership
+    is explicit, never inferred from the filename.
     """
     if not source_pdf:
-        return None
+        return None, False
     candidates = [source_pdf, str(_REPO_ROOT / source_pdf),
                   os.path.join(config.upload_dir(), os.path.basename(source_pdf))]
     for c in candidates:
         if os.path.exists(c):
-            return c
+            return c, False  # a real on-disk file — never delete it
     from . import storage  # lazy to avoid an import cycle at module load
     st = storage.get_storage()
     if st.exists(source_pdf):
-        return st.materialize(source_pdf)
-    return None
+        return st.materialize(source_pdf), st.materialize_is_temp
+    return None, False
 
 
 def _load_glossary(conn, book_id: str) -> list[dict]:
@@ -281,7 +282,7 @@ def real_pipeline(conn, book_id: str, options: dict | None = None) -> None:
 
     options = options or {}
     book = db.get_book(conn, book_id) or {}
-    pdf = _resolve_pdf(book.get("source_pdf"))
+    pdf, pdf_is_temp = _resolve_pdf(book.get("source_pdf"))
     if not pdf:
         raise RuntimeError(f"source PDF not found for {book_id}: {book.get('source_pdf')!r}")
 
@@ -331,9 +332,11 @@ def real_pipeline(conn, book_id: str, options: dict | None = None) -> None:
                 conn.commit()  # durable per page → live progress + resume point
         _set_detail(book_id, phase="done", page=None)
     finally:
-        # Release the materialized source PDF (a temp copy when using S3/R2).
-        from . import storage
-        storage.get_storage().cleanup_local(pdf)
+        # Release the materialized source PDF ONLY when it was a temp copy
+        # (S3/R2) — never a real on-disk file (explicit ownership, not filename).
+        if pdf_is_temp:
+            from . import storage
+            storage.get_storage().cleanup_local(pdf)
 
 
 def default_pipeline(conn, book_id: str, options: dict | None = None) -> None:
