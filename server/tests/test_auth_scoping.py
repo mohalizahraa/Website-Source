@@ -102,3 +102,18 @@ def test_segment_routes_are_scoped_to_book_owner(client):
     assert client.post(f"/api/segments/{seg_id}/review",
                        json={"en_edited": "x", "action": "approve",
                              "scores": {}, "mqm": []}).status_code == 403
+
+
+def test_chat_tools_reject_unauthorized_book():
+    """The assistant's tools must refuse any book the caller can't access,
+    even if the model supplies an arbitrary book_id in a tool call."""
+    from app import chat
+
+    deny = lambda bid, write=True: False  # noqa: E731 — user has no access
+    for name, args in [
+        ("set_translation_notes", {"book_id": "B-99", "notes": "x"}),
+        ("get_book_status", {"book_id": "B-99"}),
+        ("add_glossary_term", {"book_id": "B-99", "term_ar": "x", "term_en": "y", "scope": "book"}),
+    ]:
+        res = chat._execute_tool(None, name, args, authorize=deny)
+        assert "not authorized" in str(res.get("error", "")), (name, res)

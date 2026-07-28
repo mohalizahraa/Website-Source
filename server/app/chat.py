@@ -113,10 +113,21 @@ TOOLS = [
 ]
 
 
-def _execute_tool(conn, name: str, args: dict) -> dict:
-    """Run a tool call against the DB. Returns a JSON-serialisable result."""
+def _execute_tool(conn, name: str, args: dict, authorize=None) -> dict:
+    """Run a tool call against the DB. Returns a JSON-serialisable result.
+
+    ``authorize(book_id, write)`` (supplied by the API layer) gates EVERY book a
+    tool touches — a tool call can carry an arbitrary book_id, so without this a
+    user could read/modify a book they don't own via the assistant.
+    """
+    def _denied(bid: str, write: bool) -> bool:
+        return authorize is not None and bid and not authorize(bid, write)
+
     if name == "get_book_status":
-        b = db.get_book(conn, args.get("book_id", ""))
+        bid = args.get("book_id", "")
+        if _denied(bid, False):
+            return {"error": "not authorized for that book"}
+        b = db.get_book(conn, bid)
         if not b:
             return {"error": "book not found"}
         return {
@@ -128,6 +139,8 @@ def _execute_tool(conn, name: str, args: dict) -> dict:
         }
     if name == "set_translation_notes":
         bid = args.get("book_id", "")
+        if _denied(bid, True):
+            return {"error": "not authorized for that book"}
         if not db.get_book(conn, bid):
             return {"error": "book not found"}
         db.set_book_notes(conn, bid, (args.get("notes") or "").strip() or None)
@@ -138,6 +151,8 @@ def _execute_tool(conn, name: str, args: dict) -> dict:
         bid = args.get("book_id") if scope == "book" else None
         if scope == "book" and not bid:
             return {"error": "book_id required for book-scoped term"}
+        if _denied(bid or "", True):
+            return {"error": "not authorized for that book"}
         db.insert_term(
             conn, term_ar=args.get("term_ar", ""), term_en=args.get("term_en", ""),
             note=args.get("note"), scope=scope, book_id=bid, created_by="assistant",
@@ -186,9 +201,11 @@ def _call_openrouter(messages: list[dict]) -> dict:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def chat(conn, messages: list[dict], book_id: str | None = None) -> dict:
+def chat(conn, messages: list[dict], book_id: str | None = None,
+         authorize=None) -> dict:
     """Run one assistant turn (with an internal tool loop). Returns
-    ``{reply, actions}`` where actions lists any tools the assistant invoked."""
+    ``{reply, actions}`` where actions lists any tools the assistant invoked.
+    ``authorize(book_id, write)`` gates every book a tool touches."""
     convo = [
         {"role": "system", "content": APP_KNOWLEDGE + "\n\n" + _book_context(conn, book_id)},
         *[{"role": m["role"], "content": m.get("content", "")} for m in messages],
@@ -214,7 +231,7 @@ def chat(conn, messages: list[dict], book_id: str | None = None) -> dict:
             if book_id and "book_id" in {p for p in ("book_id",)} and not args.get("book_id"):
                 if name in ("get_book_status", "set_translation_notes"):
                     args["book_id"] = book_id
-            result = _execute_tool(conn, name, args)
+            result = _execute_tool(conn, name, args, authorize=authorize)
             actions.append({"tool": name, "args": args, "result": result})
             convo.append({
                 "role": "tool", "tool_call_id": tc.get("id"),

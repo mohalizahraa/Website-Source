@@ -118,6 +118,8 @@ def _require_book_access(conn, book: dict | None, user, *, write: bool) -> dict:
         return book  # public read of a published book
     if user is None:
         raise HTTPException(status_code=401, detail="authentication required")
+    if write and user.get("role") == "reader":
+        raise HTTPException(status_code=403, detail="read-only account")
     if user.get("role") == "admin":
         return book
     owner = book.get("owner_id")
@@ -186,6 +188,23 @@ async def create_user_endpoint(request: Request, _admin=Depends(require_admin),
 def _on_startup() -> None:
     """A fresh process has no running worker, so any book still marked
     'processing' is stale — un-wedge it so ingestion can be resumed."""
+    # In production, REFUSE to start with insecure defaults (forgeable cookies
+    # / default admin). Set HAYDARI_ENV=production once real secrets are configured.
+    if os.environ.get("HAYDARI_ENV", "").strip().lower() == "production":
+        missing = []
+        if not auth.secret_is_configured():
+            missing.append("HAYDARI_SECRET_KEY")
+        if not os.environ.get("HAYDARI_ADMIN_EMAIL"):
+            missing.append("HAYDARI_ADMIN_EMAIL")
+        if not os.environ.get("HAYDARI_ADMIN_PASSWORD"):
+            missing.append("HAYDARI_ADMIN_PASSWORD")
+        if not _cookie_secure():
+            missing.append("HAYDARI_COOKIE_SECURE=true")
+        if missing:
+            raise RuntimeError(
+                "Refusing to start in production with insecure config; set: "
+                + ", ".join(missing)
+            )
     conn = db.connect()
     try:
         db.init_db(conn)
@@ -349,7 +368,12 @@ async def upload_books(
             raise HTTPException(status_code=409, detail="could not allocate a book id, retry")
 
         key = f"books/{book_id}/{safe_name}"
-        storage.get_storage().save_bytes(key, data, "application/pdf")
+        try:
+            storage.get_storage().save_bytes(key, data, "application/pdf")
+        except Exception as exc:  # noqa: BLE001 — don't leave a row with no blob
+            conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
+            conn.commit()
+            raise HTTPException(status_code=502, detail=f"storage write failed: {exc}")
         if notes and notes.strip():
             db.set_book_notes(conn, book_id, notes.strip())
         write_event(conn, actor=user["id"], type="book.upload",
@@ -360,7 +384,7 @@ async def upload_books(
 
 
 @app.post("/api/books/import")
-async def import_books(request: Request, _user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
+async def import_books(request: Request, user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     """Bulk-register books from a catalog.
 
     Accepts the contract's raw JSON array ``[ {title_ar, ...}, ... ]`` and also
@@ -395,9 +419,10 @@ async def import_books(request: Request, _user=Depends(require_user), conn: sqli
             author=entry.author,
             status="uploaded",
             source_pdf=entry.source_pdf,
+            owner_id=user["id"],
         )
         write_event(
-            conn, actor="importer", type="book.import",
+            conn, actor=user["id"], type="book.import",
             payload={"id": book_id, "title_ar": entry.title_ar},
         )
         conn.commit()
@@ -491,8 +516,18 @@ async def chat_endpoint(request: Request, user=Depends(require_user),
     # access to any book it is scoped to.
     if book_id:
         _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
+
+    # Authorize EVERY book the assistant's tools try to touch (a tool call can
+    # carry an arbitrary book_id), not just the top-level one.
+    def authorize(bid: str, write: bool = True) -> bool:
+        try:
+            _require_book_access(conn, db.get_book(conn, bid), user, write=write)
+            return True
+        except HTTPException:
+            return False
+
     try:
-        result = chat_mod.chat(conn, messages, book_id)
+        result = chat_mod.chat(conn, messages, book_id, authorize=authorize)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
@@ -716,9 +751,11 @@ def review_segment(
 # Termbase / style rules
 # ---------------------------------------------------------------------------
 @app.post("/api/termbase")
-def add_term(body: TermbaseRequest, _user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
+def add_term(body: TermbaseRequest, user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     if body.scope == "book" and not body.book_id:
         raise HTTPException(status_code=400, detail="book_id required for scope=book")
+    if body.book_id:  # a book-scoped term must be authorized against that book
+        _require_book_access(conn, db.get_book(conn, body.book_id), user, write=True)
     term_id = db.insert_term(
         conn,
         term_ar=body.term_ar,
@@ -743,7 +780,7 @@ async def import_termbase(
     file: UploadFile = File(...),
     scope: str = Form("global"),
     book_id: Optional[str] = Form(None),
-    _user=Depends(require_user),
+    user=Depends(require_user),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     """Bulk-load glossary term pairs from a CSV.
@@ -778,6 +815,8 @@ async def import_termbase(
             continue
         row_scope = r.get("scope") or scope
         row_book = r.get("book_id") or (book_id if row_scope == "book" else None)
+        if row_book:  # authorize any book-scoped row against that book
+            _require_book_access(conn, db.get_book(conn, row_book), user, write=True)
         db.insert_term(
             conn,
             term_ar=term_ar,
@@ -797,11 +836,13 @@ async def import_termbase(
 
 @app.post("/api/style-rules")
 def add_style_rule(
-    body: StyleRuleRequest, _user=Depends(require_user),
+    body: StyleRuleRequest, user=Depends(require_user),
     conn: sqlite3.Connection = Depends(get_conn)
 ):
     if body.scope == "book" and not body.book_id:
         raise HTTPException(status_code=400, detail="book_id required for scope=book")
+    if body.book_id:  # a book-scoped rule must be authorized against that book
+        _require_book_access(conn, db.get_book(conn, body.book_id), user, write=True)
     rule_id = db.insert_style_rule(
         conn, rule=body.rule, scope=body.scope, book_id=body.book_id
     )
