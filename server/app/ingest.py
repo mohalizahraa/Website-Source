@@ -137,7 +137,12 @@ def _pipeline_mode() -> str:
 
 
 def _resolve_pdf(source_pdf: str | None) -> str | None:
-    """Find the book's PDF on disk (absolute, repo-relative, or under uploads)."""
+    """Return a LOCAL path to the book's PDF for rendering.
+
+    Handles legacy absolute/relative paths (still on disk) AND the new storage
+    keys (``books/<id>/<file>``), materializing from local disk or S3/R2 as
+    needed so pdftoppm always gets a real file.
+    """
     if not source_pdf:
         return None
     candidates = [source_pdf, str(_REPO_ROOT / source_pdf),
@@ -145,6 +150,10 @@ def _resolve_pdf(source_pdf: str | None) -> str | None:
     for c in candidates:
         if os.path.exists(c):
             return c
+    from . import storage  # lazy to avoid an import cycle at module load
+    st = storage.get_storage()
+    if st.exists(source_pdf):
+        return st.materialize(source_pdf)
     return None
 
 

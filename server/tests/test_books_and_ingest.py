@@ -64,7 +64,9 @@ def test_upload_creates_uploaded_book(client):
     detail = client.get(f"/api/books/{new_id}").json()
     assert detail["status"] == "uploaded"
     assert detail["title_ar"] == "كتاب تجريبي"
-    assert detail["source_pdf"] and os.path.exists(detail["source_pdf"])
+    # source_pdf is now a backend-neutral storage key; verify the blob exists.
+    from app import storage
+    assert detail["source_pdf"] and storage.get_storage().exists(detail["source_pdf"])
 
 
 def test_upload_multiple_files(client):

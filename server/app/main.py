@@ -26,7 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from . import chat as chat_mod
-from . import config, db, ingest
+from . import config, db, ingest, storage
 from .diffing import compute_diff
 from .events import write_event
 from .schemas import (
@@ -142,12 +142,16 @@ def delete_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
     book = db.get_book(conn, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="book not found")
-    # Remove the uploaded source PDF, but only if it lives in our uploads dir.
+    # Remove the source PDF from storage (best-effort). Handles both the new
+    # storage keys and legacy absolute paths under the uploads dir.
     src = book.get("source_pdf") or ""
     try:
-        up = os.path.realpath(config.upload_dir())
-        if src and os.path.realpath(src).startswith(up) and os.path.exists(src):
-            os.remove(src)
+        if src.startswith("books/"):
+            storage.get_storage().delete(src)
+        else:
+            up = os.path.realpath(config.upload_dir())
+            if src and os.path.realpath(src).startswith(up) and os.path.exists(src):
+                os.remove(src)
     except Exception:  # noqa: BLE001 — file cleanup is best-effort
         pass
     conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
@@ -172,9 +176,11 @@ async def upload_books(
     for f in files:
         book_id = db.next_book_id(conn)
         safe_name = os.path.basename(f.filename or f"{book_id}.pdf")
-        dest = os.path.join(config.upload_dir(), f"{book_id}__{safe_name}")
-        with open(dest, "wb") as out:
-            out.write(await f.read())
+        # Store under a backend-neutral key (local disk or S3/R2). The KEY is
+        # persisted in source_pdf; the ingest worker materializes it to a local
+        # file for pdftoppm.
+        key = f"books/{book_id}/{safe_name}"
+        storage.get_storage().save_bytes(key, await f.read(), "application/pdf")
         # Default title from filename when none supplied.
         stem = os.path.splitext(safe_name)[0]
         db.insert_book(
@@ -184,7 +190,7 @@ async def upload_books(
             title_en=title_en,
             author=author,
             status="uploaded",
-            source_pdf=dest,
+            source_pdf=key,
         )
         if notes and notes.strip():
             db.set_book_notes(conn, book_id, notes.strip())
