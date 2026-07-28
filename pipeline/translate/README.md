@@ -65,7 +65,9 @@ Priority order inside `translate_segment` (`core.py`):
 | `sacred.py` | `substitute_sacred` — detect-and-replace for Qurʾān/Hadith |
 | `interfaces.py` | `Translator`, `CanonicalDB` ABCs, `NotConfiguredError` |
 | `mocks.py` | `MockTranslator`, `MockCanonicalDB`, `RecordingTranslator` |
-| `adapters.py` | `OllamaTranslator`, `ClaudeTranslator`, `GeminiTranslator` |
+| `adapters.py` | real engines: `Ollama`, `Gemini`, `OpenAI`, `Claude` + env selection |
+| `factory.py` | `build_pipeline_from_env()` — production `Pipeline` from env |
+| `ab_compare.py` | side-by-side A/B of cloud engines on one segment + cost |
 | `arabic.py` | Arabic normalisation (diacritic-tolerant matching) |
 | `types.py` | dataclasses: `TranslationResult`, `CanonicalEntry`, `Prompt`, … |
 
@@ -88,23 +90,57 @@ coherence, and style rules.
 
 Matching is on normalised Arabic so OCR diacritic noise does not prevent a hit.
 
-## Real engines (later)
+## Real engines
 
 Adapters read config from env and raise a clear `NotConfiguredError` before any
-network call (never exercised offline):
+network call (never exercised offline). Defaults are the **best-value picks for
+Arabic→English** from `RESEARCH.md`:
 
-| Engine | Env vars |
-|--------|----------|
-| `OllamaTranslator` (Qwen3-14B, local) | `OLLAMA_HOST` (required), `OLLAMA_MODEL` (default `qwen3:14b`) |
-| `ClaudeTranslator` (cloud) | `ANTHROPIC_API_KEY` (required), `ANTHROPIC_MODEL` (default `claude-opus-4-8`) |
-| `GeminiTranslator` (cloud) | `GEMINI_API_KEY` / `GOOGLE_API_KEY` (required), `GEMINI_MODEL` (default `gemini-2.0-flash`) |
+| Engine | Default model | Env vars |
+|--------|---------------|----------|
+| `GeminiTranslator` (cloud — **best value**) | `gemini-2.5-flash` | `GEMINI_API_KEY` / `GOOGLE_API_KEY`, `GEMINI_MODEL` |
+| `OpenAITranslator` (cloud — **best all-rounder**) | `gpt-4.1-mini` | `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_BASE_URL` |
+| `ClaudeTranslator` (cloud — frontier escalation) | `claude-sonnet-5` | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` |
+| `OllamaTranslator` (Qwen3, local — free) | `qwen3:14b` | `OLLAMA_HOST` (required), `OLLAMA_MODEL` |
 
-Wire them into production like:
+Pick the cloud engine with **`CLOUD_TRANSLATOR`** = `gemini` (default) | `openai` | `claude`.
 
 ```python
-from translate import Pipeline, OllamaTranslator, ClaudeTranslator
-pipe = Pipeline(local=OllamaTranslator(), cloud=ClaudeTranslator())
+from pipeline.translate import build_pipeline_from_env
+pipe = build_pipeline_from_env()          # local = Ollama if OLLAMA_HOST else mock;
+                                          # cloud = CLOUD_TRANSLATOR (gemini default)
+pipe.translate_segment(seg, context)
 ```
+
+or wire specific engines directly:
+
+```python
+from pipeline.translate import Pipeline, OllamaTranslator, GeminiTranslator
+pipe = Pipeline(local=OllamaTranslator(), cloud=GeminiTranslator())
+```
+
+### Caching & batch (cost)
+
+- **Prompt caching is on by structure.** The stable 9-point system preamble is
+  sent first, so Gemini (implicit) and OpenAI (automatic, ≥1024-token prefix)
+  cache it at ~10% of input cost on repeat calls. To cache even more, promote a
+  book-stable glossary into the system prompt.
+- **Batch (−50%) is the next step, not yet wired.** Both providers offer a 50%
+  async batch tier; book translation isn't latency-sensitive, so the ingest
+  worker should submit a book as one batch and poll. The synchronous adapters
+  here are the per-request building block that a batch layer will wrap.
+
+### A/B two engines on a real page
+
+```bash
+# built-in sample
+python -m pipeline.translate.ab_compare
+# your own Arabic, choosing engines
+python -m pipeline.translate.ab_compare --file page.txt --engines gemini openai
+```
+
+Prints each engine's output side by side with a rough token + cost estimate.
+Engines without a key are skipped with a note — set the key to see real output.
 
 ## Tests
 

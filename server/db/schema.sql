@@ -21,6 +21,11 @@ CREATE TABLE IF NOT EXISTS books (
     status         TEXT NOT NULL DEFAULT 'draft',
     source_pdf     TEXT,
     google_doc_url TEXT,
+    -- Total physical pages in the source PDF (from pdfinfo; 0 until known).
+    pages_total    INTEGER NOT NULL DEFAULT 0,
+    -- Free-text, per-book translation instructions injected into every prompt
+    -- (set at upload or via the chat assistant).
+    translation_notes TEXT,
     updated_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 

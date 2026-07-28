@@ -97,6 +97,17 @@ def _style_block(context: Context) -> str:
     return "\n".join(lines)
 
 
+def _instructions_block(context: Context) -> str:
+    """Per-book translation instructions supplied by the user (highest priority)."""
+    notes = (context.get("instructions") or "").strip()
+    if not notes:
+        return ""
+    return (
+        "BOOK-SPECIFIC INSTRUCTIONS FROM THE EDITOR — these take priority over "
+        "general style and must be followed exactly:\n" + notes
+    )
+
+
 class PromptBuilder:
     """Assembles a :class:`Prompt` from a segment + retrieval context."""
 
@@ -105,6 +116,7 @@ class PromptBuilder:
 
     def build(self, seg: Segment, context: Context) -> Prompt:
         blocks = [
+            _instructions_block(context),
             _glossary_block(context),
             _tm_block(context, self.tm_top_k),
             _coherence_block(context),

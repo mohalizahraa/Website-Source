@@ -1,4 +1,10 @@
 import type { Metadata, Viewport } from "next";
+// Self-hosted type — Digital Scriptorium: Fraunces (display/serif reading),
+// Hanken Grotesk (UI), Amiri (classical Arabic naskh). No CDN, works offline.
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/hanken-grotesk";
+import "@fontsource/amiri/400.css";
+import "@fontsource/amiri/700.css";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
 
@@ -12,8 +18,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FCFBF5" },
-    { media: "(prefers-color-scheme: dark)", color: "#12140E" },
+    { media: "(prefers-color-scheme: light)", color: "#FBF8F1" },
+    { media: "(prefers-color-scheme: dark)", color: "#171410" },
   ],
 };
 

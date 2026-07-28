@@ -78,6 +78,28 @@ scoring, and "teach the model" actions — all persisting to the backend.
 (Ollama + Qwen3 / cloud), and Qurʾān/Hadith canonical data. These sit behind clean interfaces with working
 mocks; swap in real adapters via environment variables. See `ARCHITECTURE.md` → "Environment reality".
 
+## Run it for real (OpenRouter — one key, any model)
+
+1. **Paste your key** into `server/.env` → `OPENROUTER_API_KEY=…` (git-ignored; auto-loaded).
+   Pick models with `TRANSLATION_MODEL_BULK` (value, e.g. `google/gemini-2.5-flash`),
+   `TRANSLATION_MODEL_FRONTIER` (doctrinal, e.g. `google/gemini-2.5-pro`), and `OCR_MODEL`.
+2. **Compare models on your own text** before committing:
+   ```bash
+   python -m pipeline.translate.ab_compare --file page.txt   # Western + Chinese shortlist
+   ```
+3. **Start the app** (`server/README.md` + `web/README.md`), **upload a PDF** in the Library, hit
+   **Ingest** → the worker runs **real OCR → translate → QA** and fills in the review workbench.
+   Sacred Qurʾān/Hadith is substituted from the canonical store (never machine-translated); doctrinal
+   segments route to the frontier model; footnote anchors are preserved.
+4. **Review & approve** in the workbench. Every edit is captured as a `(draft → your edit)` pair.
+5. **Export training data** to fine-tune a model on your voice:
+   ```bash
+   python server/export_training.py    # → training/sft.jsonl, dpo.jsonl, glossary.json
+   ```
+
+Everything degrades gracefully: with no key set, the pipeline runs on deterministic mocks and the full
+test suite stays offline.
+
 ## Legacy: the five book scripts (`books/`)
 
 The original CLI workflow, kept for reference. See `KNOWN_ISSUES.md` for the review of these scripts.

@@ -18,6 +18,10 @@ def client():
     fd, path = tempfile.mkstemp(suffix=".db")
     os.close(fd)
     os.environ["HAYDARI_DB"] = path
+    # Tests are strictly offline: never let a real key (loaded from server/.env)
+    # push ingestion onto the network. Force the deterministic mock pipeline.
+    os.environ.pop("OPENROUTER_API_KEY", None)
+    os.environ["HAYDARI_PIPELINE"] = "mock"
 
     # Import lazily so config picks up HAYDARI_DB, and re-seed per test.
     from app import config, db  # noqa: WPS433

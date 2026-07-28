@@ -4,7 +4,10 @@
 import type {
   Book,
   CatalogEntry,
+  ChatMessage,
+  ChatResult,
   HaydariAPI,
+  IngestOptions,
   IngestStatus,
   LearningSummary,
   PagePayload,
@@ -58,8 +61,16 @@ function mapBook(raw: any): Book {
     title_en: raw.title_en ?? "",
     author: raw.author ?? "",
     status: raw.status,
-    page_count: typeof raw.page_count === "number" ? raw.page_count : 1,
+    // Prefer the true PDF page total; fall back to any legacy page_count.
+    page_count:
+      typeof raw.pages_total === "number" && raw.pages_total > 0
+        ? raw.pages_total
+        : typeof raw.page_count === "number"
+          ? raw.page_count
+          : 1,
     progress: frac(raw.progress),
+    pages_total: typeof raw.pages_total === "number" ? raw.pages_total : 0,
+    translation_notes: raw.translation_notes ?? null,
   };
 }
 
@@ -70,7 +81,9 @@ function mapIngest(raw: any): IngestStatus {
     phase: raw.phase ?? "idle",
     pages_done: raw.pages_done ?? 0,
     pages_total: raw.pages_total ?? 0,
+    has_more: !!raw.has_more,
     progress: frac(raw.progress),
+    detail: raw.detail && Object.keys(raw.detail).length ? raw.detail : undefined,
   };
 }
 
@@ -81,12 +94,24 @@ export const httpApi: HaydariAPI = {
   async getBook(id) {
     return mapBook(await request<any>(`/books/${encodeURIComponent(id)}`));
   },
+  deleteBook(id) {
+    return request<{ ok: boolean }>(`/books/${encodeURIComponent(id)}`, { method: "DELETE" });
+  },
+  async updateBook(id, patch) {
+    return mapBook(
+      await request<any>(`/books/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      }),
+    );
+  },
   uploadBooks(files: File[], meta?: UploadMeta) {
     const form = new FormData();
     files.forEach((f) => form.append("files", f, f.name));
     if (meta?.title_ar) form.append("title_ar", meta.title_ar);
     if (meta?.title_en) form.append("title_en", meta.title_en);
     if (meta?.author) form.append("author", meta.author);
+    if (meta?.notes) form.append("notes", meta.notes);
     return upload<{ id: string }[]>("/books/upload", form);
   },
   importBooks(catalog: CatalogEntry[]) {
@@ -95,13 +120,26 @@ export const httpApi: HaydariAPI = {
       body: JSON.stringify(catalog),
     });
   },
-  async ingestBook(id) {
-    return mapIngest(
-      await request<any>(`/books/${encodeURIComponent(id)}/ingest`, { method: "POST" }),
-    );
+  async ingestBook(id, options?: IngestOptions) {
+    await request<any>(`/books/${encodeURIComponent(id)}/ingest`, {
+      method: "POST",
+      body: JSON.stringify(options ?? {}),
+    });
+    // The ingest response is the enqueue ack; return the live status snapshot.
+    return mapIngest(await request<any>(`/books/${encodeURIComponent(id)}/status`));
   },
   async getBookStatus(id) {
     return mapIngest(await request<any>(`/books/${encodeURIComponent(id)}/status`));
+  },
+  async listPages(id) {
+    const r = await request<{ pages: number[] }>(`/books/${encodeURIComponent(id)}/pages`);
+    return r.pages ?? [];
+  },
+  chat(messages: ChatMessage[], bookId?: string) {
+    return request<ChatResult>("/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages, book_id: bookId }),
+    });
   },
   importTermbase(file: File) {
     const form = new FormData();

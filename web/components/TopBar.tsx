@@ -18,6 +18,8 @@ export function TopBar({
   pageCount,
   onPrev,
   onNext,
+  hasPrev,
+  hasNext,
   saveState,
   reviewer = "HA",
 }: {
@@ -26,6 +28,8 @@ export function TopBar({
   pageCount: number;
   onPrev: () => void;
   onNext: () => void;
+  hasPrev?: boolean; // overrides default page<=1 (for non-contiguous page sets)
+  hasNext?: boolean; // overrides default page>=pageCount
   saveState: SaveState;
   reviewer?: string;
 }) {
@@ -44,7 +48,11 @@ export function TopBar({
         </span>
       </div>
       <div className="pager">
-        <button aria-label="Previous page" onClick={onPrev} disabled={page <= 1}>
+        <button
+          aria-label="Previous page"
+          onClick={onPrev}
+          disabled={hasPrev === undefined ? page <= 1 : !hasPrev}
+        >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M10 3L5 8l5 5" />
           </svg>
@@ -52,7 +60,11 @@ export function TopBar({
         <span className="pg">
           Page <b>{page}</b> / {pageCount}
         </span>
-        <button aria-label="Next page" onClick={onNext} disabled={page >= pageCount}>
+        <button
+          aria-label="Next page"
+          onClick={onNext}
+          disabled={hasNext === undefined ? page >= pageCount : !hasNext}
+        >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M6 3l5 5-5 5" />
           </svg>

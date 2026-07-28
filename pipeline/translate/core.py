@@ -15,6 +15,7 @@ pipeline is fully offline (mocks); production swaps in real adapters.
 
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 from . import arabic
@@ -27,6 +28,31 @@ from .types import Context, Segment, TranslationResult
 
 # Score at/above which a TM match counts as "exact" and is reused verbatim.
 TM_EXACT_THRESHOLD = 0.995
+
+# Some models (e.g. Qwen, DeepSeek) wrap output in a label or a translator's
+# note despite "return only the translation". Strip those known wrappers so
+# every engine is safe to use — conservative: only removes obvious meta lines.
+_LABEL_RE = re.compile(
+    r"^[\s*]*(?:improved translation|english translation|translation|"
+    r"here is (?:the|my)(?: improved)? translation|the translation(?: is)?)[\s:*]*",
+    re.IGNORECASE,
+)
+_TRAILING_NOTE_RE = re.compile(
+    r"\n+\s*\(?(?:note|improved for|changes?:|i (?:have )?improved|this translation)\b.*$",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _sanitize(text: str) -> str:
+    """Strip a leading label line and a trailing translator's meta-note."""
+    if not text:
+        return text
+    t = text.strip()
+    t = _LABEL_RE.sub("", t, count=1).strip()
+    t = _TRAILING_NOTE_RE.sub("", t).strip()
+    if len(t) >= 2 and t[0] in "\"'`" and t[-1] == t[0]:
+        t = t[1:-1].strip()
+    return t
 
 
 class Pipeline:
@@ -71,12 +97,19 @@ class Pipeline:
     # -- one MT pass + refine + glossary enforcement ----------------------
     def _mt(self, seg: Segment, context: Context, engine: Translator) -> TranslationResult:
         prompt = self.prompt_builder.build(seg, context)
-        result = engine.translate(prompt, ar=seg.get("ar", ""), context=context)
+        draft = engine.translate(prompt, ar=seg.get("ar", ""), context=context)
+        result = draft
         if self.refine:
-            refine_prompt = self.prompt_builder.build_refine(seg, context, result.text)
-            result = engine.refine(
-                result.text, prompt=refine_prompt, ar=seg.get("ar", ""), context=context
+            refine_prompt = self.prompt_builder.build_refine(seg, context, draft.text)
+            refined = engine.refine(
+                draft.text, prompt=refine_prompt, ar=seg.get("ar", ""), context=context
             )
+            # A refine pass that drops a big chunk of a long draft has almost
+            # certainly TRUNCATED rather than improved — keep the fuller draft.
+            d, r = len(draft.text.strip()), len(refined.text.strip())
+            if r >= 0.75 * d or d < 400:
+                result = refined
+        result.text = _sanitize(result.text)
         result.text = self._enforce_glossary(seg, context, result.text)
         return result
 
@@ -99,17 +132,22 @@ class Pipeline:
     def translate_segment(self, seg: Segment, context: Optional[Context] = None) -> dict:
         context = context or {}
 
-        # 1) Sacred → canonical detect-and-replace. Sacred text is NEVER
-        # machine-translated. A canonical miss must not fall through to MT;
-        # it is flagged for human review with the original Arabic preserved.
+        # 1) Sacred → canonical detect-and-replace. On a hit we use the verified
+        # canonical Arabic + approved English. On a MISS we do NOT leave it blank
+        # (the reviewer can't act on an empty box): we produce an audited machine
+        # translation as a starting draft, flagged needs_review + needs_canonical
+        # so a human supplies/verifies the canonical wording. If even that yields
+        # nothing, fall back to the original Arabic so the box is never empty.
         if seg.get("kind") == "sacred":
             replaced = substitute_sacred(seg, self.canonical_db)
             if replaced is not None:
                 return replaced
+            fallback = self._mt(seg, context, self.cloud)
+            text = fallback.text.strip() or seg.get("ar", "")
             return {
-                "en": "",  # untranslated on purpose — a human must supply/verify
-                "engine": "canonical-missing",
-                "confidence": 0.0,
+                "en": text,
+                "engine": "mt-fallback-sacred",
+                "confidence": fallback.confidence,
                 "status": "needs_review",
                 "needs_canonical": True,
             }

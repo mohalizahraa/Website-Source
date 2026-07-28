@@ -6,7 +6,10 @@
 import type {
   Book,
   CatalogEntry,
+  ChatMessage,
+  ChatResult,
   HaydariAPI,
+  IngestOptions,
   IngestStatus,
   LearningSummary,
   PagePayload,
@@ -66,6 +69,7 @@ function statusFor(book: Book): IngestStatus {
       phase: book.status === "published" ? "done" : "idle",
       pages_done: done,
       pages_total: total,
+      has_more: book.status === "uploaded",
       progress: book.progress,
     };
   }
@@ -81,6 +85,7 @@ function statusFor(book: Book): IngestStatus {
       phase: "done",
       pages_done: total,
       pages_total: total,
+      has_more: false,
       progress: 1,
     };
   }
@@ -92,6 +97,7 @@ function statusFor(book: Book): IngestStatus {
     phase,
     pages_done: Math.round(p * total),
     pages_total: total,
+    has_more: false,
     progress: p,
   };
 }
@@ -109,6 +115,11 @@ export const mockApi: HaydariAPI = {
     return delay({ ...b });
   },
 
+  async deleteBook(id) {
+    state.books = state.books.filter((b) => b.id !== id);
+    return delay({ ok: true });
+  },
+
   async uploadBooks(files: File[], meta?: UploadMeta) {
     const created = files.map((file, i) => {
       const id = `B-${String(state.nextId++).padStart(2, "0")}`;
@@ -121,6 +132,7 @@ export const mockApi: HaydariAPI = {
         status: "uploaded",
         page_count: 120 + Math.round(Math.random() * 300),
         progress: 0,
+        translation_notes: meta?.notes || null,
       });
       return { id };
     });
@@ -144,7 +156,7 @@ export const mockApi: HaydariAPI = {
     return delay(created);
   },
 
-  async ingestBook(id) {
+  async ingestBook(id, _options?: IngestOptions) {
     const b = findBook(id);
     if (!b) throw new Error(`Unknown book ${id}`);
     b.status = "processing";
@@ -154,10 +166,34 @@ export const mockApi: HaydariAPI = {
     return delay(statusFor(b));
   },
 
+  async updateBook(id, patch) {
+    const b = findBook(id);
+    if (!b) throw new Error(`Unknown book ${id}`);
+    if (patch.translation_notes !== undefined) b.translation_notes = patch.translation_notes;
+    return delay({ ...b });
+  },
+
+  async chat(messages: ChatMessage[], _bookId?: string): Promise<ChatResult> {
+    const last = messages[messages.length - 1]?.content || "";
+    return delay({
+      reply:
+        "This is the offline demo assistant. Connect the live backend to ask real " +
+        `questions about the app and manage your books. You said: “${last.slice(0, 120)}”.`,
+      actions: [],
+    });
+  },
+
   async getBookStatus(id) {
     const b = findBook(id);
     if (!b) throw new Error(`Unknown book ${id}`);
     return delay(statusFor(b));
+  },
+
+  async listPages(id) {
+    const b = findBook(id);
+    if (!b) throw new Error(`Unknown book ${id}`);
+    // The mock serves a single demo page for any reviewable book.
+    return delay(b.status === "uploaded" ? [] : [1]);
   },
 
   async importTermbase(file: File) {

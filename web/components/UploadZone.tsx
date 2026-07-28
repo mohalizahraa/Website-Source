@@ -26,13 +26,12 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
       setQueued(files.map((f) => f.name));
       try {
         const created = await api.uploadBooks(files, meta);
-        // Auto-start ingestion so the reviewer sees real progress immediately
-        // instead of an inert "uploaded" card with no obvious next step.
-        await Promise.all(created.map((c) => api.ingestBook(c.id).catch(() => null)));
+        // Do NOT auto-ingest — ingestion costs tokens. The reviewer chooses a
+        // page range and starts it deliberately from each book card.
         learn([
           T.strong(`Uploaded ${created.length} ${created.length === 1 ? "book" : "books"}.`),
           T.text(
-            "Ingestion started (OCR → translate → QA). Watch the progress below, then open it to review.",
+            "Choose a page range on the book card and press Ingest to start OCR → translate → QA.",
           ),
         ]);
         setMeta({});
@@ -151,6 +150,20 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
             value={meta.author || ""}
             onChange={(e) => setMeta((m) => ({ ...m, author: e.target.value }))}
           />
+        </div>
+        <div className="field">
+          <label htmlFor="m-notes">Translation instructions</label>
+          <textarea
+            id="m-notes"
+            rows={3}
+            placeholder="e.g. Transliterate all divine names; keep footnotes as footnotes; prefer &lsquo;the mutakallimūn&rsquo; for المتكلّمون."
+            value={meta.notes || ""}
+            onChange={(e) => setMeta((m) => ({ ...m, notes: e.target.value }))}
+          />
+          <span className="bc-meta">
+            Injected into every translation for this book. You can also change this later via the
+            assistant.
+          </span>
         </div>
 
         <div className="mc-title" style={{ marginTop: 14 }}>

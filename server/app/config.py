@@ -12,6 +12,31 @@ from pathlib import Path
 _SERVER_DIR = Path(__file__).resolve().parent.parent
 
 
+def _load_dotenv() -> None:
+    """Load ``server/.env`` into the process environment (no dependency).
+
+    Reads simple ``KEY=VALUE`` lines (``#`` comments and blanks ignored). An
+    already-set environment variable always wins, so real env overrides the
+    file. This is how API keys (OPENROUTER_API_KEY, …) reach both the server
+    and the translation/OCR pipeline, which run in the same process.
+    """
+    env_file = _SERVER_DIR / ".env"
+    if not env_file.exists():
+        return
+    for raw in env_file.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_dotenv()
+
+
 def db_path() -> str:
     """Absolute path to the SQLite database file."""
     return os.environ.get("HAYDARI_DB", str(_SERVER_DIR / "haydari.db"))

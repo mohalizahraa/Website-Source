@@ -34,6 +34,11 @@ def connect(path: str | None = None) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
+    # WAL lets many readers run concurrently with one writer. busy_timeout makes
+    # a would-be second writer WAIT (up to 5s) for the lock instead of failing
+    # with "database is locked" — this is what lets a reviewer approve/edit a
+    # done page while the ingest worker is committing a later page.
+    conn.execute("PRAGMA busy_timeout = 5000")
     return conn
 
 
@@ -41,7 +46,22 @@ def init_db(conn: sqlite3.Connection, schema_file: str | None = None) -> None:
     """Create all tables from the authoritative schema.sql (idempotent)."""
     with open(schema_file or config.schema_path(), "r", encoding="utf-8") as fh:
         conn.executescript(fh.read())
+    _migrate(conn)
     conn.commit()
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Additive, idempotent column migrations for pre-existing databases.
+
+    ``CREATE TABLE IF NOT EXISTS`` never alters an existing table, so new
+    columns added to schema.sql must also be back-filled here for DBs created
+    before the column existed. Safe to run on every startup.
+    """
+    have = {r["name"] for r in conn.execute("PRAGMA table_info(books)").fetchall()}
+    if "pages_total" not in have:
+        conn.execute("ALTER TABLE books ADD COLUMN pages_total INTEGER NOT NULL DEFAULT 0")
+    if "translation_notes" not in have:
+        conn.execute("ALTER TABLE books ADD COLUMN translation_notes TEXT")
 
 
 # ---------------------------------------------------------------------------
@@ -146,6 +166,57 @@ def page_count(conn: sqlite3.Connection, book_id: str) -> int:
         conn.execute(
             "SELECT COUNT(*) AS c FROM pages WHERE book_id = ?", (book_id,)
         ).fetchone()["c"]
+    )
+
+
+def completed_page_numbers(conn: sqlite3.Connection, book_id: str) -> set[int]:
+    """Page numbers already fully processed (OCR'd + translated => 'in_review').
+
+    Used to resume ingestion: these pages are skipped on a subsequent run.
+    """
+    rows = conn.execute(
+        "SELECT page_no FROM pages WHERE book_id = ? AND status = 'in_review'",
+        (book_id,),
+    ).fetchall()
+    return {int(r["page_no"]) for r in rows}
+
+
+def pages_done(conn: sqlite3.Connection, book_id: str) -> int:
+    return len(completed_page_numbers(conn, book_id))
+
+
+def reset_stale_processing(conn: sqlite3.Connection) -> list[str]:
+    """Un-wedge books left in 'processing' by a killed/restarted worker.
+
+    A book is only ever 'processing' while a worker holds it. On a fresh process
+    (server restart, crash, or --reload) no worker is running, so any surviving
+    'processing' row is stale and would block ``claim_book_for_ingest`` forever.
+    Reset each to a resumable state: 'in_review' if it has completed pages, else
+    'uploaded'. Returns the affected book ids.
+    """
+    rows = conn.execute("SELECT id FROM books WHERE status = 'processing'").fetchall()
+    ids = [r["id"] for r in rows]
+    for bid in ids:
+        conn.execute(
+            "UPDATE books SET status = ?, updated_at = ? WHERE id = ?",
+            ("in_review" if pages_done(conn, bid) > 0 else "uploaded", _now(), bid),
+        )
+    if ids:
+        conn.commit()
+    return ids
+
+
+def set_book_pages_total(conn: sqlite3.Connection, book_id: str, total: int) -> None:
+    conn.execute(
+        "UPDATE books SET pages_total = ?, updated_at = ? WHERE id = ?",
+        (int(total), _now(), book_id),
+    )
+
+
+def set_book_notes(conn: sqlite3.Connection, book_id: str, notes: str | None) -> None:
+    conn.execute(
+        "UPDATE books SET translation_notes = ?, updated_at = ? WHERE id = ?",
+        (notes, _now(), book_id),
     )
 
 
@@ -320,6 +391,35 @@ def upsert_tm(
 
 def tm_size(conn: sqlite3.Connection) -> int:
     return int(conn.execute("SELECT COUNT(*) AS c FROM translation_memory").fetchone()["c"])
+
+
+def tm_lookup(conn: sqlite3.Connection, ar: str, book_id: str | None = None,
+              top_k: int = 3) -> list[dict]:
+    """Approved translation-memory matches for a piece of Arabic.
+
+    Returns exact matches (same normalized Arabic) as ``{ar, en_approved, score}``
+    with score 1.0, book-scoped entries preferred over global. This is what lets
+    an approved translation be REUSED for identical Arabic on future runs — the
+    core of the human-in-the-loop learning feeding back into new translations.
+    """
+    if not (ar or "").strip():
+        return []
+    h = ar_hash(ar)
+    rows = conn.execute(
+        "SELECT ar, en_approved FROM translation_memory WHERE ar_hash = ? "
+        "ORDER BY (book_id IS NOT NULL AND book_id = ?) DESC LIMIT ?",
+        (h, book_id, top_k),
+    ).fetchall()
+    return [{"ar": r["ar"], "en_approved": r["en_approved"], "score": 1.0} for r in rows]
+
+
+def style_rules_for(conn: sqlite3.Connection, book_id: str | None = None) -> list[str]:
+    """Active style rules for a book: global rules plus this book's own."""
+    rows = conn.execute(
+        "SELECT rule FROM style_rules WHERE scope = 'global' OR book_id = ? ORDER BY id",
+        (book_id,),
+    ).fetchall()
+    return [r["rule"] for r in rows]
 
 
 def segments_matching_ar(

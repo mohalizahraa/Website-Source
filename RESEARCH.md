@@ -339,3 +339,53 @@ translation table read directly from the PDF, Baseer, Docling's RTL issues, and 
 paper). Items marked ⚠️ are single-source and not independently re-checked (Doha-RAG uplift, Gemini OCR
 $/page, IslamicMMLU, MLX-vs-Ollama numbers). Confirm those exact figures — and, critically, each tool's
 **real RTL/Arabic behavior on actual Haydari pages** — before committing.*
+
+---
+
+# Addendum — Best-value translation model for Arabic→English (mid-2026)
+
+Follow-up research pass focused only on picking the **cloud translation engine with the best
+quality-per-dollar for Arabic**. Cross-referenced 2026 translation-quality benchmarks with live API pricing.
+
+## Quality (what actually wins Arabic→English)
+- **Frontier general LLMs win Arabic translation** — Gemini / GPT / Claude are the top tier; Gemini edges
+  ahead on several 2026 translation benchmarks, and Arabic is rated the *hardest* language across engines.
+  ([Alconost 2026](https://alconost.com/en/blog/best-llm-for-translation-2026), [machinetranslation.com](https://www.machinetranslation.com/blog/claude-ai-vs-gemini))
+- **Skip DeepL for Arabic** — it's European-focused; Arabic isn't a strength, and LLMs now beat NMT on Arabic.
+  ([SimpleLocalize](https://simplelocalize.io/blog/posts/ai-machine-translation-cost-comparison/))
+- **Arabic-*specialized* models (Falcon-H1 Arabic, ALLaM, Fanar, SILMA) top Arabic *understanding*
+  leaderboards, not translation** — those leaderboards moved away from translated tests precisely because they
+  conflated translation with comprehension; our verified aiXplain table showed the Arabic-tuned models *lose*
+  on En↔Ar translation to general models. ([QIMMA/TII](https://huggingface.co/blog/tiiuae/qimma-arabic-leaderboard))
+
+## Value table (verified 2026 list pricing, per 1M tokens; ~$/1,000 pages @ ~9M in + 3M out)
+| Model | $/1M in–out | ~$/1,000 pages | Note |
+|---|---|---|---|
+| **Gemini 2.5 Flash** | $0.15 / $1.25 | **~$5** | 🏆 best value (retires Oct 2026 → 3.5 Flash-Lite) |
+| **Qwen3-32B** (DeepInfra) | $0.08 / $0.28 | **~$1.6** | best open / free if self-hosted |
+| **GPT-4.1-mini** | $0.40 / $1.60 | ~$8 (~$4 batch) | best all-rounder; 1M ctx, cheap caching |
+| Gemini 3.5 Flash-Lite | $0.30 / $2.50 | ~$10 | durable Gemini-cheap successor |
+| Cohere Command R7B | $0.0375 / $0.15 | ~$0.8 | cheapest, lower quality |
+| GPT-5.4-mini | $0.75 / $4.50 | ~$20 | strong, pricier |
+| Claude Haiku 4.5 | $1 / $5 | ~$24 | — |
+| Gemini 3.5 Flash | $1.50 / $9 | ~$40 | frontier-lite |
+| Claude Sonnet 5 | $3 / $15 (intro $2/$10) | ~$50–72 | frontier escalation |
+| Opus 4.8 / Gemini 3.x Pro / GPT-5.x | $5+ / $25+ | ~$120+ | doctrinal-only escalation |
+
+Two levers cut every row **40–60%**: prompt caching (repeated glossary/system prefix → ~10% of input cost)
+and the batch API (−50%, fine for non-latency-sensitive book runs).
+Sources: [Gemini pricing](https://www.tldl.io/resources/google-gemini-api-pricing),
+[OpenAI pricing](https://pricepertoken.com/pricing-page/model/openai-gpt-4.1-mini),
+[Qwen pricing](https://deepinfra.com/blog/qwen-api-pricing-2026-guide),
+[Cohere pricing](https://www.aipricing.guru/cohere-pricing/).
+
+## Decision (wired into `pipeline/translate/`)
+- **Default cloud = Gemini 2.5 Flash** (`GeminiTranslator`) — best value; **co-primary = GPT-4.1-mini**
+  (`OpenAITranslator`) — best all-rounder, cheapest caching. Selectable via `CLOUD_TRANSLATOR`.
+- **Frontier escalation = Claude Sonnet 5** (`ClaudeTranslator`) for the flagged doctrinal minority.
+- **Bulk stays free/local** (Qwen3 via Ollama) with cloud only on low-confidence/doctrinal segments →
+  realistic spend in the **low single digits per 1,000 pages** at top-tier quality.
+- A/B the two value picks on a real page: `python -m pipeline.translate.ab_compare`.
+
+*Prices are aggregator-reported and quality benchmarks are general (not Arabic-religious-text-specific) —
+directionally solid; confirm the exact current rate for whichever engine you enable.*

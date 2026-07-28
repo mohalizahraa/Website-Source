@@ -23,8 +23,14 @@ falling back to the mock so nothing breaks offline.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
+import re
+import socket
+import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
@@ -175,6 +181,121 @@ class GeminiOcrEngine:
 
 
 # --------------------------------------------------------------------------- #
+# OpenRouter vision OCR (real) — one key, any vision model                     #
+# --------------------------------------------------------------------------- #
+_OCR_PROMPT = (
+    "You are an OCR engine for classical Arabic scholarly books. Transcribe ALL "
+    "Arabic text in this page image EXACTLY as printed, preserving diacritics "
+    "(tashkīl) and punctuation. Output plain text as Markdown: one paragraph per "
+    "block, blank line between blocks. If the page has a footnote section at the "
+    "bottom, put a line with only '---' before it. Do NOT translate, summarise, "
+    "explain, or add anything — output only the transcribed Arabic."
+)
+
+
+class OpenRouterOcrEngine:
+    """Cloud vision OCR via OpenRouter (Gemini / GPT / Claude vision, one key).
+
+    Uses the OpenAI-compatible chat endpoint with an image part, so any
+    vision-capable model works. Env: OPENROUTER_API_KEY (required), OCR_MODEL
+    (default ``google/gemini-2.5-flash``), OPENROUTER_BASE_URL. Stdlib only.
+    """
+
+    name = "openrouter"
+
+    def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
+        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
+        self.model = model or os.environ.get("OCR_MODEL", "google/gemini-2.5-flash")
+        self.base_url = os.environ.get(
+            "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
+        ).rstrip("/")
+
+    def recognize(self, image_path: str | Path) -> OcrResult:  # pragma: no cover - network
+        if not self.api_key:
+            raise OcrError(
+                "OpenRouterOcrEngine is not configured: set OPENROUTER_API_KEY "
+                "(and optionally OCR_MODEL), or use the mock engine offline."
+            )
+        raw = Path(image_path).read_bytes()
+        b64 = base64.b64encode(raw).decode("ascii")
+        suffix = Path(image_path).suffix.lower().lstrip(".") or "png"
+        media = "jpeg" if suffix in ("jpg", "jpeg") else suffix
+        body = {
+            "model": self.model,
+            "temperature": 0,
+            # Dense scholarly pages (Arabic + full tashkīl + footnotes) are long.
+            # Without an explicit ceiling many providers default to a small output
+            # cap and silently TRUNCATE mid-page. Give the transcription room.
+            "max_tokens": int(os.environ.get("OCR_MAX_TOKENS", "8192")),
+            "usage": {"include": True},  # OpenRouter: return real per-call cost
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": _OCR_PROMPT},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/{media};base64,{b64}"},
+                        },
+                    ],
+                }
+            ],
+        }
+        data = json.dumps(body).encode("utf-8")
+        req = urllib.request.Request(
+            f"{self.base_url}/chat/completions",
+            data=data,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        # Retry transient network/server errors so a single OCR hiccup doesn't
+        # fail the page (which would otherwise be skipped by the ingest worker).
+        out = None
+        last_exc: Exception | None = None
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=120) as resp:
+                    out = json.loads(resp.read().decode("utf-8"))
+                break
+            except urllib.error.HTTPError as exc:
+                last_exc = exc
+                if exc.code not in (408, 409, 429, 500, 502, 503, 504) or attempt == 2:
+                    raise
+            except (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError, OSError) as exc:
+                last_exc = exc
+                if attempt == 2:
+                    raise
+            time.sleep(2 * (attempt + 1))
+        if out is None:  # pragma: no cover
+            raise last_exc or OcrError("OCR failed with no response")
+        try:  # record real token/cost usage for measurement runs
+            from pipeline.translate import usage as _usage
+            u = out.get("usage") or {}
+            _usage.record(stage="ocr", model=self.model,
+                          prompt_tokens=u.get("prompt_tokens"),
+                          completion_tokens=u.get("completion_tokens"),
+                          cost=u.get("cost"))
+        except Exception:  # noqa: BLE001 — never let accounting break OCR
+            pass
+        choices = out.get("choices") or []
+        markdown = (choices[0].get("message", {}).get("content") or "") if choices else ""
+        # If the model stopped because it hit the token ceiling, the page was
+        # truncated — lower confidence so QA/human review flags it rather than
+        # silently accepting a half-transcribed page.
+        finish = (choices[0].get("finish_reason") if choices else None) or ""
+        truncated = finish == "length"
+        confidence = 0.4 if truncated else 0.9
+        return OcrResult(
+            blocks=blocks_from_markdown(markdown, confidence=confidence),
+            page_confidence=confidence,
+            engine=self.name,
+        )
+
+
+# --------------------------------------------------------------------------- #
 # Shared helper for real VLM adapters                                         #
 # --------------------------------------------------------------------------- #
 def blocks_from_markdown(markdown: str, confidence: float = 1.0) -> list[OcrBlock]:
@@ -193,8 +314,45 @@ def blocks_from_markdown(markdown: str, confidence: float = 1.0) -> list[OcrBloc
             blocks.append(OcrBlock(text=para, region=REGION_DIVIDER, confidence=confidence))
             region = REGION_NOTES
             continue
-        blocks.append(OcrBlock(text=para, region=region, confidence=confidence))
+        # A whole dense page often arrives as one paragraph. Split it into
+        # sentence-sized units so review is granular AND each unit translates
+        # completely (long inputs overflow the draft/refine passes and truncate).
+        for piece in _split_long_paragraph(para):
+            blocks.append(OcrBlock(text=piece, region=region, confidence=confidence))
     return blocks
+
+
+# Sentence boundaries: Latin ., !, ? and Arabic ؟ / ۔, each followed by space.
+_SENT_SPLIT = re.compile(r"(?<=[\.\!\?؟۔])\s+")
+
+
+def _split_long_paragraph(text: str, target: int = 320, hard_min: int = 60) -> list[str]:
+    """Split an over-long paragraph into ~``target``-char sentence groups.
+
+    Short/normal paragraphs are returned unchanged. Only paragraphs well beyond
+    ``target`` are split, on sentence boundaries, merging fragments so no chunk
+    is smaller than ``hard_min``. Never splits inside a ``[[FN-n]]`` anchor.
+    """
+    text = text.strip()
+    if len(text) <= int(target * 1.5):
+        return [text]
+    pieces = [p.strip() for p in _SENT_SPLIT.split(text) if p.strip()]
+    chunks: list[str] = []
+    buf = ""
+    for p in pieces:
+        if not buf:
+            buf = p
+        elif len(buf) < target:
+            buf = f"{buf} {p}"
+        else:
+            chunks.append(buf)
+            buf = p
+    if buf:
+        if chunks and len(buf) < hard_min:
+            chunks[-1] = f"{chunks[-1]} {buf}"
+        else:
+            chunks.append(buf)
+    return chunks or [text]
 
 
 # --------------------------------------------------------------------------- #
@@ -209,12 +367,18 @@ def select_engine(name: str | None = None) -> OcrEngine:
     """
     name = (name or os.environ.get("HAYDARI_OCR_ENGINE") or "").strip().lower()
 
+    if name == "openrouter":
+        return OpenRouterOcrEngine()
     if name == "qari":
         return QariOcrEngine()
     if name == "gemini":
         return GeminiOcrEngine()
-    if name == "mock" or not name:
-        # Auto-detect: prefer a configured local engine, else mock.
+    if name == "mock":
+        return MockOcrEngine()
+    if not name:
+        # Auto-detect: OpenRouter vision (one key) → local QARI → offline mock.
+        if os.environ.get("OPENROUTER_API_KEY"):
+            return OpenRouterOcrEngine()
         if os.environ.get("QARI_MODEL_PATH"):
             return QariOcrEngine()
         return MockOcrEngine()

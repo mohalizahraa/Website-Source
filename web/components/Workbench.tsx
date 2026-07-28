@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import type { PagePayload, ReviewAction, Segment } from "@/lib/types";
+import type { IngestStatus, PagePayload, ReviewAction, Segment } from "@/lib/types";
 import { T, useToast } from "./Toast";
 import { TopBar, type SaveState } from "./TopBar";
 import { SegmentRail } from "./SegmentRail";
 import { DocEditor, type DocEditorHandle } from "./DocEditor";
 import { ContextPanel, type Scores } from "./ContextPanel";
+import { ChatWidget } from "./ChatWidget";
 
 const EMPTY_SCORES: Scores = { Adequacy: 0, Fluency: 0, Terminology: 0, Footnotes: 0 };
 
@@ -24,17 +25,44 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
   const { learn } = useToast();
   const [data, setData] = useState<PagePayload | null>(null);
   const [page, setPage] = useState(initialPage);
+  const [pages, setPages] = useState<number[]>([]); // page numbers that exist
+  const [pagesReady, setPagesReady] = useState(false); // have we fetched the list?
   const [activeId, setActiveId] = useState("");
   const [focusMode, setFocusMode] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [scoresById, setScoresById] = useState<Record<string, Scores>>({});
   const [mqmById, setMqmById] = useState<Record<string, string[]>>({});
   const [err, setErr] = useState<string | null>(null);
+  const [live, setLive] = useState<IngestStatus | null>(null);
 
   const docRef = useRef<DocEditorHandle>(null);
+  const pagesRef = useRef<number[]>([]);
 
-  // Load page.
+  // Which pages actually exist (ingestion can be a non-contiguous range).
+  const refreshPages = useCallback(async () => {
+    const nums = await api.listPages(bookId).catch(() => null);
+    if (nums) {
+      pagesRef.current = nums;
+      setPages(nums);
+      setPagesReady(true);
+    }
+  }, [bookId]);
+
   useEffect(() => {
+    setPagesReady(false);
+    void refreshPages();
+  }, [refreshPages]);
+
+  // Snap the current page onto the first available one (never 404 on a gap).
+  useEffect(() => {
+    if (!pagesReady || pages.length === 0) return;
+    if (!pages.includes(page)) setPage(pages[0]);
+  }, [pages, pagesReady, page]);
+
+  // Load the current page — only once we know it exists, and NOT on every poll
+  // (deps are [bookId, page] only) so in-progress edits are never clobbered.
+  useEffect(() => {
+    if (!pagesReady || !pagesRef.current.includes(page)) return;
     let alive = true;
     setErr(null);
     api
@@ -50,7 +78,33 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
     return () => {
       alive = false;
     };
-  }, [bookId, page]);
+  }, [bookId, page, pagesReady]);
+
+  // Poll ingest status + the page list so the banner and pager grow live.
+  // Depends only on bookId; the interval skips fetches once ingestion is idle.
+  const liveRef = useRef<IngestStatus | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const tick = async () => {
+      const s = await api.getBookStatus(bookId).catch(() => null);
+      if (!alive) return;
+      if (s) {
+        liveRef.current = s;
+        setLive(s);
+      }
+      await refreshPages(); // reveal newly-finished pages while ingesting
+    };
+    void tick();
+    const id = setInterval(() => {
+      const cur = liveRef.current;
+      if (cur && cur.status !== "processing" && !cur.has_more) return; // idle
+      void tick();
+    }, 2500);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [bookId, refreshPages]);
 
   const railSegments = useMemo(
     () => (data ? data.segments.filter((s) => s.kind !== "footnote") : []),
@@ -159,15 +213,20 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
   }, [learn]);
 
   const teachStyle = useCallback(async () => {
-    await api.addStyleRule({
-      rule: "Prefer transliterated technical terms over loose glosses.",
-      scope: "book",
-    });
-    learn([
-      T.strong("Style rule saved."),
-      T.text("The model will prefer transliterated technical terms. Applied to this book and future ones."),
-    ]);
-  }, [learn]);
+    try {
+      await api.addStyleRule({
+        rule: "Prefer transliterated technical terms over loose glosses.",
+        scope: "book",
+        book_id: bookId,
+      });
+      learn([
+        T.strong("Style rule saved."),
+        T.text("The model will prefer transliterated technical terms. Applied to this book and future ones."),
+      ]);
+    } catch (e) {
+      learn([T.strong("Couldn’t save style rule."), T.text(String(e))]);
+    }
+  }, [learn, bookId]);
 
   const setScore = useCallback(
     (dim: keyof Scores, v: number) => {
@@ -212,6 +271,28 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
     return () => document.removeEventListener("keydown", onKey);
   }, [doSave, step, review]);
 
+  // No reviewable pages yet — a friendly wait state, not a scary error.
+  if (pagesReady && pages.length === 0) {
+    const proc = live?.status === "processing";
+    return (
+      <div className="app">
+        <div className="loading">
+          <div>{proc ? "Ingesting the first page…" : "No pages ready to review yet."}</div>
+          <div style={{ marginTop: 8, fontSize: "var(--fs-sm)", color: "var(--ink-3)" }}>
+            {proc
+              ? "Pages appear here the moment each one finishes. This refreshes automatically."
+              : "Start ingestion from the Library (choose a page range and press Ingest)."}
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <a className="btn sm" href="/">
+              ← Back to Library
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (err) {
     return (
       <div className="app">
@@ -238,17 +319,38 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
   }
 
   const isSacred = active.kind === "sacred";
+  // Navigate only the pages that actually exist (handles non-contiguous ranges
+  // and pages arriving live during ingestion).
+  const ingesting = data.book.status === "processing";
+  const idx = pages.indexOf(page);
+  const prevPage = idx > 0 ? pages[idx - 1] : null;
+  const nextPage = idx >= 0 && idx < pages.length - 1 ? pages[idx + 1] : null;
+  const totalPages = live?.pages_total || data.book.page_count;
 
   return (
     <div className="app">
       <TopBar
         book={data.book}
         page={page}
-        pageCount={data.book.page_count}
-        onPrev={() => setPage((p) => Math.max(1, p - 1))}
-        onNext={() => setPage((p) => Math.min(data.book.page_count, p + 1))}
+        pageCount={totalPages}
+        onPrev={() => prevPage != null && setPage(prevPage)}
+        onNext={() => nextPage != null && setPage(nextPage)}
+        hasPrev={prevPage != null}
+        hasNext={nextPage != null}
         saveState={saveState}
       />
+      {ingesting && (
+        <div className="live-banner">
+          <span className="lb-dot" /> Ingesting live —{" "}
+          <b>
+            {live?.pages_done ?? 0}
+            {live?.pages_total ? ` / ${live.pages_total}` : ""}
+          </b>{" "}
+          pages ready ({pages.length} loaded).
+          {live?.detail?.message ? <span className="lb-msg"> {live.detail.message}</span> : null}{" "}
+          Reviewing now won’t affect ingestion.
+        </div>
+      )}
       <div className="workspace">
         <SegmentRail
           segments={railSegments}
@@ -267,7 +369,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
           footer={
             <div className="actions">
               <div className="inner">
-                <button className="btn btn-primary" onClick={() => void review("approve")} disabled={isSacred}>
+                <button className="btn btn-primary" onClick={() => void review("approve")}>
                   Approve &amp; save edits <span className="k">A</span>
                 </button>
                 <button className="btn" onClick={doSave}>
@@ -277,7 +379,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
                   Skip
                 </button>
                 <div className="spacer" />
-                <button className="btn btn-danger" onClick={() => void review("reject")} disabled={isSacred}>
+                <button className="btn btn-danger" onClick={() => void review("reject")}>
                   Reject &amp; regenerate
                 </button>
               </div>
@@ -298,6 +400,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
           onTeachStyle={teachStyle}
         />
       </div>
+      <ChatWidget bookId={bookId} bookTitle={data.book.title_en || data.book.title_ar} />
     </div>
   );
 }

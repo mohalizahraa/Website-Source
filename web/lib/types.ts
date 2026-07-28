@@ -47,6 +47,22 @@ export interface Book {
   status: BookStatus;
   page_count: number;
   progress: number; // 0..1 approved fraction across the book
+  pages_total?: number; // physical pages in the source PDF (0 until known)
+  translation_notes?: string | null; // per-book instructions injected into prompts
+}
+
+// Live, human-readable detail while a book is ingesting.
+export interface IngestDetail {
+  message?: string; // composed one-liner, e.g. "Translating page 7 · segment 3/8…"
+  phase?: string; // rendering | ocr | translate | done | error
+  page?: number | null; // page currently being processed
+  seg?: number;
+  seg_total?: number;
+  index?: number; // page index within this run
+  target_count?: number; // pages targeted this run
+  done_this_run?: number;
+  failed?: number[]; // pages that failed this run
+  last_error?: string | null;
 }
 
 // GET /books/{id}/status — ingestion/translation progress for the Library.
@@ -56,7 +72,17 @@ export interface IngestStatus {
   phase: "idle" | "ocr" | "translate" | "qa" | "done";
   pages_done: number;
   pages_total: number;
-  progress: number; // 0..1
+  has_more: boolean; // true when pages remain to ingest (enables "Continue")
+  progress: number; // 0..1 ingest completion (pages_done / pages_total)
+  detail?: IngestDetail; // live per-page/segment feedback
+}
+
+// Bounds for one ingest run.
+export interface IngestOptions {
+  from_page?: number;
+  to_page?: number;
+  max_pages?: number;
+  force?: boolean; // re-do already-finished pages in the range
 }
 
 // Optional metadata attached to an upload.
@@ -64,6 +90,22 @@ export interface UploadMeta {
   title_ar?: string;
   title_en?: string;
   author?: string;
+  notes?: string; // per-book translation instructions
+}
+
+// POST /chat
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+export interface ChatAction {
+  tool: string;
+  args: Record<string, unknown>;
+  result: Record<string, unknown>;
+}
+export interface ChatResult {
+  reply: string;
+  actions: ChatAction[];
 }
 
 // POST /books/import — catalog entry.
@@ -116,6 +158,7 @@ export interface TermBody {
 export interface StyleRuleBody {
   rule: string;
   scope: Scope;
+  book_id?: string;
 }
 
 // GET /learning/summary
@@ -130,10 +173,14 @@ export interface LearningSummary {
 export interface HaydariAPI {
   listBooks(): Promise<Book[]>;
   getBook(id: string): Promise<Book>;
+  deleteBook(id: string): Promise<{ ok: boolean }>;
+  updateBook(id: string, patch: { translation_notes?: string }): Promise<Book>;
   uploadBooks(files: File[], meta?: UploadMeta): Promise<{ id: string }[]>;
   importBooks(catalog: CatalogEntry[]): Promise<{ id: string }[]>;
-  ingestBook(id: string): Promise<IngestStatus>;
+  ingestBook(id: string, options?: IngestOptions): Promise<IngestStatus>;
   getBookStatus(id: string): Promise<IngestStatus>;
+  listPages(id: string): Promise<number[]>;
+  chat(messages: ChatMessage[], bookId?: string): Promise<ChatResult>;
   importTermbase(file: File): Promise<{ imported: number }>;
   getPage(bookId: string, n: number): Promise<PagePayload>;
   getSegment(id: string): Promise<Segment>;

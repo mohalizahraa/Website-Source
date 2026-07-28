@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 import os
 import re
 import sqlite3
@@ -24,6 +25,7 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
+from . import chat as chat_mod
 from . import config, db, ingest
 from .diffing import compute_diff
 from .events import write_event
@@ -56,6 +58,23 @@ def get_conn() -> sqlite3.Connection:
     db.init_db(conn)  # idempotent CREATE TABLE IF NOT EXISTS
     try:
         yield conn
+    finally:
+        conn.close()
+
+
+@app.on_event("startup")
+def _on_startup() -> None:
+    """A fresh process has no running worker, so any book still marked
+    'processing' is stale — un-wedge it so ingestion can be resumed."""
+    conn = db.connect()
+    try:
+        db.init_db(conn)
+        reset = db.reset_stale_processing(conn)
+        if reset:
+            for bid in reset:
+                write_event(conn, actor="system", type="ingest.reset",
+                            payload={"book_id": bid, "reason": "stale processing on startup"})
+            conn.commit()
     finally:
         conn.close()
 
@@ -116,12 +135,34 @@ def get_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
     return book
 
 
+@app.delete("/api/books/{book_id}")
+def delete_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+    """Delete a book and everything under it (pages, segments, corrections, TM,
+    book-scoped terms — via ON DELETE CASCADE) plus its uploaded PDF."""
+    book = db.get_book(conn, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="book not found")
+    # Remove the uploaded source PDF, but only if it lives in our uploads dir.
+    src = book.get("source_pdf") or ""
+    try:
+        up = os.path.realpath(config.upload_dir())
+        if src and os.path.realpath(src).startswith(up) and os.path.exists(src):
+            os.remove(src)
+    except Exception:  # noqa: BLE001 — file cleanup is best-effort
+        pass
+    conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
+    write_event(conn, actor="reviewer", type="book.delete", payload={"book_id": book_id})
+    conn.commit()
+    return {"ok": True, "id": book_id}
+
+
 @app.post("/api/books/upload")
 async def upload_books(
     files: list[UploadFile] = File(...),
     title_ar: Optional[str] = Form(None),
     title_en: Optional[str] = Form(None),
     author: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     """Accept one or many PDFs; store each and create a book (status=uploaded)."""
@@ -145,6 +186,8 @@ async def upload_books(
             status="uploaded",
             source_pdf=dest,
         )
+        if notes and notes.strip():
+            db.set_book_notes(conn, book_id, notes.strip())
         write_event(
             conn, actor="uploader", type="book.upload",
             payload={"id": book_id, "file": safe_name},
@@ -201,17 +244,66 @@ async def import_books(request: Request, conn: sqlite3.Connection = Depends(get_
 
 
 @app.post("/api/books/{book_id}/ingest")
-def ingest_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
-    """Enqueue the OCR->translate->QA pipeline (one-at-a-time worker)."""
+async def ingest_book(
+    book_id: str, request: Request, conn: sqlite3.Connection = Depends(get_conn)
+):
+    """Enqueue the OCR->translate->QA pipeline (one-at-a-time worker).
+
+    Optional JSON body bounds the run:
+        {"from_page": 1, "to_page": 50, "max_pages": 20}
+    Omit all three to process the next window (resume) with the default cap.
+    """
     book = db.get_book(conn, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="book not found")
+
+    options: dict = {}
+    try:
+        body = await request.json()
+        if isinstance(body, dict):
+            for k in ("from_page", "to_page", "max_pages"):
+                v = body.get(k)
+                if v is not None:
+                    options[k] = int(v)
+            if body.get("force"):
+                options["force"] = True
+    except Exception:  # noqa: BLE001 — empty/invalid body => default run
+        options = {}
+
     write_event(
-        conn, actor="reviewer", type="ingest.enqueue", payload={"book_id": book_id}
+        conn, actor="reviewer", type="ingest.enqueue",
+        payload={"book_id": book_id, "options": options},
     )
     conn.commit()
-    state = ingest.enqueue(book_id)
-    return {"book_id": book_id, "job": state}
+    state = ingest.enqueue(book_id, options)
+    return {"book_id": book_id, "job": state, "options": options}
+
+
+def _status_payload(conn: sqlite3.Connection, book: dict) -> dict:
+    """Shared status shape: live page progress the Library bar reads."""
+    book_id = book["id"]
+    total = int(book.get("pages_total") or 0)
+    done = db.pages_done(conn, book_id)
+    job = ingest.job_state(book_id)
+    active = job in ("queued", "processing") or book["status"] == "processing"
+    phase = "translate" if active else ("done" if done and total and done >= total else "idle")
+    # Progress reflects INGEST completion (pages done / total) so the bar moves
+    # live during processing — distinct from the review/approval fraction.
+    progress = (done / total) if total else (1.0 if book["status"] == "in_review" else 0.0)
+    return {
+        "book_id": book_id,
+        "id": book_id,
+        "status": book["status"],
+        "job": job,
+        "phase": phase,
+        "pages_done": done,
+        "pages_total": total,
+        "pages": done,  # back-compat alias
+        "has_more": bool(total) and done < total,
+        "progress": progress,
+        "review": book["progress"],  # approval fraction, for the review view
+        "detail": ingest.job_detail(book_id),  # live phase/page/segment + message
+    }
 
 
 @app.get("/api/books/{book_id}/status")
@@ -220,13 +312,84 @@ def book_status(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
     book = db.get_book(conn, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="book not found")
-    return {
-        "id": book_id,
-        "status": book["status"],
-        "job": ingest.job_state(book_id),
-        "pages": db.page_count(conn, book_id),
-        "progress": book["progress"],
-    }
+    return _status_payload(conn, book)
+
+
+@app.post("/api/chat")
+async def chat_endpoint(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    """In-app assistant. Body: {messages:[{role,content}], book_id?}."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+    messages = body.get("messages") or []
+    if not isinstance(messages, list) or not messages:
+        raise HTTPException(status_code=400, detail="messages[] required")
+    book_id = body.get("book_id")
+    try:
+        result = chat_mod.chat(conn, messages, book_id)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"assistant error: {exc}")
+    return result
+
+
+@app.patch("/api/books/{book_id}")
+async def update_book(
+    book_id: str, request: Request, conn: sqlite3.Connection = Depends(get_conn)
+):
+    """Update editable book fields. Currently: translation_notes."""
+    book = db.get_book(conn, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="book not found")
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+    if "translation_notes" in body:
+        db.set_book_notes(conn, book_id, (body.get("translation_notes") or "").strip() or None)
+        write_event(conn, actor="reviewer", type="book.notes",
+                    payload={"book_id": book_id})
+    conn.commit()
+    return db.get_book(conn, book_id)
+
+
+@app.get("/api/books/{book_id}/activity")
+def book_activity(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+    """Recent ingest activity for a book — a live feed the UI can show so the
+    reviewer always sees what happened (page done, page failed, start, finish)."""
+    if db.get_book(conn, book_id) is None:
+        raise HTTPException(status_code=404, detail="book not found")
+    rows = conn.execute(
+        "SELECT ts, type, payload_json FROM events "
+        "WHERE type LIKE 'ingest%' AND payload_json LIKE ? "
+        "ORDER BY id DESC LIMIT 40",
+        (f'%"{book_id}"%',),
+    ).fetchall()
+    items = []
+    for r in rows:
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except Exception:  # noqa: BLE001
+            payload = {}
+        items.append({"ts": r["ts"], "type": r["type"],
+                      "page_no": payload.get("page_no"),
+                      "error": payload.get("error"),
+                      "pages_done": payload.get("pages_done")})
+    return {"items": items}
+
+
+@app.get("/api/books/{book_id}/pages")
+def list_pages(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+    """The page numbers that are ready to review (completed OCR+translate).
+
+    Ingestion can cover a non-contiguous range (e.g. pages 1–2 then 100), so the
+    review UI must navigate the pages that actually exist rather than 1..N.
+    """
+    if db.get_book(conn, book_id) is None:
+        raise HTTPException(status_code=404, detail="book not found")
+    return {"pages": sorted(db.completed_page_numbers(conn, book_id))}
 
 
 @app.get("/api/books/{book_id}/pages/{n}")

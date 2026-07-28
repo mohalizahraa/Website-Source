@@ -111,7 +111,7 @@ export const DocEditor = forwardRef<
       },
       focusSegment(id) {
         const el = nodes.current.get(id);
-        if (el && !el.classList.contains("sacred")) {
+        if (el) {
           el.focus();
           const range = document.createRange();
           range.selectNodeContents(el);
@@ -150,25 +150,29 @@ export const DocEditor = forwardRef<
             const lvl = levelOf(s);
             const sacred = s.kind === "sacred";
             const edited = !!s.en_draft && s.en_draft !== s.en;
+            // Sacred segments keep their golden styling but are now EDITABLE: a
+            // canonical hit shows "canonical"; a fallback/blank asks you to verify.
+            const canonical = sacred && s.engine === "canonical";
             const tag = sacred
-              ? "Qurʾān · locked"
+              ? canonical
+                ? "Qurʾān · canonical"
+                : "Qurʾān · verify translation"
               : edited
                 ? "edited by you"
                 : `${Math.round(s.confidence * 100)}% confidence`;
-            const initialHTML = edited && !sacred ? diffHTML(s.en_draft!, s.en) : plainHTML(s.en);
+            const initialHTML = edited ? diffHTML(s.en_draft!, s.en) : plainHTML(s.en);
             return (
               <div
                 key={s.id}
                 ref={(el) => setNode(s.id, el)}
                 data-id={s.id}
                 className={"seg lvl-" + lvl + (sacred ? " sacred" : "") + (s.id === activeId ? " active" : "")}
-                contentEditable={!sacred}
+                contentEditable
                 suppressContentEditableWarning
                 spellCheck={false}
                 role="textbox"
                 aria-multiline="true"
-                aria-label={sacred ? "Locked sacred segment" : "Editable translation segment"}
-                aria-readonly={sacred || undefined}
+                aria-label={sacred ? "Sacred segment (editable, verify canonical wording)" : "Editable translation segment"}
                 onClick={() => onSelect(s.id)}
                 onFocus={() => onSelect(s.id)}
                 onInput={onDirty}

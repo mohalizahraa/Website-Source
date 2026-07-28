@@ -10,8 +10,18 @@ behind an interface with a working offline mock, so the whole stage runs and is
 tested without a network or API keys.
 """
 
-from .adapters import ClaudeTranslator, GeminiTranslator, OllamaTranslator
+from .adapters import (
+    CLOUD_ENGINES,
+    ClaudeTranslator,
+    GeminiTranslator,
+    OllamaTranslator,
+    OpenAITranslator,
+    OpenRouterTranslator,
+    cloud_translator_from_env,
+    local_translator_from_env,
+)
 from .core import Pipeline, translate_segment
+from .factory import build_pipeline_from_env
 from .interfaces import CanonicalDB, NotConfiguredError, Translator
 from .mocks import MockCanonicalDB, MockTranslator, RecordingTranslator
 from .prompt import PromptBuilder
@@ -22,6 +32,7 @@ from .types import CanonicalEntry, Prompt, RouteDecision, TranslationResult
 __all__ = [
     "translate_segment",
     "Pipeline",
+    "build_pipeline_from_env",
     "Translator",
     "CanonicalDB",
     "NotConfiguredError",
@@ -31,6 +42,11 @@ __all__ = [
     "OllamaTranslator",
     "ClaudeTranslator",
     "GeminiTranslator",
+    "OpenAITranslator",
+    "OpenRouterTranslator",
+    "CLOUD_ENGINES",
+    "cloud_translator_from_env",
+    "local_translator_from_env",
     "PromptBuilder",
     "Router",
     "substitute_sacred",

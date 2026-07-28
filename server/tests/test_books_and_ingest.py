@@ -30,10 +30,10 @@ def test_list_books_includes_seed(client):
 
 
 def test_get_page_returns_wire_segments(client):
-    resp = client.get("/api/books/B-01/pages/42")
+    resp = client.get("/api/books/B-01/pages/1")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["page"] == 42
+    assert data["page"] == 1
     assert len(data["segments"]) == 8
     sacred = [s for s in data["segments"] if s["kind"] == "sacred"]
     assert len(sacred) == 1
