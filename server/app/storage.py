@@ -17,6 +17,25 @@ from pathlib import Path
 from . import config
 
 
+def safe_key(key: str) -> str:
+    """Validate a storage key and return it, or raise ValueError.
+
+    Keys are relative, forward-slash paths (``books/B-01/source.pdf``). Reject
+    absolute paths, ``..`` traversal, empty/whitespace parts, backslashes, and
+    control characters so a crafted key can never escape the local storage root
+    (or land somewhere unexpected in a bucket). Applied centrally by every
+    backend, so even a user-supplied ``source_pdf`` (import) is constrained.
+    """
+    if not key or not isinstance(key, str):
+        raise ValueError("empty storage key")
+    if key.startswith("/") or "\\" in key or "\x00" in key:
+        raise ValueError(f"unsafe storage key: {key!r}")
+    parts = key.split("/")
+    if any(p in ("", ".", "..") for p in parts):
+        raise ValueError(f"unsafe storage key: {key!r}")
+    return key
+
+
 class Storage:
     def save_bytes(self, key: str, data: bytes, content_type: str | None = None) -> None:
         raise NotImplementedError
@@ -34,6 +53,10 @@ class Storage:
         """Return a LOCAL filesystem path for ``key`` (for pdftoppm etc.)."""
         raise NotImplementedError
 
+    def cleanup_local(self, path: str) -> None:
+        """Release a path returned by :meth:`materialize`. No-op unless the
+        backend created a temporary copy (S3) that must be removed."""
+
     def signed_url(self, key: str, expires: int = 3600) -> str | None:
         return None
 
@@ -45,7 +68,7 @@ class LocalStorage(Storage):
         self.root = Path(root)
 
     def _p(self, key: str) -> Path:
-        return self.root / key
+        return self.root / safe_key(key)
 
     def save_bytes(self, key: str, data: bytes, content_type: str | None = None) -> None:
         p = self._p(key)
@@ -82,6 +105,7 @@ class S3Storage(Storage):
         )
 
     def save_bytes(self, key: str, data: bytes, content_type: str | None = None) -> None:
+        key = safe_key(key)
         extra = {"ContentType": content_type} if content_type else {}
         self.client.put_object(Bucket=self.bucket, Key=key, Body=data, **extra)
 
@@ -92,11 +116,17 @@ class S3Storage(Storage):
         self.client.delete_object(Bucket=self.bucket, Key=key)
 
     def exists(self, key: str) -> bool:
+        from botocore.exceptions import ClientError
+
         try:
             self.client.head_object(Bucket=self.bucket, Key=key)
             return True
-        except Exception:  # noqa: BLE001 — head raises 404 as ClientError
-            return False
+        except ClientError as exc:
+            code = str(exc.response.get("Error", {}).get("Code", ""))
+            status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+            if code in ("404", "NoSuchKey", "NotFound") or status == 404:
+                return False
+            raise  # a real error (auth, network, throttle) must NOT look like 404
 
     def materialize(self, key: str) -> str:
         data = self.read_bytes(key)
@@ -105,6 +135,14 @@ class S3Storage(Storage):
         with os.fdopen(fd, "wb") as fh:
             fh.write(data)
         return path
+
+    def cleanup_local(self, path: str) -> None:
+        # Only remove the temp copies WE created (never a real local file).
+        if path and os.path.basename(path).startswith("haydari-blob-"):
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
 
     def signed_url(self, key: str, expires: int = 3600) -> str | None:
         return self.client.generate_presigned_url(

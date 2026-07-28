@@ -450,13 +450,36 @@ def upsert_tm(
             (ar, en_approved, embedding, existing["id"]),
         )
         return int(existing["id"]), False
-    new_id = _insert_id(
-        conn,
-        "INSERT INTO translation_memory (book_id, ar_hash, ar, en_approved, embedding) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (book_id, h, ar, en_approved, embedding),
-    )
-    return new_id, True
+    try:
+        new_id = _insert_id(
+            conn,
+            "INSERT INTO translation_memory (book_id, ar_hash, ar, en_approved, embedding) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (book_id, h, ar, en_approved, embedding),
+        )
+        return new_id, True
+    except Exception:  # noqa: BLE001 — lost a concurrent race on the unique index
+        # Clear the aborted-transaction state (Postgres) then update the row the
+        # winner inserted. Callers isolate upsert_tm in its own transaction, so a
+        # rollback here never discards other committed work.
+        conn.rollback()
+        if book_id is None:
+            row = conn.execute(
+                "SELECT id FROM translation_memory WHERE book_id IS NULL AND ar_hash = ?",
+                (h,),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT id FROM translation_memory WHERE book_id = ? AND ar_hash = ?",
+                (book_id, h),
+            ).fetchone()
+        if row is None:
+            raise
+        conn.execute(
+            "UPDATE translation_memory SET ar = ?, en_approved = ?, embedding = ? WHERE id = ?",
+            (ar, en_approved, embedding, row["id"]),
+        )
+        return int(row["id"]), False
 
 
 def tm_size(conn: sqlite3.Connection) -> int:

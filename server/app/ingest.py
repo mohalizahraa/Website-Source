@@ -285,50 +285,55 @@ def real_pipeline(conn, book_id: str, options: dict | None = None) -> None:
     if not pdf:
         raise RuntimeError(f"source PDF not found for {book_id}: {book.get('source_pdf')!r}")
 
-    # Record the true page total once (metadata only; no rendering).
-    total = int(book.get("pages_total") or 0)
-    if not total:
-        total = pdf_page_count(pdf)
-        db.set_book_pages_total(conn, book_id, total)
-        conn.commit()
+    try:
+        # Record the true page total once (metadata only; no rendering).
+        total = int(book.get("pages_total") or 0)
+        if not total:
+            total = pdf_page_count(pdf)
+            db.set_book_pages_total(conn, book_id, total)
+            conn.commit()
 
-    targets = _target_pages(conn, book_id, total, options)
-    if not targets:
-        return
+        targets = _target_pages(conn, book_id, total, options)
+        if not targets:
+            return
 
-    engine = select_engine()
-    pipe = build_pipeline_from_env()
-    glossary = _load_glossary(conn, book_id)
-    style_rules = db.style_rules_for(conn, book_id)
-    notes = (book.get("translation_notes") or "").strip() or None
+        engine = select_engine()
+        pipe = build_pipeline_from_env()
+        glossary = _load_glossary(conn, book_id)
+        style_rules = db.style_rules_for(conn, book_id)
+        notes = (book.get("translation_notes") or "").strip() or None
 
-    _set_detail(book_id, target_count=len(targets), done_this_run=0,
-                failed=[], last_error=None)
+        _set_detail(book_id, target_count=len(targets), done_this_run=0,
+                    failed=[], last_error=None)
 
-    with tempfile.TemporaryDirectory(prefix="haydari-ocr-") as work_dir:
-        for i, page_no in enumerate(targets, 1):
-            _set_detail(book_id, index=i, page=page_no)
-            # Per-PAGE resilience: one page failing (a timeout, a bad render)
-            # must not abort the whole run. Roll back just that page, record it,
-            # and continue — the reviewer sees which page failed and can retry it.
-            try:
-                _process_one_page(conn, book_id, pdf, page_no, work_dir,
-                                  engine, pipe, glossary, notes, style_rules)
-            except Exception as exc:  # noqa: BLE001
-                conn.rollback()
-                JOB_DETAIL[book_id]["failed"].append(page_no)
-                JOB_DETAIL[book_id]["last_error"] = f"page {page_no}: {str(exc)[:160]}"
-                write_event(conn, actor="worker", type="ingest.page_error",
-                            payload={"book_id": book_id, "page_no": page_no,
-                                     "error": str(exc)[:200]})
-                conn.commit()
-                continue
-            JOB_DETAIL[book_id]["done_this_run"] = i - len(JOB_DETAIL[book_id]["failed"])
-            db.set_book_status(conn, book_id, "processing")
-            write_event(conn, actor="worker", type="ingest.page_done",
-                        payload={"book_id": book_id, "page_no": page_no})
-            conn.commit()  # durable per page → live progress + resume point
-    _set_detail(book_id, phase="done", page=None)
+        with tempfile.TemporaryDirectory(prefix="haydari-ocr-") as work_dir:
+            for i, page_no in enumerate(targets, 1):
+                _set_detail(book_id, index=i, page=page_no)
+                # Per-PAGE resilience: one page failing (a timeout, a bad render)
+                # must not abort the whole run. Roll back just that page, record
+                # it, and continue — the reviewer can retry the failed page.
+                try:
+                    _process_one_page(conn, book_id, pdf, page_no, work_dir,
+                                      engine, pipe, glossary, notes, style_rules)
+                except Exception as exc:  # noqa: BLE001
+                    conn.rollback()
+                    JOB_DETAIL[book_id]["failed"].append(page_no)
+                    JOB_DETAIL[book_id]["last_error"] = f"page {page_no}: {str(exc)[:160]}"
+                    write_event(conn, actor="worker", type="ingest.page_error",
+                                payload={"book_id": book_id, "page_no": page_no,
+                                         "error": str(exc)[:200]})
+                    conn.commit()
+                    continue
+                JOB_DETAIL[book_id]["done_this_run"] = i - len(JOB_DETAIL[book_id]["failed"])
+                db.set_book_status(conn, book_id, "processing")
+                write_event(conn, actor="worker", type="ingest.page_done",
+                            payload={"book_id": book_id, "page_no": page_no})
+                conn.commit()  # durable per page → live progress + resume point
+        _set_detail(book_id, phase="done", page=None)
+    finally:
+        # Release the materialized source PDF (a temp copy when using S3/R2).
+        from . import storage
+        storage.get_storage().cleanup_local(pdf)
 
 
 def default_pipeline(conn, book_id: str, options: dict | None = None) -> None:

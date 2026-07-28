@@ -54,8 +54,10 @@ app.add_middleware(
 # DB dependency (one connection per request; ensures schema exists)
 # ---------------------------------------------------------------------------
 def get_conn() -> sqlite3.Connection:
+    # Schema is created once at startup (see _on_startup), NOT per request — on
+    # Postgres, running CREATE TABLE/INDEX IF NOT EXISTS on every request adds
+    # real catalog overhead and can exhaust connection limits under polling.
     conn = db.connect()
-    db.init_db(conn)  # idempotent CREATE TABLE IF NOT EXISTS
     try:
         yield conn
     finally:
@@ -142,8 +144,18 @@ def delete_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
     book = db.get_book(conn, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="book not found")
-    # Remove the source PDF from storage (best-effort). Handles both the new
-    # storage keys and legacy absolute paths under the uploads dir.
+
+    # Delete the DB rows FIRST (commit), THEN the storage blob — so a DB failure
+    # never orphans the file (the reverse could leave a row pointing at nothing).
+    # Pre-delete this book's translation-memory rows so the FK's ON DELETE SET
+    # NULL never fires: setting book_id→NULL could collide with a global TM row
+    # sharing the same ar_hash on the COALESCE(book_id,'') unique index.
+    conn.execute("DELETE FROM translation_memory WHERE book_id = ?", (book_id,))
+    conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
+    write_event(conn, actor="reviewer", type="book.delete", payload={"book_id": book_id})
+    conn.commit()
+
+    # Best-effort blob cleanup (new storage keys and legacy absolute paths).
     src = book.get("source_pdf") or ""
     try:
         if src.startswith("books/"):
@@ -154,9 +166,6 @@ def delete_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
                 os.remove(src)
     except Exception:  # noqa: BLE001 — file cleanup is best-effort
         pass
-    conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
-    write_event(conn, actor="reviewer", type="book.delete", payload={"book_id": book_id})
-    conn.commit()
     return {"ok": True, "id": book_id}
 
 
@@ -175,7 +184,10 @@ async def upload_books(
     created: list[dict] = []
     for f in files:
         book_id = db.next_book_id(conn)
-        safe_name = os.path.basename(f.filename or f"{book_id}.pdf")
+        # Constrain the filename to a safe key component (no traversal, no odd
+        # characters) so books/<id>/<name> is always a valid storage key.
+        base = os.path.basename(f.filename or f"{book_id}.pdf")
+        safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", base).strip("._") or f"{book_id}.pdf"
         # Store under a backend-neutral key (local disk or S3/R2). The KEY is
         # persisted in source_pdf; the ingest worker materializes it to a local
         # file for pdftoppm.
@@ -476,8 +488,13 @@ def review_segment(
 
     # Apply the action in a separate transaction from the correction.
     if body.action == "approve":
+        # Commit the approval FIRST so it is durable independent of the TM step.
+        # (On Postgres a failed statement aborts the whole transaction, so the
+        # TM-upsert must be isolated — otherwise its failure would also roll back
+        # the approval and break every subsequent write in this request.)
         db.update_segment(conn, seg_id, en_current=en_after, status="approved")
         new_status = "approved"
+        conn.commit()
         try:
             _tm_id, created = db.upsert_tm(
                 conn,
@@ -487,12 +504,21 @@ def review_segment(
             )
             tm_added = 1 if created else 0
             applied_to = db.segments_matching_ar(conn, seg["ar"], exclude_id=seg_id)
+            conn.commit()
         except Exception as exc:  # noqa: BLE001 — TM is secondary to the approval
-            write_event(
-                conn, actor=body.reviewer or "reviewer", type="tm.error",
-                payload={"segment_id": seg_id, "error": str(exc)},
-            )
-        conn.commit()
+            # Clear any aborted-transaction state (Postgres) BEFORE logging.
+            try:
+                conn.rollback()
+            except Exception:  # noqa: BLE001
+                pass
+            try:
+                write_event(
+                    conn, actor=body.reviewer or "reviewer", type="tm.error",
+                    payload={"segment_id": seg_id, "error": str(exc)},
+                )
+                conn.commit()
+            except Exception:  # noqa: BLE001
+                pass
     elif body.action == "reject":
         # Keep the reviewer's text but send it back for another pass.
         db.update_segment(conn, seg_id, en_current=en_after, status="needs_review")
