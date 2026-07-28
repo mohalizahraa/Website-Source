@@ -20,11 +20,13 @@ from fastapi import (
     Form,
     HTTPException,
     Request,
+    Response,
     UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
+from . import auth
 from . import chat as chat_mod
 from . import config, db, ingest, storage
 from .diffing import compute_diff
@@ -64,6 +66,122 @@ def get_conn() -> sqlite3.Connection:
         conn.close()
 
 
+# ---------------------------------------------------------------------------
+# Auth dependencies + helpers
+# ---------------------------------------------------------------------------
+def current_user(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    """The logged-in user, or None for anonymous (public) requests."""
+    token = request.cookies.get(auth.COOKIE_NAME)
+    if not token:
+        return None
+    uid = auth.read_session(token)
+    if not uid:
+        return None
+    return db.get_user(conn, uid)
+
+
+def require_user(user=Depends(current_user)):
+    if user is None:
+        raise HTTPException(status_code=401, detail="authentication required")
+    return user
+
+
+def require_admin(user=Depends(require_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="admin only")
+    return user
+
+
+def _user_wire(u: dict | None) -> dict | None:
+    if not u:
+        return None
+    return {"id": u["id"], "email": u["email"],
+            "display_name": u.get("display_name"), "role": u.get("role")}
+
+
+def _cookie_secure() -> bool:
+    return os.environ.get("HAYDARI_COOKIE_SECURE", "").strip().lower() in ("1", "true", "yes")
+
+
+def _require_book_access(conn, book: dict | None, user, *, write: bool) -> dict:
+    """Central access rule for a single book.
+
+    - Anonymous may READ a published book only.
+    - A logged-in user may read/write their own books (and legacy NULL-owner
+      books, so pre-auth data stays manageable during migration). Admins: all.
+    Raises 404 (not found), 401 (auth needed), or 403 (not yours).
+    """
+    if book is None:
+        raise HTTPException(status_code=404, detail="book not found")
+    published = book.get("status") == "published"
+    if not write and published:
+        return book  # public read of a published book
+    if user is None:
+        raise HTTPException(status_code=401, detail="authentication required")
+    if user.get("role") == "admin":
+        return book
+    owner = book.get("owner_id")
+    if owner is None or owner == user["id"]:
+        return book
+    raise HTTPException(status_code=403, detail="you do not have access to this book")
+
+
+# ---------------------------------------------------------------------------
+# Auth endpoints
+# ---------------------------------------------------------------------------
+@app.post("/api/auth/login")
+async def login(request: Request, response: Response,
+                conn: sqlite3.Connection = Depends(get_conn)):
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+    email = (body.get("email") or "").strip().lower()
+    password = body.get("password") or ""
+    u = db.get_user_by_email(conn, email)
+    if not u or not auth.verify_password(password, u["password_hash"]):
+        raise HTTPException(status_code=401, detail="invalid email or password")
+    token = auth.make_session(u["id"])
+    response.set_cookie(auth.COOKIE_NAME, token, httponly=True, samesite="lax",
+                        secure=_cookie_secure(), max_age=60 * 60 * 24 * 30, path="/")
+    return _user_wire(u)
+
+
+@app.post("/api/auth/logout")
+def logout(response: Response):
+    response.delete_cookie(auth.COOKIE_NAME, path="/")
+    return {"ok": True}
+
+
+@app.get("/api/auth/me")
+def whoami(user=Depends(current_user)):
+    return _user_wire(user)
+
+
+@app.post("/api/auth/users")
+async def create_user_endpoint(request: Request, _admin=Depends(require_admin),
+                               conn: sqlite3.Connection = Depends(get_conn)):
+    """Admin-only: provision a team account."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+    email = (body.get("email") or "").strip().lower()
+    password = body.get("password") or ""
+    if "@" not in email or len(password) < 8:
+        raise HTTPException(status_code=400, detail="valid email and 8+ char password required")
+    if db.get_user_by_email(conn, email):
+        raise HTTPException(status_code=409, detail="email already registered")
+    role = body.get("role") if body.get("role") in ("admin", "creator", "reader") else "creator"
+    uid = db.next_user_id(conn)
+    db.create_user(conn, user_id=uid, email=email,
+                   password_hash=auth.hash_password(password),
+                   display_name=body.get("display_name"), role=role)
+    write_event(conn, actor=_admin["id"], type="user.create", payload={"id": uid, "role": role})
+    conn.commit()
+    return _user_wire(db.get_user(conn, uid))
+
+
 @app.on_event("startup")
 def _on_startup() -> None:
     """A fresh process has no running worker, so any book still marked
@@ -76,6 +194,17 @@ def _on_startup() -> None:
             for bid in reset:
                 write_event(conn, actor="system", type="ingest.reset",
                             payload={"book_id": bid, "reason": "stale processing on startup"})
+            conn.commit()
+        # Bootstrap the first admin account so the team can log in. Credentials
+        # come from env; a dev default is used only when nothing is configured.
+        if db.count_users(conn) == 0:
+            email = (os.environ.get("HAYDARI_ADMIN_EMAIL") or "admin@haydari.local").strip().lower()
+            password = os.environ.get("HAYDARI_ADMIN_PASSWORD") or "changeme-admin"
+            uid = db.next_user_id(conn)
+            db.create_user(conn, user_id=uid, email=email,
+                           password_hash=auth.hash_password(password),
+                           display_name="Admin", role="admin")
+            write_event(conn, actor="system", type="user.bootstrap", payload={"id": uid})
             conn.commit()
     finally:
         conn.close()
@@ -125,25 +254,27 @@ def _suggest_terms(diff: dict) -> list[dict]:
 # Books
 # ---------------------------------------------------------------------------
 @app.get("/api/books")
-def list_books(conn: sqlite3.Connection = Depends(get_conn)):
-    return db.list_books(conn)
+def list_books(user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)):
+    # Anonymous → only published books (the public library). Logged in → your
+    # own books plus any legacy unowned ones.
+    if user is None:
+        return db.list_published_books(conn)
+    return db.list_books_for(conn, user["id"])
 
 
 @app.get("/api/books/{book_id}")
-def get_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def get_book(book_id: str, user=Depends(current_user),
+             conn: sqlite3.Connection = Depends(get_conn)):
     book = db.get_book(conn, book_id)
-    if book is None:
-        raise HTTPException(status_code=404, detail="book not found")
-    return book
+    return _require_book_access(conn, book, user, write=False)
 
 
 @app.delete("/api/books/{book_id}")
-def delete_book(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def delete_book(book_id: str, user=Depends(require_user),
+                conn: sqlite3.Connection = Depends(get_conn)):
     """Delete a book and everything under it (pages, segments, corrections, TM,
     book-scoped terms — via ON DELETE CASCADE) plus its uploaded PDF."""
-    book = db.get_book(conn, book_id)
-    if book is None:
-        raise HTTPException(status_code=404, detail="book not found")
+    book = _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
 
     # Delete the DB rows FIRST (commit), THEN the storage blob — so a DB failure
     # never orphans the file (the reverse could leave a row pointing at nothing).
@@ -176,47 +307,54 @@ async def upload_books(
     title_en: Optional[str] = Form(None),
     author: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
+    user=Depends(require_user),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
-    """Accept one or many PDFs; store each and create a book (status=uploaded)."""
+    """Accept one or many PDFs; store each and create a book (status=uploaded)
+    owned by the caller."""
     if not files:
         raise HTTPException(status_code=400, detail="no files provided")
     created: list[dict] = []
     for f in files:
-        book_id = db.next_book_id(conn)
-        # Constrain the filename to a safe key component (no traversal, no odd
-        # characters) so books/<id>/<name> is always a valid storage key.
-        base = os.path.basename(f.filename or f"{book_id}.pdf")
-        safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", base).strip("._") or f"{book_id}.pdf"
-        # Store under a backend-neutral key (local disk or S3/R2). The KEY is
-        # persisted in source_pdf; the ingest worker materializes it to a local
-        # file for pdftoppm.
-        key = f"books/{book_id}/{safe_name}"
-        storage.get_storage().save_bytes(key, await f.read(), "application/pdf")
-        # Default title from filename when none supplied.
+        base = os.path.basename(f.filename or "upload.pdf")
+        safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", base).strip("._") or "upload.pdf"
+        data = await f.read()
         stem = os.path.splitext(safe_name)[0]
-        db.insert_book(
-            conn,
-            book_id=book_id,
-            title_ar=title_ar or stem,
-            title_en=title_en,
-            author=author,
-            status="uploaded",
-            source_pdf=key,
-        )
+
+        # Reserve the id by inserting the DB row FIRST, retrying on a PK race so
+        # two concurrent uploads can't pick the same B-NN. Only after the row is
+        # committed do we write the blob (no orphan on a lost race).
+        book_id = None
+        for _ in range(5):
+            candidate = db.next_book_id(conn)
+            try:
+                db.insert_book(
+                    conn, book_id=candidate, title_ar=title_ar or stem,
+                    title_en=title_en, author=author, status="uploaded",
+                    source_pdf=f"books/{candidate}/{safe_name}", owner_id=user["id"],
+                )
+                conn.commit()
+                book_id = candidate
+                break
+            except Exception:  # noqa: BLE001 — PK collision on a concurrent upload
+                conn.rollback()
+                continue
+        if book_id is None:
+            raise HTTPException(status_code=409, detail="could not allocate a book id, retry")
+
+        key = f"books/{book_id}/{safe_name}"
+        storage.get_storage().save_bytes(key, data, "application/pdf")
         if notes and notes.strip():
             db.set_book_notes(conn, book_id, notes.strip())
-        write_event(
-            conn, actor="uploader", type="book.upload",
-            payload={"id": book_id, "file": safe_name},
-        )
-        conn.commit()  # commit so next_book_id sees this row
+        write_event(conn, actor=user["id"], type="book.upload",
+                    payload={"id": book_id, "file": safe_name})
+        conn.commit()
         created.append({"id": book_id})
     return created
 
 
 @app.post("/api/books/import")
-async def import_books(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+async def import_books(request: Request, _user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     """Bulk-register books from a catalog.
 
     Accepts the contract's raw JSON array ``[ {title_ar, ...}, ... ]`` and also
@@ -263,7 +401,8 @@ async def import_books(request: Request, conn: sqlite3.Connection = Depends(get_
 
 @app.post("/api/books/{book_id}/ingest")
 async def ingest_book(
-    book_id: str, request: Request, conn: sqlite3.Connection = Depends(get_conn)
+    book_id: str, request: Request, user=Depends(require_user),
+    conn: sqlite3.Connection = Depends(get_conn)
 ):
     """Enqueue the OCR->translate->QA pipeline (one-at-a-time worker).
 
@@ -271,9 +410,7 @@ async def ingest_book(
         {"from_page": 1, "to_page": 50, "max_pages": 20}
     Omit all three to process the next window (resume) with the default cap.
     """
-    book = db.get_book(conn, book_id)
-    if book is None:
-        raise HTTPException(status_code=404, detail="book not found")
+    _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
 
     options: dict = {}
     try:
@@ -289,7 +426,7 @@ async def ingest_book(
         options = {}
 
     write_event(
-        conn, actor="reviewer", type="ingest.enqueue",
+        conn, actor=user["id"], type="ingest.enqueue",
         payload={"book_id": book_id, "options": options},
     )
     conn.commit()
@@ -325,16 +462,16 @@ def _status_payload(conn: sqlite3.Connection, book: dict) -> dict:
 
 
 @app.get("/api/books/{book_id}/status")
-def book_status(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def book_status(book_id: str, user=Depends(current_user),
+                conn: sqlite3.Connection = Depends(get_conn)):
     """Ingestion/translation progress for the Library view."""
-    book = db.get_book(conn, book_id)
-    if book is None:
-        raise HTTPException(status_code=404, detail="book not found")
+    book = _require_book_access(conn, db.get_book(conn, book_id), user, write=False)
     return _status_payload(conn, book)
 
 
 @app.post("/api/chat")
-async def chat_endpoint(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+async def chat_endpoint(request: Request, user=Depends(require_user),
+                        conn: sqlite3.Connection = Depends(get_conn)):
     """In-app assistant. Body: {messages:[{role,content}], book_id?}."""
     try:
         body = await request.json()
@@ -344,6 +481,10 @@ async def chat_endpoint(request: Request, conn: sqlite3.Connection = Depends(get
     if not isinstance(messages, list) or not messages:
         raise HTTPException(status_code=400, detail="messages[] required")
     book_id = body.get("book_id")
+    # The assistant can edit a book (set notes, add glossary), so require write
+    # access to any book it is scoped to.
+    if book_id:
+        _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
     try:
         result = chat_mod.chat(conn, messages, book_id)
     except RuntimeError as exc:
@@ -355,30 +496,33 @@ async def chat_endpoint(request: Request, conn: sqlite3.Connection = Depends(get
 
 @app.patch("/api/books/{book_id}")
 async def update_book(
-    book_id: str, request: Request, conn: sqlite3.Connection = Depends(get_conn)
+    book_id: str, request: Request, user=Depends(require_user),
+    conn: sqlite3.Connection = Depends(get_conn)
 ):
-    """Update editable book fields. Currently: translation_notes."""
-    book = db.get_book(conn, book_id)
-    if book is None:
-        raise HTTPException(status_code=404, detail="book not found")
+    """Update editable book fields: translation_notes and publish/unpublish."""
+    _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
     try:
         body = await request.json()
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=400, detail="invalid JSON body")
     if "translation_notes" in body:
         db.set_book_notes(conn, book_id, (body.get("translation_notes") or "").strip() or None)
-        write_event(conn, actor="reviewer", type="book.notes",
-                    payload={"book_id": book_id})
+        write_event(conn, actor=user["id"], type="book.notes", payload={"book_id": book_id})
+    # Publish / unpublish makes a book publicly readable (future reader library).
+    if "status" in body and body["status"] in ("published", "in_review"):
+        db.set_book_status(conn, book_id, body["status"])
+        write_event(conn, actor=user["id"], type="book.publish",
+                    payload={"book_id": book_id, "status": body["status"]})
     conn.commit()
     return db.get_book(conn, book_id)
 
 
 @app.get("/api/books/{book_id}/activity")
-def book_activity(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def book_activity(book_id: str, user=Depends(current_user),
+                  conn: sqlite3.Connection = Depends(get_conn)):
     """Recent ingest activity for a book — a live feed the UI can show so the
     reviewer always sees what happened (page done, page failed, start, finish)."""
-    if db.get_book(conn, book_id) is None:
-        raise HTTPException(status_code=404, detail="book not found")
+    _require_book_access(conn, db.get_book(conn, book_id), user, write=False)
     rows = conn.execute(
         "SELECT ts, type, payload_json FROM events "
         "WHERE type LIKE 'ingest%' AND payload_json LIKE ? "
@@ -399,19 +543,21 @@ def book_activity(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
 
 
 @app.get("/api/books/{book_id}/pages")
-def list_pages(book_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def list_pages(book_id: str, user=Depends(current_user),
+               conn: sqlite3.Connection = Depends(get_conn)):
     """The page numbers that are ready to review (completed OCR+translate).
 
     Ingestion can cover a non-contiguous range (e.g. pages 1–2 then 100), so the
     review UI must navigate the pages that actually exist rather than 1..N.
     """
-    if db.get_book(conn, book_id) is None:
-        raise HTTPException(status_code=404, detail="book not found")
+    _require_book_access(conn, db.get_book(conn, book_id), user, write=False)
     return {"pages": sorted(db.completed_page_numbers(conn, book_id))}
 
 
 @app.get("/api/books/{book_id}/pages/{n}")
-def get_page(book_id: str, n: int, conn: sqlite3.Connection = Depends(get_conn)):
+def get_page(book_id: str, n: int, user=Depends(current_user),
+             conn: sqlite3.Connection = Depends(get_conn)):
+    _require_book_access(conn, db.get_book(conn, book_id), user, write=False)
     page = db.get_page(conn, book_id, n)
     if page is None:
         raise HTTPException(status_code=404, detail="page not found")
@@ -427,7 +573,7 @@ def get_page(book_id: str, n: int, conn: sqlite3.Connection = Depends(get_conn))
 # Segments
 # ---------------------------------------------------------------------------
 @app.get("/api/segments/{seg_id}")
-def get_segment(seg_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def get_segment(seg_id: str, _user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     seg = db.get_segment(conn, seg_id)
     if seg is None:
         raise HTTPException(status_code=404, detail="segment not found")
@@ -438,6 +584,7 @@ def get_segment(seg_id: str, conn: sqlite3.Connection = Depends(get_conn)):
 def review_segment(
     seg_id: str,
     body: ReviewRequest,
+    _user=Depends(require_user),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     seg = db.get_segment(conn, seg_id)
@@ -557,7 +704,7 @@ def review_segment(
 # Termbase / style rules
 # ---------------------------------------------------------------------------
 @app.post("/api/termbase")
-def add_term(body: TermbaseRequest, conn: sqlite3.Connection = Depends(get_conn)):
+def add_term(body: TermbaseRequest, _user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     if body.scope == "book" and not body.book_id:
         raise HTTPException(status_code=400, detail="book_id required for scope=book")
     term_id = db.insert_term(
@@ -584,6 +731,7 @@ async def import_termbase(
     file: UploadFile = File(...),
     scope: str = Form("global"),
     book_id: Optional[str] = Form(None),
+    _user=Depends(require_user),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     """Bulk-load glossary term pairs from a CSV.
@@ -637,7 +785,8 @@ async def import_termbase(
 
 @app.post("/api/style-rules")
 def add_style_rule(
-    body: StyleRuleRequest, conn: sqlite3.Connection = Depends(get_conn)
+    body: StyleRuleRequest, _user=Depends(require_user),
+    conn: sqlite3.Connection = Depends(get_conn)
 ):
     if body.scope == "book" and not body.book_id:
         raise HTTPException(status_code=400, detail="book_id required for scope=book")
@@ -658,7 +807,7 @@ def add_style_rule(
 # Learning summary
 # ---------------------------------------------------------------------------
 @app.get("/api/learning/summary", response_model=LearningSummary)
-def learning_summary(conn: sqlite3.Connection = Depends(get_conn)):
+def learning_summary(_user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     return _learning_summary(conn)
 
 

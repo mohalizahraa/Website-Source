@@ -155,6 +155,10 @@ def _migrate(conn: Conn) -> None:
         conn.execute("ALTER TABLE books ADD COLUMN pages_total INTEGER NOT NULL DEFAULT 0")
     if "translation_notes" not in have:
         conn.execute("ALTER TABLE books ADD COLUMN translation_notes TEXT")
+    if "owner_id" not in have:
+        # No inline REFERENCES on ALTER (both backends dislike it); the column is
+        # enough — new rows use the schema's FK, legacy rows stay NULL (public/system).
+        conn.execute("ALTER TABLE books ADD COLUMN owner_id TEXT")
 
 
 # ---------------------------------------------------------------------------
@@ -210,12 +214,13 @@ def insert_book(
     status: str,
     source_pdf: str | None,
     google_doc_url: str | None = None,
+    owner_id: str | None = None,
 ) -> str:
     conn.execute(
         """
         INSERT INTO books (id, title_ar, title_en, author, status, source_pdf,
-                           google_doc_url, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                           google_doc_url, owner_id, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             book_id,
@@ -225,10 +230,87 @@ def insert_book(
             status,
             source_pdf,
             google_doc_url,
+            owner_id,
             _now(),
         ),
     )
     return book_id
+
+
+# ---------------------------------------------------------------------------
+# Users (creators/reviewers). Readers browse published books anonymously.
+# ---------------------------------------------------------------------------
+def next_user_id(conn: sqlite3.Connection) -> str:
+    rows = conn.execute("SELECT id FROM users").fetchall()
+    max_n = 0
+    for r in rows:
+        m = re.fullmatch(r"U-(\d+)", r["id"])
+        if m:
+            max_n = max(max_n, int(m.group(1)))
+    return f"U-{max_n + 1:02d}"
+
+
+def create_user(conn: sqlite3.Connection, *, user_id: str, email: str,
+                password_hash: str, display_name: str | None,
+                role: str = "creator", bio: str | None = None) -> str:
+    conn.execute(
+        "INSERT INTO users (id, email, password_hash, display_name, role, bio) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (user_id, email.lower().strip(), password_hash, display_name, role, bio),
+    )
+    return user_id
+
+
+def get_user(conn: sqlite3.Connection, user_id: str) -> dict | None:
+    return _row_to_dict(
+        conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    )
+
+
+def get_user_by_email(conn: sqlite3.Connection, email: str) -> dict | None:
+    return _row_to_dict(
+        conn.execute(
+            "SELECT * FROM users WHERE email = ?", (email.lower().strip(),)
+        ).fetchone()
+    )
+
+
+def count_users(conn: sqlite3.Connection) -> int:
+    return int(conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"])
+
+
+def list_published_books(conn: sqlite3.Connection) -> list[dict]:
+    """Books anyone (even anonymous) may read."""
+    rows = conn.execute(
+        "SELECT * FROM books WHERE status = 'published' ORDER BY id"
+    ).fetchall()
+    out = []
+    for r in rows:
+        b = dict(r)
+        b["progress"] = book_progress(conn, b["id"])
+        out.append(b)
+    return out
+
+
+def list_books_for(conn: sqlite3.Connection, owner_id: str | None,
+                   include_unowned: bool = True) -> list[dict]:
+    """Books a creator can manage: their own, plus legacy/unowned (NULL owner)
+    so pre-auth books remain visible to the team during migration."""
+    if include_unowned:
+        rows = conn.execute(
+            "SELECT * FROM books WHERE owner_id = ? OR owner_id IS NULL ORDER BY id",
+            (owner_id,),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM books WHERE owner_id = ? ORDER BY id", (owner_id,)
+        ).fetchall()
+    out = []
+    for r in rows:
+        b = dict(r)
+        b["progress"] = book_progress(conn, b["id"])
+        out.append(b)
+    return out
 
 
 def set_book_status(conn: sqlite3.Connection, book_id: str, status: str) -> None:

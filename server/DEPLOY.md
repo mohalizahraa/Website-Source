@@ -24,6 +24,16 @@ When `DATABASE_URL` is set, the app uses Postgres (schema auto-created from
 | `S3_ACCESS_KEY_ID` | — | access key |
 | `S3_SECRET_ACCESS_KEY` | — | secret key |
 
+### Auth (Phase 2)
+| Var | Notes |
+|-----|-------|
+| `HAYDARI_SECRET_KEY` | **secret** — signs session cookies. MUST be set in production (a dev fallback is used otherwise). Rotating it logs everyone out. |
+| `HAYDARI_ADMIN_EMAIL` | bootstrap admin email (created once, on first startup when no users exist) |
+| `HAYDARI_ADMIN_PASSWORD` | bootstrap admin password — set a strong one; change it after first login |
+| `HAYDARI_COOKIE_SECURE` | `true` in production (HTTPS) so the session cookie is Secure-only |
+
+Access model: anonymous visitors can read **published** books (the public library); creators/reviewers log in to manage their own books; admins manage everything and provision accounts via `POST /api/auth/users`.
+
 ### Translation (already in use)
 | Var | Notes |
 |-----|-------|

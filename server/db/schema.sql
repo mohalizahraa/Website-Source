@@ -11,6 +11,21 @@
 PRAGMA foreign_keys = ON;
 
 -- ---------------------------------------------------------------------------
+-- users  (creators/reviewers who log in; readers browse published books
+--         anonymously and get accounts only later for follows/reviews)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS users (
+    id            TEXT PRIMARY KEY,           -- e.g. "U-01"
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    display_name  TEXT,
+    role          TEXT NOT NULL DEFAULT 'creator'
+                      CHECK (role IN ('admin', 'creator', 'reader')),
+    bio           TEXT,                       -- future: scholar profile
+    created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+-- ---------------------------------------------------------------------------
 -- books
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS books (
@@ -26,6 +41,9 @@ CREATE TABLE IF NOT EXISTS books (
     -- Free-text, per-book translation instructions injected into every prompt
     -- (set at upload or via the chat assistant).
     translation_notes TEXT,
+    -- Creator who owns this book (NULL = legacy/system; a published book is
+    -- publicly readable regardless of owner).
+    owner_id       TEXT REFERENCES users(id) ON DELETE SET NULL,
     updated_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 

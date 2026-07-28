@@ -8,6 +8,17 @@
 --   * (no PRAGMA; Postgres enforces FKs and uses MVCC)
 -- Timestamps remain ISO-8601 UTC TEXT strings, identical to the SQLite side.
 
+CREATE TABLE IF NOT EXISTS users (
+    id            TEXT PRIMARY KEY,
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    display_name  TEXT,
+    role          TEXT NOT NULL DEFAULT 'creator'
+                      CHECK (role IN ('admin', 'creator', 'reader')),
+    bio           TEXT,
+    created_at    TEXT NOT NULL DEFAULT to_char(now() AT TIME ZONE 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+);
+
 CREATE TABLE IF NOT EXISTS books (
     id             TEXT PRIMARY KEY,
     title_ar       TEXT NOT NULL,
@@ -18,6 +29,7 @@ CREATE TABLE IF NOT EXISTS books (
     google_doc_url TEXT,
     pages_total    INTEGER NOT NULL DEFAULT 0,
     translation_notes TEXT,
+    owner_id       TEXT REFERENCES users(id) ON DELETE SET NULL,
     updated_at     TEXT NOT NULL DEFAULT to_char(now() AT TIME ZONE 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 );
 

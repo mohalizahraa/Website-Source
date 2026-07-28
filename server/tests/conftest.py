@@ -36,6 +36,13 @@ def client():
     from fastapi.testclient import TestClient
 
     with TestClient(app) as c:
+        # Startup bootstraps an admin (admin@haydari.local / changeme-admin);
+        # log in so the authenticated routes work. The client persists the
+        # session cookie across requests. Tests that need anonymous behaviour
+        # can clear c.cookies themselves.
+        r = c.post("/api/auth/login",
+                   json={"email": "admin@haydari.local", "password": "changeme-admin"})
+        assert r.status_code == 200, r.text
         yield c
 
     os.remove(path)
