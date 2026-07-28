@@ -208,6 +208,12 @@ def _on_startup() -> None:
             conn.commit()
     finally:
         conn.close()
+    if not auth.secret_is_configured():
+        import logging
+        logging.getLogger("uvicorn.error").warning(
+            "HAYDARI_SECRET_KEY is not set — using an INSECURE dev fallback. "
+            "Session cookies are forgeable. Set a strong secret before production."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -573,10 +579,14 @@ def get_page(book_id: str, n: int, user=Depends(current_user),
 # Segments
 # ---------------------------------------------------------------------------
 @app.get("/api/segments/{seg_id}")
-def get_segment(seg_id: str, _user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
+def get_segment(seg_id: str, user=Depends(current_user),
+                conn: sqlite3.Connection = Depends(get_conn)):
     seg = db.get_segment(conn, seg_id)
     if seg is None:
         raise HTTPException(status_code=404, detail="segment not found")
+    # Scope to the segment's BOOK (ids like B-02:001:00 are guessable, so
+    # require_user alone would let any creator read another's segment — IDOR).
+    _require_book_access(conn, db.get_book(conn, seg["book_id"]), user, write=False)
     return segment_to_wire(seg)
 
 
@@ -584,12 +594,14 @@ def get_segment(seg_id: str, _user=Depends(require_user), conn: sqlite3.Connecti
 def review_segment(
     seg_id: str,
     body: ReviewRequest,
-    _user=Depends(require_user),
+    user=Depends(require_user),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     seg = db.get_segment(conn, seg_id)
     if seg is None:
         raise HTTPException(status_code=404, detail="segment not found")
+    # Only the owner (or admin) of the segment's book may review/approve it.
+    _require_book_access(conn, db.get_book(conn, seg["book_id"]), user, write=True)
 
     en_after = body.en_edited
 

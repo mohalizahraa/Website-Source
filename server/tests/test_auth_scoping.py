@@ -72,3 +72,33 @@ def test_creator_cannot_touch_another_users_book(client):
     # the creator may not read/delete the admin's unpublished book
     assert client.get(f"/api/books/{admin_book}").status_code == 403
     assert client.delete(f"/api/books/{admin_book}").status_code == 403
+
+
+def test_segment_routes_are_scoped_to_book_owner(client):
+    """IDOR guard: segment ids (B-02:001:00) are guessable, so segment routes
+    must check the segment's BOOK ownership — not merely that you're logged in."""
+    from app import config, db
+
+    admin_book = _upload(client, "adminseg.pdf")  # owned by admin
+    conn = db.connect(config.db_path())
+    conn.execute("INSERT INTO pages (book_id, page_no, status) VALUES (?, ?, 'in_review')",
+                 (admin_book, 1))
+    seg_id = f"{admin_book}:001:00"
+    conn.execute(
+        "INSERT INTO segments (id, book_id, page_no, seg_order, kind, ar, status) "
+        "VALUES (?, ?, 1, 0, 'body', 'نص', 'needs_review')", (seg_id, admin_book))
+    conn.commit()
+    conn.close()
+
+    # admin (owner) can read it
+    assert client.get(f"/api/segments/{seg_id}").status_code == 200
+
+    # a different creator cannot read or review it
+    client.post("/api/auth/users", json={
+        "email": "creator2@haydari.local", "password": "password123", "role": "creator"})
+    assert client.post("/api/auth/login", json={
+        "email": "creator2@haydari.local", "password": "password123"}).status_code == 200
+    assert client.get(f"/api/segments/{seg_id}").status_code == 403
+    assert client.post(f"/api/segments/{seg_id}/review",
+                       json={"en_edited": "x", "action": "approve",
+                             "scores": {}, "mqm": []}).status_code == 403
