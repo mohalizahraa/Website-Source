@@ -5,19 +5,22 @@ Called on every mutation to record audit / provenance. Never updated or deleted.
 from __future__ import annotations
 
 import json
-import sqlite3
 from typing import Any
+
+from . import db
 
 
 def write_event(
-    conn: sqlite3.Connection,
+    conn,
     *,
     actor: str | None,
     type: str,
     payload: dict[str, Any] | None = None,
 ) -> int:
-    cur = conn.execute(
+    # Uses the cross-backend insert helper so it works on both SQLite and
+    # Postgres (psycopg cursors have no ``lastrowid``; they use RETURNING).
+    return db._insert_id(
+        conn,
         "INSERT INTO events (actor, type, payload_json) VALUES (?, ?, ?)",
         (actor, type, json.dumps(payload or {}, ensure_ascii=False)),
     )
-    return int(cur.lastrowid)

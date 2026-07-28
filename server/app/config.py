@@ -43,8 +43,13 @@ def db_path() -> str:
 
 
 def schema_path() -> str:
-    """Absolute path to the authoritative schema.sql."""
+    """Absolute path to the authoritative SQLite schema.sql."""
     return os.environ.get("HAYDARI_SCHEMA", str(_SERVER_DIR / "db" / "schema.sql"))
+
+
+def schema_path_pg() -> str:
+    """Absolute path to the PostgreSQL schema (used when DATABASE_URL is set)."""
+    return os.environ.get("HAYDARI_SCHEMA_PG", str(_SERVER_DIR / "db" / "schema_pg.sql"))
 
 
 def cors_origins() -> list[str]:

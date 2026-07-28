@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import sqlite3
 import unicodedata
@@ -22,42 +23,121 @@ _WS_RE = re.compile(r"\s+")
 
 
 # ---------------------------------------------------------------------------
-# Connection
+# Connection — dual backend: SQLite (local dev + tests) and PostgreSQL (prod).
+#
+# The whole data layer is raw SQL with ``?`` placeholders and dict-style row
+# access (``row["col"]``). Both backends are wrapped by ``Conn`` so the ~30
+# query functions below work UNCHANGED against either. Postgres is selected by
+# setting DATABASE_URL (postgres://…); otherwise SQLite is used.
 # ---------------------------------------------------------------------------
-def connect(path: str | None = None) -> sqlite3.Connection:
-    """Open a connection with sane defaults (Row factory, FK enforcement)."""
+def _database_url() -> str | None:
+    url = os.environ.get("DATABASE_URL", "").strip()
+    return url or None
+
+
+class Conn:
+    """Backend-agnostic connection wrapper.
+
+    ``execute`` accepts SQLite-style ``?`` placeholders and rewrites them for
+    Postgres (``%s``), doubling literal ``%`` so LIKE patterns survive. Rows are
+    dict-accessible on both backends (``sqlite3.Row`` / psycopg ``dict_row``).
+    """
+
+    def __init__(self, raw, backend: str):
+        self._raw = raw
+        self.backend = backend  # "sqlite" | "postgres"
+
+    def execute(self, sql: str, params: Iterable = ()):  # type: ignore[type-arg]
+        if self.backend == "postgres":
+            sql = sql.replace("%", "%%").replace("?", "%s")
+        return self._raw.execute(sql, tuple(params) if params else ())
+
+    def executescript(self, script: str) -> None:
+        if self.backend == "sqlite":
+            self._raw.executescript(script)
+            return
+        # psycopg: run each ';'-terminated statement (schema_pg.sql has no
+        # inline semicolons, so a simple split is safe).
+        cur = self._raw.cursor()
+        for stmt in _split_sql(script):
+            cur.execute(stmt)
+
+    def commit(self) -> None:
+        self._raw.commit()
+
+    def rollback(self) -> None:
+        self._raw.rollback()
+
+    def close(self) -> None:
+        self._raw.close()
+
+
+def _split_sql(script: str) -> list[str]:
+    """Split a SQL script into individual statements (comments stripped)."""
+    lines = [ln for ln in script.splitlines() if not ln.strip().startswith("--")]
+    return [s.strip() for s in "\n".join(lines).split(";") if s.strip()]
+
+
+def connect(path: str | None = None) -> Conn:
+    """Open a connection. Postgres when DATABASE_URL is set, else SQLite."""
+    url = _database_url()
+    if url:
+        import psycopg
+        from psycopg.rows import dict_row
+
+        raw = psycopg.connect(url, row_factory=dict_row, autocommit=False)
+        return Conn(raw, "postgres")
+
     # check_same_thread=False: FastAPI may run a sync dependency and an async
     # endpoint body on different threads within the SAME request. Each request
-    # still gets its own connection and uses it sequentially (never shared
-    # concurrently), so this is safe.
-    conn = sqlite3.connect(path or config.db_path(), check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
-    # WAL lets many readers run concurrently with one writer. busy_timeout makes
-    # a would-be second writer WAIT (up to 5s) for the lock instead of failing
-    # with "database is locked" — this is what lets a reviewer approve/edit a
-    # done page while the ingest worker is committing a later page.
-    conn.execute("PRAGMA busy_timeout = 5000")
-    return conn
+    # still gets its own connection and uses it sequentially, so this is safe.
+    raw = sqlite3.connect(path or config.db_path(), check_same_thread=False)
+    raw.row_factory = sqlite3.Row
+    raw.execute("PRAGMA foreign_keys = ON")
+    raw.execute("PRAGMA journal_mode = WAL")
+    # busy_timeout makes a second writer WAIT for the lock (up to 5s) instead of
+    # failing with "database is locked" — lets review + ingest write concurrently.
+    raw.execute("PRAGMA busy_timeout = 5000")
+    return Conn(raw, "sqlite")
 
 
-def init_db(conn: sqlite3.Connection, schema_file: str | None = None) -> None:
-    """Create all tables from the authoritative schema.sql (idempotent)."""
-    with open(schema_file or config.schema_path(), "r", encoding="utf-8") as fh:
+def init_db(conn: Conn, schema_file: str | None = None) -> None:
+    """Create all tables from the backend's schema (idempotent)."""
+    if schema_file is None:
+        schema_file = config.schema_path_pg() if conn.backend == "postgres" \
+            else config.schema_path()
+    with open(schema_file, "r", encoding="utf-8") as fh:
         conn.executescript(fh.read())
     _migrate(conn)
     conn.commit()
 
 
-def _migrate(conn: sqlite3.Connection) -> None:
+def _book_columns(conn: Conn) -> set[str]:
+    if conn.backend == "postgres":
+        rows = conn.execute(
+            "SELECT column_name AS name FROM information_schema.columns "
+            "WHERE table_name = 'books'"
+        ).fetchall()
+    else:
+        rows = conn.execute("PRAGMA table_info(books)").fetchall()
+    return {r["name"] for r in rows}
+
+
+def _insert_id(conn: Conn, sql: str, params: Iterable) -> int:
+    """Run an INSERT and return the new integer id, on either backend."""
+    if conn.backend == "postgres":
+        row = conn.execute(sql + " RETURNING id", params).fetchone()
+        return int(row["id"])
+    return int(conn.execute(sql, params).lastrowid)
+
+
+def _migrate(conn: Conn) -> None:
     """Additive, idempotent column migrations for pre-existing databases.
 
-    ``CREATE TABLE IF NOT EXISTS`` never alters an existing table, so new
-    columns added to schema.sql must also be back-filled here for DBs created
-    before the column existed. Safe to run on every startup.
+    ``CREATE TABLE IF NOT EXISTS`` never alters an existing table, so columns
+    added later must be back-filled here. Safe to run on every startup.
     """
-    have = {r["name"] for r in conn.execute("PRAGMA table_info(books)").fetchall()}
+    have = _book_columns(conn)
     if "pages_total" not in have:
         conn.execute("ALTER TABLE books ADD COLUMN pages_total INTEGER NOT NULL DEFAULT 0")
     if "translation_notes" not in have:
@@ -311,7 +391,8 @@ def insert_correction(
     dims: dict | None,
     reviewer: str | None,
 ) -> int:
-    cur = conn.execute(
+    return _insert_id(
+        conn,
         """
         INSERT INTO corrections
             (segment_id, en_before, en_after, diff_json, mqm_tags_json,
@@ -328,7 +409,6 @@ def insert_correction(
             reviewer,
         ),
     )
-    return int(cur.lastrowid)
 
 
 # ---------------------------------------------------------------------------
@@ -351,42 +431,32 @@ def upsert_tm(
     h = ar_hash(ar)
     embedding = pack_vector(get_embedder().embed(ar))
 
-    def _find():
-        return conn.execute(
-            "SELECT id FROM translation_memory WHERE book_id IS ? AND ar_hash = ?",
+    # NULL-safe lookup (book_id can be NULL for global entries) — written so it
+    # works identically on SQLite and Postgres (avoid the SQLite-only `IS ?`).
+    if book_id is None:
+        existing = conn.execute(
+            "SELECT id FROM translation_memory WHERE book_id IS NULL AND ar_hash = ?",
+            (h,),
+        ).fetchone()
+    else:
+        existing = conn.execute(
+            "SELECT id FROM translation_memory WHERE book_id = ? AND ar_hash = ?",
             (book_id, h),
         ).fetchone()
 
-    existing = _find()
     if existing is not None:
         conn.execute(
-            """
-            UPDATE translation_memory
-            SET ar = ?, en_approved = ?, embedding = ?
-            WHERE id = ?
-            """,
+            "UPDATE translation_memory SET ar = ?, en_approved = ?, embedding = ? WHERE id = ?",
             (ar, en_approved, embedding, existing["id"]),
         )
         return int(existing["id"]), False
-    try:
-        cur = conn.execute(
-            """
-            INSERT INTO translation_memory (book_id, ar_hash, ar, en_approved, embedding)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (book_id, h, ar, en_approved, embedding),
-        )
-        return int(cur.lastrowid), True
-    except sqlite3.IntegrityError:
-        # Lost the race: a row now exists — update it rather than fail.
-        row = _find()
-        if row is None:
-            raise
-        conn.execute(
-            "UPDATE translation_memory SET ar = ?, en_approved = ?, embedding = ? WHERE id = ?",
-            (ar, en_approved, embedding, row["id"]),
-        )
-        return int(row["id"]), False
+    new_id = _insert_id(
+        conn,
+        "INSERT INTO translation_memory (book_id, ar_hash, ar, en_approved, embedding) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (book_id, h, ar, en_approved, embedding),
+    )
+    return new_id, True
 
 
 def tm_size(conn: sqlite3.Connection) -> int:
@@ -450,14 +520,14 @@ def insert_term(
     book_id: str | None,
     created_by: str | None,
 ) -> int:
-    cur = conn.execute(
+    return _insert_id(
+        conn,
         """
         INSERT INTO termbase (term_ar, term_en, note, scope, book_id, created_by)
         VALUES (?, ?, ?, ?, ?, ?)
         """,
         (term_ar, term_en, note, scope, book_id, created_by),
     )
-    return int(cur.lastrowid)
 
 
 def insert_style_rule(
@@ -467,11 +537,11 @@ def insert_style_rule(
     scope: str,
     book_id: str | None,
 ) -> int:
-    cur = conn.execute(
+    return _insert_id(
+        conn,
         "INSERT INTO style_rules (rule, scope, book_id) VALUES (?, ?, ?)",
         (rule, scope, book_id),
     )
-    return int(cur.lastrowid)
 
 
 def count(conn: sqlite3.Connection, table: str) -> int:
