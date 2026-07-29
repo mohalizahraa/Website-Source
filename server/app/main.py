@@ -92,6 +92,18 @@ def require_admin(user=Depends(require_user)):
     return user
 
 
+def require_creator(user=Depends(require_user)):
+    """A user who may WRITE. Readers are read-only, so they're rejected here.
+
+    Book-scoped writes re-check ownership via _require_book_access(write=True);
+    this guards the GLOBAL-scope writes (termbase/style-rule/import) that have no
+    single book to authorize against, so the role check would otherwise be
+    skipped and a reader could write global training signal."""
+    if user.get("role") == "reader":
+        raise HTTPException(status_code=403, detail="read-only account")
+    return user
+
+
 def _user_wire(u: dict | None) -> dict | None:
     if not u:
         return None
@@ -332,7 +344,7 @@ async def upload_books(
     title_en: Optional[str] = Form(None),
     author: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
-    user=Depends(require_user),
+    user=Depends(require_creator),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     """Accept one or many PDFs; store each and create a book (status=uploaded)
@@ -384,7 +396,7 @@ async def upload_books(
 
 
 @app.post("/api/books/import")
-async def import_books(request: Request, user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
+async def import_books(request: Request, user=Depends(require_creator), conn: sqlite3.Connection = Depends(get_conn)):
     """Bulk-register books from a catalog.
 
     Accepts the contract's raw JSON array ``[ {title_ar, ...}, ... ]`` and also
@@ -501,9 +513,11 @@ def book_status(book_id: str, user=Depends(current_user),
 
 
 @app.post("/api/chat")
-async def chat_endpoint(request: Request, user=Depends(require_user),
+async def chat_endpoint(request: Request, user=Depends(require_creator),
                         conn: sqlite3.Connection = Depends(get_conn)):
-    """In-app assistant. Body: {messages:[{role,content}], book_id?}."""
+    """In-app assistant (writes notes/glossary) — creators/admins only. A global
+    glossary tool call has no book_id to authorize against, so a reader must be
+    blocked at the door rather than at the per-book authorize() callback."""
     try:
         body = await request.json()
     except Exception:  # noqa: BLE001
@@ -751,7 +765,7 @@ def review_segment(
 # Termbase / style rules
 # ---------------------------------------------------------------------------
 @app.post("/api/termbase")
-def add_term(body: TermbaseRequest, user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
+def add_term(body: TermbaseRequest, user=Depends(require_creator), conn: sqlite3.Connection = Depends(get_conn)):
     if body.scope == "book" and not body.book_id:
         raise HTTPException(status_code=400, detail="book_id required for scope=book")
     if body.book_id:  # a book-scoped term must be authorized against that book
@@ -780,7 +794,7 @@ async def import_termbase(
     file: UploadFile = File(...),
     scope: str = Form("global"),
     book_id: Optional[str] = Form(None),
-    user=Depends(require_user),
+    user=Depends(require_creator),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     """Bulk-load glossary term pairs from a CSV.
@@ -836,7 +850,7 @@ async def import_termbase(
 
 @app.post("/api/style-rules")
 def add_style_rule(
-    body: StyleRuleRequest, user=Depends(require_user),
+    body: StyleRuleRequest, user=Depends(require_creator),
     conn: sqlite3.Connection = Depends(get_conn)
 ):
     if body.scope == "book" and not body.book_id:

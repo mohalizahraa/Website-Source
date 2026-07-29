@@ -7,7 +7,9 @@ import type { Book, IngestOptions, IngestStatus } from "@/lib/types";
 import { BrandMark } from "./BrandMark";
 import { UploadZone } from "./UploadZone";
 import { ChatWidget } from "./ChatWidget";
+import { AuthMenu } from "./AuthMenu";
 import { T, useToast } from "./Toast";
+import { canWrite, useAuth } from "@/lib/auth";
 
 const STATUS_LABEL: Record<Book["status"], string> = {
   uploaded: "Uploaded",
@@ -96,12 +98,14 @@ function BookCard({
   onIngest,
   onDelete,
   busy,
+  canManage,
 }: {
   book: Book;
   status?: IngestStatus;
   onIngest: (id: string, opts: IngestOptions) => void;
   onDelete: (id: string) => void;
   busy: boolean;
+  canManage: boolean; // false for anonymous / reader visitors (published-only view)
 }) {
   const total = status?.pages_total ?? book.pages_total ?? 0;
   const done = status?.pages_done ?? 0;
@@ -113,7 +117,7 @@ function BookCard({
   // Reviewable whenever at least one page is done — including WHILE it ingests,
   // since pages are committed one at a time and reviewing them is non-blocking.
   const openable = book.status === "in_review" || book.status === "published" || done > 0;
-  const canIngest = !processing && (book.status === "uploaded" || hasMore);
+  const canIngest = canManage && !processing && (book.status === "uploaded" || hasMore);
 
   return (
     <div className="book-card">
@@ -166,17 +170,19 @@ function BookCard({
         )}
         {openable && (
           <Link className="btn btn-primary sm" href={`/review/${encodeURIComponent(book.id)}`}>
-            {processing ? "Review (live)" : "Open review"}
+            {processing ? "Review (live)" : canManage ? "Open review" : "Read"}
           </Link>
         )}
         <span className="spacer" />
-        <button
-          className="btn btn-danger sm"
-          onClick={() => onDelete(book.id)}
-          aria-label={`Delete ${book.title_en || book.title_ar || book.id}`}
-        >
-          Delete
-        </button>
+        {canManage && (
+          <button
+            className="btn btn-danger sm"
+            onClick={() => onDelete(book.id)}
+            aria-label={`Delete ${book.title_en || book.title_ar || book.id}`}
+          >
+            Delete
+          </button>
+        )}
       </div>
     </div>
   );
@@ -184,12 +190,18 @@ function BookCard({
 
 export function Library() {
   const { learn } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const loggedIn = !!user;
+  const manage = canWrite(user); // creators/admins manage books; anon/readers browse
   const [books, setBooks] = useState<Book[]>([]);
   const [statuses, setStatuses] = useState<Record<string, IngestStatus>>({});
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const booksRef = useRef<Book[]>([]);
   booksRef.current = books;
+  // Guards against a stale listBooks() (e.g. the creator-scoped fetch in flight
+  // when you log out) resolving after a newer one and repopulating private books.
+  const loadSeq = useRef(0);
 
   const loadStatus = useCallback(async (id: string) => {
     const s = await api.getBookStatus(id).catch(() => null);
@@ -198,16 +210,23 @@ export function Library() {
   }, []);
 
   const refresh = useCallback(async () => {
+    const mine = ++loadSeq.current;
     const list = await api.listBooks();
+    if (mine !== loadSeq.current) return; // superseded by a newer refresh
     setBooks(list);
     setLoading(false);
     // Pull live ingest status for every book so bars reflect real progress.
     await Promise.all(list.map((b) => loadStatus(b.id)));
   }, [loadStatus]);
 
+  // (Re)load the library once the auth state is known, and again whenever the
+  // signed-in identity changes — the backend returns published-only for anon
+  // vs. your own books when logged in.
   useEffect(() => {
+    if (authLoading) return;
+    setLoading(true);
     void refresh();
-  }, [refresh]);
+  }, [refresh, authLoading, user?.id]);
 
   // Poll status for any book that is actively processing.
   useEffect(() => {
@@ -299,21 +318,20 @@ export function Library() {
         <span className="datasrc" title="Active data adapter">
           {DATA_SOURCE === "mock" ? "mock data" : "live api"}
         </span>
-        <div className="who">
-          <span className="avatar" title="Reviewer">
-            HA
-          </span>
-        </div>
+        <AuthMenu />
       </header>
 
       <main className="home-main">
         <div className="home-inner">
           <div className="home-head">
             <div>
-              <h1>Library</h1>
+              <h1>{loggedIn ? "Library" : "Published Library"}</h1>
               <p className="lede">
-                Upload Arabic source PDFs, choose a page range, and run the OCR → translate → QA
-                pipeline. Progress is live and resumable. Every edit becomes training signal.
+                {manage
+                  ? "Upload Arabic source PDFs, choose a page range, and run the OCR → translate → QA pipeline. Progress is live and resumable. Every edit becomes training signal."
+                  : loggedIn
+                    ? "You have read-only access. Browse the translations available to your account below."
+                    : "Read published English translations of the Haydari corpus. Sign in to upload sources and join the translation workbench."}
               </p>
             </div>
             <div className="home-stats">
@@ -332,15 +350,23 @@ export function Library() {
             </div>
           </div>
 
-          <div className="section-label">Add books</div>
-          <UploadZone onUploaded={refresh} />
+          {manage && (
+            <>
+              <div className="section-label">Add books</div>
+              <UploadZone onUploaded={refresh} />
+            </>
+          )}
 
-          <div className="section-label">Your books</div>
+          <div className="section-label">
+            {manage ? "Your books" : loggedIn ? "Books" : "Published translations"}
+          </div>
           {loading ? (
             <div style={{ color: "var(--ink-3)", fontSize: "var(--fs-sm)" }}>Loading library…</div>
           ) : books.length === 0 ? (
             <div style={{ color: "var(--ink-3)", fontSize: "var(--fs-sm)" }}>
-              No books yet — upload a PDF to begin.
+              {manage
+                ? "No books yet — upload a PDF to begin."
+                : "No published translations yet — check back soon."}
             </div>
           ) : (
             <div className="book-grid">
@@ -352,6 +378,7 @@ export function Library() {
                   busy={!!busy[b.id]}
                   onIngest={ingest}
                   onDelete={remove}
+                  canManage={manage}
                 />
               ))}
             </div>
@@ -359,7 +386,8 @@ export function Library() {
         </div>
       </main>
 
-      <ChatWidget />
+      {/* The chat assistant calls authenticated, per-book tools — creators only. */}
+      {manage && <ChatWidget />}
     </div>
   );
 }

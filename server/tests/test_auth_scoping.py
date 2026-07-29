@@ -104,6 +104,50 @@ def test_segment_routes_are_scoped_to_book_owner(client):
                              "scores": {}, "mqm": []}).status_code == 403
 
 
+def test_reader_cannot_write_global_training_signal(client):
+    """A reader is read-only. Book-scoped writes are already blocked by
+    _require_book_access; this guards the GLOBAL-scope writes (termbase / style
+    rule / CSV import) that have no book to authorize against."""
+    mk = client.post("/api/auth/users", json={
+        "email": "reader@haydari.local", "password": "password123",
+        "display_name": "Reader", "role": "reader"})
+    assert mk.status_code == 200, mk.text
+    assert client.post("/api/auth/login", json={
+        "email": "reader@haydari.local", "password": "password123"}).status_code == 200
+
+    # global termbase / style-rule writes are refused for a reader
+    assert client.post("/api/termbase", json={
+        "term_ar": "س", "term_en": "x", "note": "", "scope": "global"}).status_code == 403
+    assert client.post("/api/style-rules", json={
+        "rule": "x", "scope": "global"}).status_code == 403
+    assert client.post(
+        "/api/termbase/import",
+        files={"file": ("t.csv", io.BytesIO(b"term_ar,term_en\n\xd8\xb3,x\n"), "text/csv")},
+    ).status_code == 403
+
+    # a reader may not CREATE books (upload/import) — otherwise they'd own a book
+    # and could write to it — nor use the write-capable chat assistant.
+    assert client.post(
+        "/api/books/upload",
+        files={"files": ("r.pdf", io.BytesIO(b"%PDF"), "application/pdf")},
+    ).status_code == 403
+    assert client.post("/api/books/import", json=[]).status_code == 403
+    assert client.post("/api/chat", json={"messages": [{"role": "user", "content": "hi"}]}).status_code == 403
+
+
+def test_creator_can_write_global_training_signal(client):
+    """The reader block must not regress creators: a creator may still add
+    global terms and style rules."""
+    client.post("/api/auth/users", json={
+        "email": "creator3@haydari.local", "password": "password123", "role": "creator"})
+    assert client.post("/api/auth/login", json={
+        "email": "creator3@haydari.local", "password": "password123"}).status_code == 200
+    assert client.post("/api/termbase", json={
+        "term_ar": "س", "term_en": "x", "note": "", "scope": "global"}).status_code == 200
+    assert client.post("/api/style-rules", json={
+        "rule": "prefer transliteration", "scope": "global"}).status_code == 200
+
+
 def test_chat_tools_reject_unauthorized_book():
     """The assistant's tools must refuse any book the caller can't access,
     even if the model supplies an arbitrary book_id in a tool call."""

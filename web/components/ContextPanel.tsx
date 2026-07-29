@@ -22,6 +22,7 @@ export function ContextPanel({
   onApplyAlt,
   onTeachTerm,
   onTeachStyle,
+  readOnly = false,
 }: {
   seg: Segment;
   page: number;
@@ -32,6 +33,7 @@ export function ContextPanel({
   onApplyAlt: (text: string) => void;
   onTeachTerm: () => void;
   onTeachStyle: () => void;
+  readOnly?: boolean; // hide teaching controls for read-only visitors
 }) {
   const lvl = levelOf(seg);
   const sacred = seg.kind === "sacred";
@@ -106,9 +108,15 @@ export function ContextPanel({
             <div className="ctx-label">Alternatives</div>
             <div className="alts">
               {seg.alternatives.map((a, i) => (
-                <button className="alt" key={i} type="button" onClick={() => onApplyAlt(a)}>
+                <button
+                  className="alt"
+                  key={i}
+                  type="button"
+                  disabled={readOnly}
+                  onClick={readOnly ? undefined : () => onApplyAlt(a)}
+                >
                   <span>{a}</span>
-                  <span className="apply">apply →</span>
+                  {!readOnly && <span className="apply">apply →</span>}
                 </button>
               ))}
             </div>
@@ -116,7 +124,8 @@ export function ContextPanel({
         )}
       </div>
 
-      {/* Quality score */}
+      {/* Quality score — review apparatus, creators/admins only */}
+      {!readOnly && (
       <div className="ctx-sec">
         <div className="ctx-label">
           Your quality score <span className="plain">feeds learning</span>
@@ -158,8 +167,10 @@ export function ContextPanel({
           ))}
         </div>
       </div>
+      )}
 
-      {/* Teach the model */}
+      {/* Teach the model — creators/admins only */}
+      {!readOnly && (
       <div className="ctx-sec" style={{ borderBottom: "none" }}>
         <div className="ctx-label">Teach the model</div>
         <div className="teach">
@@ -188,6 +199,7 @@ export function ContextPanel({
           </button>
         </div>
       </div>
+      )}
     </aside>
   );
 }

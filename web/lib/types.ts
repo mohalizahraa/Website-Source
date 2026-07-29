@@ -1,6 +1,22 @@
 // Wire types — these mirror ARCHITECTURE.md exactly.
 // The frontend depends on this contract; adapters must not deviate from it.
 
+// Authenticated user (wire shape from /api/auth/*). null = anonymous.
+export type UserRole = "admin" | "creator" | "reader";
+export interface User {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: UserRole;
+}
+// New-account payload for the admin "add user" screen.
+export interface NewUser {
+  email: string;
+  password: string;
+  display_name?: string;
+  role?: UserRole;
+}
+
 export type SegmentKind = "body" | "footnote" | "sacred";
 export type SegmentStatus = "draft" | "needs_review" | "approved";
 export type ReviewAction = "approve" | "reject" | "skip";
@@ -171,6 +187,12 @@ export interface LearningSummary {
 }
 
 export interface HaydariAPI {
+  // --- auth ---
+  me(): Promise<User | null>;
+  login(email: string, password: string): Promise<User>;
+  logout(): Promise<{ ok: boolean }>;
+  createUser(body: NewUser): Promise<User>;
+
   listBooks(): Promise<Book[]>;
   getBook(id: string): Promise<Book>;
   deleteBook(id: string): Promise<{ ok: boolean }>;

@@ -7,6 +7,7 @@ import "@fontsource/amiri/400.css";
 import "@fontsource/amiri/700.css";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
+import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Miʿrāj — Haydari Translation Workbench",
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <ToastProvider>{children}</ToastProvider>
+        <AuthProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

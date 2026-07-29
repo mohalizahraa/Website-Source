@@ -22,6 +22,7 @@ export function TopBar({
   hasNext,
   saveState,
   reviewer = "HA",
+  readOnly = false,
 }: {
   book: Book;
   page: number;
@@ -32,6 +33,7 @@ export function TopBar({
   hasNext?: boolean; // overrides default page>=pageCount
   saveState: SaveState;
   reviewer?: string;
+  readOnly?: boolean; // hide write affordances (kbd hints, save state) for readers
 }) {
   return (
     <header className="bar">
@@ -71,13 +73,22 @@ export function TopBar({
         </button>
       </div>
       <div className="spacer" />
-      <div className="kbd-hint">
-        <kbd>J</kbd>
-        <kbd>K</kbd> move&nbsp;·&nbsp;<kbd>A</kbd> accept&nbsp;·&nbsp;<kbd>⌘S</kbd> save
-      </div>
-      <div className={"save " + saveState} aria-live="polite">
-        <span className="dot" /> {SAVE_LABEL[saveState]}
-      </div>
+      {readOnly ? (
+        <div className="kbd-hint">
+          <kbd>J</kbd>
+          <kbd>K</kbd> move
+        </div>
+      ) : (
+        <>
+          <div className="kbd-hint">
+            <kbd>J</kbd>
+            <kbd>K</kbd> move&nbsp;·&nbsp;<kbd>A</kbd> accept&nbsp;·&nbsp;<kbd>⌘S</kbd> save
+          </div>
+          <div className={"save " + saveState} aria-live="polite">
+            <span className="dot" /> {SAVE_LABEL[saveState]}
+          </div>
+        </>
+      )}
       <div className="who">
         <span className="avatar" title="Reviewer">
           {reviewer}

@@ -14,31 +14,52 @@ import type {
   ReviewBody,
   ReviewResult,
   Segment,
+  NewUser,
   StyleRuleBody,
   TermBody,
   UploadMeta,
+  User,
 } from "../types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE || "/api";
 
+// Carries the HTTP status so callers (auth guard, UI) can special-case 401/403.
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+// `credentials: "include"` is REQUIRED: the session lives in an httponly cookie
+// and the frontend is a different origin (localhost:3000 → :8000), so the
+// browser only sends the cookie when we opt in. The backend sets
+// allow_credentials=True with explicit origins (never "*") to match.
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
     ...init,
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`${init?.method || "GET"} ${path} -> ${res.status} ${text}`);
+    throw new ApiError(res.status, `${init?.method || "GET"} ${path} -> ${res.status} ${text}`);
   }
   return res.json() as Promise<T>;
 }
 
 // Multipart POST — no JSON Content-Type header (the browser sets the boundary).
 async function upload<T>(path: string, form: FormData): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { method: "POST", body: form });
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    credentials: "include",
+    body: form,
+  });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`POST ${path} -> ${res.status} ${text}`);
+    throw new ApiError(res.status, `POST ${path} -> ${res.status} ${text}`);
   }
   return res.json() as Promise<T>;
 }
@@ -88,6 +109,30 @@ function mapIngest(raw: any): IngestStatus {
 }
 
 export const httpApi: HaydariAPI = {
+  // --- auth ---
+  me() {
+    // 401 here just means "not logged in" — resolve to null instead of throwing.
+    return request<User | null>("/auth/me").catch((e) => {
+      if (e instanceof ApiError && e.status === 401) return null;
+      throw e;
+    });
+  },
+  login(email, password) {
+    return request<User>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+  },
+  logout() {
+    return request<{ ok: boolean }>("/auth/logout", { method: "POST" });
+  },
+  createUser(body: NewUser) {
+    return request<User>("/auth/users", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
   async listBooks() {
     return (await request<any[]>("/books")).map(mapBook);
   },

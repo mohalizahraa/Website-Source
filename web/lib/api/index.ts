@@ -11,4 +11,5 @@ export const DATA_SOURCE: "mock" | "api" = source === "api" ? "api" : "mock";
 
 export const api: HaydariAPI = DATA_SOURCE === "api" ? httpApi : mockApi;
 
+export { ApiError } from "./http";
 export * from "../types";

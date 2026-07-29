@@ -19,8 +19,10 @@ import type {
   StyleRuleBody,
   TermBody,
   UploadMeta,
+  User,
 } from "../types";
 import { BOOK, LIBRARY, buildPage } from "../fixtures/seed";
+import { ApiError } from "./http";
 
 const NETWORK_DELAY = 180; // ms — a touch of latency so loading states are exercised
 function delay<T>(value: T): Promise<T> {
@@ -102,7 +104,61 @@ function statusFor(book: Book): IngestStatus {
   };
 }
 
+// A tiny fixed user table so mock mode can reproduce the real auth states:
+// invalid credentials (401), and admin/creator/reader role sessions. Mock mode
+// starts signed-in as the admin so the full workbench is reachable with no
+// backend; logout() clears the session to exercise the logged-out UI.
+const MOCK_USERS: Array<User & { password: string }> = [
+  { id: "U-01", email: "admin@haydari.local", display_name: "Haydari Admin", role: "admin", password: "changeme-admin" },
+  { id: "U-02", email: "creator@haydari.local", display_name: "Creator", role: "creator", password: "password123" },
+  { id: "U-03", email: "reader@haydari.local", display_name: "Reader", role: "reader", password: "password123" },
+];
+function publicUser(u: User & { password: string }): User {
+  const { password: _pw, ...rest } = u;
+  return rest;
+}
+let mockSession: User | null = publicUser(MOCK_USERS[0]);
+
+// Every mutating method calls this so mock mode mirrors the backend: not
+// signed in -> 401 (mutations stop after logout()), and reader-role -> 403
+// (every mock mutation maps to a create/write the backend forbids readers).
+function guardSession(): void {
+  if (!mockSession) throw new ApiError(401, "authentication required");
+  if (mockSession.role === "reader") throw new ApiError(403, "read-only account");
+}
+
 export const mockApi: HaydariAPI = {
+  // --- auth ---
+  me() {
+    return delay(mockSession);
+  },
+  login(email, password) {
+    // Validate against the fixed table so invalid creds fail like /auth/login.
+    const u = MOCK_USERS.find((m) => m.email === email && m.password === password);
+    if (!u) throw new ApiError(401, "invalid email or password");
+    mockSession = publicUser(u);
+    return delay(mockSession);
+  },
+  logout() {
+    mockSession = null;
+    return delay({ ok: true });
+  },
+  createUser(body) {
+    // Match the real endpoint's dependency chain: require_user (401) then
+    // require_admin (403).
+    if (!mockSession) throw new ApiError(401, "authentication required");
+    if (mockSession.role !== "admin") throw new ApiError(403, "admin only");
+    const created: User & { password: string } = {
+      id: "U-" + body.email.slice(0, 4),
+      email: body.email,
+      display_name: body.display_name ?? null,
+      role: body.role ?? "creator",
+      password: body.password,
+    };
+    MOCK_USERS.push(created); // so the new account can actually log in
+    return delay<User>(publicUser(created));
+  },
+
   async listBooks() {
     // Touch any running jobs so the Library reflects live progress.
     state.books.forEach((b) => statusFor(b));
@@ -116,11 +172,13 @@ export const mockApi: HaydariAPI = {
   },
 
   async deleteBook(id) {
+    guardSession();
     state.books = state.books.filter((b) => b.id !== id);
     return delay({ ok: true });
   },
 
   async uploadBooks(files: File[], meta?: UploadMeta) {
+    guardSession();
     const created = files.map((file, i) => {
       const id = `B-${String(state.nextId++).padStart(2, "0")}`;
       const base = file.name.replace(/\.pdf$/i, "");
@@ -140,6 +198,7 @@ export const mockApi: HaydariAPI = {
   },
 
   async importBooks(catalog: CatalogEntry[]) {
+    guardSession();
     const created = catalog.map((c) => {
       const id = `B-${String(state.nextId++).padStart(2, "0")}`;
       state.books.push({
@@ -157,6 +216,7 @@ export const mockApi: HaydariAPI = {
   },
 
   async ingestBook(id, _options?: IngestOptions) {
+    guardSession();
     const b = findBook(id);
     if (!b) throw new Error(`Unknown book ${id}`);
     b.status = "processing";
@@ -167,6 +227,7 @@ export const mockApi: HaydariAPI = {
   },
 
   async updateBook(id, patch) {
+    guardSession();
     const b = findBook(id);
     if (!b) throw new Error(`Unknown book ${id}`);
     if (patch.translation_notes !== undefined) b.translation_notes = patch.translation_notes;
@@ -174,6 +235,7 @@ export const mockApi: HaydariAPI = {
   },
 
   async chat(messages: ChatMessage[], _bookId?: string): Promise<ChatResult> {
+    guardSession();
     const last = messages[messages.length - 1]?.content || "";
     return delay({
       reply:
@@ -197,6 +259,7 @@ export const mockApi: HaydariAPI = {
   },
 
   async importTermbase(file: File) {
+    guardSession();
     // Estimate rows from file size; deterministic enough for the mock.
     const imported = Math.max(1, Math.round(file.size / 40)) || 24;
     state.learning.terms += imported;
@@ -221,6 +284,7 @@ export const mockApi: HaydariAPI = {
   },
 
   async reviewSegment(id, body: ReviewBody) {
+    guardSession();
     const seg = findSegment(id);
     if (!seg) throw new Error(`Unknown segment ${id}`);
 
@@ -254,11 +318,13 @@ export const mockApi: HaydariAPI = {
   },
 
   async addTerm(_body: TermBody) {
+    guardSession();
     state.learning.terms += 1;
     return delay({ ok: true });
   },
 
   async addStyleRule(_body: StyleRuleBody) {
+    guardSession();
     state.learning.rules += 1;
     return delay({ ok: true });
   },

@@ -62,6 +62,7 @@ export const DocEditor = forwardRef<
     onSelect: (id: string) => void;
     onDirty: () => void;
     footer?: React.ReactNode;
+    readOnly?: boolean; // read-only view for anon/reader visitors (no editing)
   }
 >(function DocEditor(
   {
@@ -71,6 +72,7 @@ export const DocEditor = forwardRef<
     onSelect,
     onDirty,
     footer,
+    readOnly = false,
   },
   ref,
 ) {
@@ -137,11 +139,14 @@ export const DocEditor = forwardRef<
     <div className="editor-wrap">
       <div className="doc">
         <div className="doc-head">
-          <div className="kicker">Draft translation · edit freely</div>
+          <div className="kicker">
+            {readOnly ? "Translation · read only" : "Draft translation · edit freely"}
+          </div>
           <h1>{chapterTitle}</h1>
           <div className="sub">
-            Your edits are tracked and become training signal. Green segments are pre-approved; jump
-            to the red ones.
+            {readOnly
+              ? "You have read-only access to this translation. Editing and review require a creator account."
+              : "Your edits are tracked and become training signal. Green segments are pre-approved; jump to the red ones."}
           </div>
         </div>
 
@@ -167,15 +172,22 @@ export const DocEditor = forwardRef<
                 ref={(el) => setNode(s.id, el)}
                 data-id={s.id}
                 className={"seg lvl-" + lvl + (sacred ? " sacred" : "") + (s.id === activeId ? " active" : "")}
-                contentEditable
+                contentEditable={!readOnly}
                 suppressContentEditableWarning
                 spellCheck={false}
                 role="textbox"
                 aria-multiline="true"
-                aria-label={sacred ? "Sacred segment (editable, verify canonical wording)" : "Editable translation segment"}
+                aria-readonly={readOnly}
+                aria-label={
+                  readOnly
+                    ? "Translation segment (read only)"
+                    : sacred
+                      ? "Sacred segment (editable, verify canonical wording)"
+                      : "Editable translation segment"
+                }
                 onClick={() => onSelect(s.id)}
                 onFocus={() => onSelect(s.id)}
-                onInput={onDirty}
+                onInput={readOnly ? undefined : onDirty}
                 dangerouslySetInnerHTML={{
                   __html: `<span class="tag" contenteditable="false">${tag}</span>` + initialHTML,
                 }}

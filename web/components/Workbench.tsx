@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { api, ApiError } from "@/lib/api";
 import type { IngestStatus, PagePayload, ReviewAction, Segment } from "@/lib/types";
+import { canWrite, useAuth } from "@/lib/auth";
 import { T, useToast } from "./Toast";
 import { TopBar, type SaveState } from "./TopBar";
 import { SegmentRail } from "./SegmentRail";
@@ -23,6 +25,24 @@ function pickDefault(segments: Segment[]): string {
 
 export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initialPage?: number }) {
   const { learn } = useToast();
+  const router = useRouter();
+  const { user } = useAuth();
+  // Anonymous readers and reader-role accounts get a read-only view: no edit
+  // surface, approve/reject, teaching, or chat (all of which require a write
+  // and would 401/403 at the backend anyway).
+  const manage = canWrite(user);
+  // A 401 means the session is missing/expired (or this is a private book viewed
+  // anonymously) — bounce to login and return here afterward.
+  const bounceIf401 = useCallback(
+    (e: unknown): boolean => {
+      if (e instanceof ApiError && e.status === 401) {
+        router.replace(`/login?next=${encodeURIComponent(`/review/${bookId}`)}`);
+        return true;
+      }
+      return false;
+    },
+    [router, bookId],
+  );
   const [data, setData] = useState<PagePayload | null>(null);
   const [page, setPage] = useState(initialPage);
   const [pages, setPages] = useState<number[]>([]); // page numbers that exist
@@ -37,16 +57,26 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
 
   const docRef = useRef<DocEditorHandle>(null);
   const pagesRef = useRef<number[]>([]);
+  const loadedOnceRef = useRef(false); // have we ever fetched the page list OK?
 
   // Which pages actually exist (ingestion can be a non-contiguous range).
   const refreshPages = useCallback(async () => {
-    const nums = await api.listPages(bookId).catch(() => null);
+    // On a 401 here (private book viewed anon, or expired session) redirect to
+    // login — otherwise pagesReady stays false and the page hangs on "Loading".
+    const nums = await api.listPages(bookId).catch((e) => {
+      if (bounceIf401(e)) return null;
+      // Any other error on the FIRST load (403/404/500/offline) must surface as
+      // an error, not an eternal "Loading…"; ignore transient blips once loaded.
+      if (!loadedOnceRef.current) setErr(String(e));
+      return null;
+    });
     if (nums) {
+      loadedOnceRef.current = true;
       pagesRef.current = nums;
       setPages(nums);
       setPagesReady(true);
     }
-  }, [bookId]);
+  }, [bookId, bounceIf401]);
 
   useEffect(() => {
     setPagesReady(false);
@@ -73,12 +103,14 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
         setActiveId((cur) => (cur && p.segments.some((s) => s.id === cur) ? cur : pickDefault(p.segments)));
       })
       .catch((e) => {
-        if (alive) setErr(String(e));
+        if (!alive) return;
+        if (bounceIf401(e)) return;
+        setErr(String(e));
       });
     return () => {
       alive = false;
     };
-  }, [bookId, page, pagesReady]);
+  }, [bookId, page, pagesReady, bounceIf401]);
 
   // Poll ingest status + the page list so the banner and pager grow live.
   // Depends only on bookId; the interval skips fetches once ingestion is idle.
@@ -139,6 +171,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
   }, []);
 
   const doSave = useCallback(() => {
+    if (!manage) return; // read-only viewers have nothing to save
     setSaveState("saving");
     // No dedicated draft endpoint; persistence of the edited text happens on
     // approve. Here we confirm the local capture and cue the reviewer.
@@ -146,7 +179,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
       setSaveState("saved");
       learn([T.strong("Draft saved."), T.text("Edits captured to translation memory.")]);
     }, 150);
-  }, [learn]);
+  }, [learn, manage]);
 
   const review = useCallback(
     async (action: ReviewAction) => {
@@ -249,7 +282,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
       const typing = target?.isContentEditable || /input|textarea/i.test(target?.tagName || "");
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+      if (manage && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
         doSave();
         return;
@@ -262,14 +295,14 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
       } else if (k === "k") {
         e.preventDefault();
         step(-1);
-      } else if (k === "a") {
+      } else if (k === "a" && manage) {
         e.preventDefault();
         void review("approve");
       }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [doSave, step, review]);
+  }, [doSave, step, review, manage]);
 
   // No reviewable pages yet — a friendly wait state, not a scary error.
   if (pagesReady && pages.length === 0) {
@@ -338,6 +371,7 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
         hasPrev={prevPage != null}
         hasNext={nextPage != null}
         saveState={saveState}
+        readOnly={!manage}
       />
       {ingesting && (
         <div className="live-banner">
@@ -366,24 +400,27 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
           activeId={activeId}
           onSelect={select}
           onDirty={markDirty}
+          readOnly={!manage}
           footer={
-            <div className="actions">
-              <div className="inner">
-                <button className="btn btn-primary" onClick={() => void review("approve")}>
-                  Approve &amp; save edits <span className="k">A</span>
-                </button>
-                <button className="btn" onClick={doSave}>
-                  Save draft <span className="k">⌘S</span>
-                </button>
-                <button className="btn btn-ghost" onClick={() => void review("skip")}>
-                  Skip
-                </button>
-                <div className="spacer" />
-                <button className="btn btn-danger" onClick={() => void review("reject")}>
-                  Reject &amp; regenerate
-                </button>
+            manage ? (
+              <div className="actions">
+                <div className="inner">
+                  <button className="btn btn-primary" onClick={() => void review("approve")}>
+                    Approve &amp; save edits <span className="k">A</span>
+                  </button>
+                  <button className="btn" onClick={doSave}>
+                    Save draft <span className="k">⌘S</span>
+                  </button>
+                  <button className="btn btn-ghost" onClick={() => void review("skip")}>
+                    Skip
+                  </button>
+                  <div className="spacer" />
+                  <button className="btn btn-danger" onClick={() => void review("reject")}>
+                    Reject &amp; regenerate
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : undefined
           }
         />
 
@@ -398,9 +435,10 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
           onApplyAlt={applyAlt}
           onTeachTerm={teachTerm}
           onTeachStyle={teachStyle}
+          readOnly={!manage}
         />
       </div>
-      <ChatWidget bookId={bookId} bookTitle={data.book.title_en || data.book.title_ar} />
+      {manage && <ChatWidget bookId={bookId} bookTitle={data.book.title_en || data.book.title_ar} />}
     </div>
   );
 }
