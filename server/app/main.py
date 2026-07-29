@@ -358,26 +358,16 @@ async def upload_books(
         data = await f.read()
         stem = os.path.splitext(safe_name)[0]
 
-        # Reserve the id by inserting the DB row FIRST, retrying on a PK race so
-        # two concurrent uploads can't pick the same B-NN. Only after the row is
-        # committed do we write the blob (no orphan on a lost race).
-        book_id = None
-        for _ in range(5):
-            candidate = db.next_book_id(conn)
-            try:
-                db.insert_book(
-                    conn, book_id=candidate, title_ar=title_ar or stem,
-                    title_en=title_en, author=author, status="uploaded",
-                    source_pdf=f"books/{candidate}/{safe_name}", owner_id=user["id"],
-                )
-                conn.commit()
-                book_id = candidate
-                break
-            except Exception:  # noqa: BLE001 — PK collision on a concurrent upload
-                conn.rollback()
-                continue
-        if book_id is None:
-            raise HTTPException(status_code=409, detail="could not allocate a book id, retry")
+        # Reserve the id by inserting the DB row FIRST (id allocation is atomic —
+        # db.next_book_id serializes concurrent callers, so no PK race), then
+        # commit BEFORE writing the blob so a failure never orphans a file.
+        book_id = db.next_book_id(conn)
+        db.insert_book(
+            conn, book_id=book_id, title_ar=title_ar or stem,
+            title_en=title_en, author=author, status="uploaded",
+            source_pdf=f"books/{book_id}/{safe_name}", owner_id=user["id"],
+        )
+        conn.commit()
 
         key = f"books/{book_id}/{safe_name}"
         try:

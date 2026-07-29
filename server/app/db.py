@@ -160,6 +160,16 @@ def _migrate(conn: Conn) -> None:
         # enough — new rows use the schema's FK, legacy rows stay NULL (public/system).
         conn.execute("ALTER TABLE books ADD COLUMN owner_id TEXT")
 
+    # Atomic id-allocation counters. Created here as well as in the schema files
+    # so pre-existing DBs get the table, then seeded to the current MAX id so
+    # allocation continues past existing rows (see _seed_id_counter).
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS id_counters "
+        "(name TEXT PRIMARY KEY, value INTEGER NOT NULL DEFAULT 0)"
+    )
+    _seed_id_counter(conn, "book")
+    _seed_id_counter(conn, "user")
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -193,15 +203,51 @@ def list_books(conn: sqlite3.Connection) -> list[dict]:
     return books
 
 
-def next_book_id(conn: sqlite3.Connection) -> str:
-    """Allocate the next sequential book id, e.g. B-01, B-02, ..."""
-    rows = conn.execute("SELECT id FROM books").fetchall()
+# --- atomic id allocation (B-01, U-01, …) ----------------------------------
+_ID_SPECS = {"book": ("books", "B"), "user": ("users", "U")}
+
+
+def _seed_id_counter(conn: Conn, name: str) -> None:
+    """Raise id_counters[name] to at least the highest existing numeric id.
+
+    Self-healing and idempotent: run on every startup so a counter created before
+    its rows existed (or lagging after a manual insert) is corrected upward and
+    allocation never regenerates a live id. Never lowers the counter."""
+    table, prefix = _ID_SPECS[name]
     max_n = 0
-    for r in rows:
-        m = re.fullmatch(r"B-(\d+)", r["id"])
+    for r in conn.execute(f"SELECT id FROM {table}").fetchall():  # noqa: S608 — internal literals
+        m = re.fullmatch(rf"{re.escape(prefix)}-(\d+)", str(r["id"]))
         if m:
             max_n = max(max_n, int(m.group(1)))
-    return f"B-{max_n + 1:02d}"
+    # ON CONFLICT … DO UPDATE with a CASE (not MAX/GREATEST, which differ by
+    # backend) keeps the higher of the stored and computed values.
+    conn.execute(
+        "INSERT INTO id_counters (name, value) VALUES (?, ?) "
+        "ON CONFLICT (name) DO UPDATE SET value = "
+        "CASE WHEN excluded.value > id_counters.value "
+        "THEN excluded.value ELSE id_counters.value END",
+        (name, max_n),
+    )
+
+
+def _next_seq(conn: Conn, name: str) -> int:
+    """Atomically allocate the next value for a named counter.
+
+    The UPDATE takes a write lock held until the caller's transaction commits, so
+    two concurrent allocations serialize instead of both reading the same
+    MAX(id) — the race the old approach had. If the caller's surrounding INSERT
+    rolls back, this increment rolls back with it too, so the number becomes
+    reusable rather than skipped — and is never handed out twice. Callers MUST
+    allocate and insert in the same transaction."""
+    if conn.execute("SELECT 1 FROM id_counters WHERE name = ?", (name,)).fetchone() is None:
+        _seed_id_counter(conn, name)
+    conn.execute("UPDATE id_counters SET value = value + 1 WHERE name = ?", (name,))
+    return int(conn.execute("SELECT value FROM id_counters WHERE name = ?", (name,)).fetchone()["value"])
+
+
+def next_book_id(conn: sqlite3.Connection) -> str:
+    """Atomically allocate the next sequential book id, e.g. B-01, B-02, ..."""
+    return f"B-{_next_seq(conn, 'book'):02d}"
 
 
 def insert_book(
@@ -241,13 +287,8 @@ def insert_book(
 # Users (creators/reviewers). Readers browse published books anonymously.
 # ---------------------------------------------------------------------------
 def next_user_id(conn: sqlite3.Connection) -> str:
-    rows = conn.execute("SELECT id FROM users").fetchall()
-    max_n = 0
-    for r in rows:
-        m = re.fullmatch(r"U-(\d+)", r["id"])
-        if m:
-            max_n = max(max_n, int(m.group(1)))
-    return f"U-{max_n + 1:02d}"
+    """Atomically allocate the next sequential user id, e.g. U-01, U-02, ..."""
+    return f"U-{_next_seq(conn, 'user'):02d}"
 
 
 def create_user(conn: sqlite3.Connection, *, user_id: str, email: str,

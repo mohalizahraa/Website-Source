@@ -14,6 +14,16 @@ PRAGMA foreign_keys = ON;
 -- users  (creators/reviewers who log in; readers browse published books
 --         anonymously and get accounts only later for follows/reviews)
 -- ---------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------
+-- id_counters  (atomic allocation of human-readable ids: B-01, U-01, …)
+-- One row per entity kind; next_*_id() does UPDATE … +1 under a write lock so
+-- concurrent allocations serialize instead of racing on SELECT MAX(id).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS id_counters (
+    name  TEXT PRIMARY KEY,                   -- 'book' | 'user'
+    value INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id            TEXT PRIMARY KEY,           -- e.g. "U-01"
     email         TEXT NOT NULL UNIQUE,
