@@ -108,16 +108,29 @@ function statusFor(book: Book): IngestStatus {
 // invalid credentials (401), and admin/creator/reader role sessions. Mock mode
 // starts signed-in as the admin so the full workbench is reachable with no
 // backend; logout() clears the session to exercise the logged-out UI.
-const MOCK_USERS: Array<User & { password: string }> = [
+type MockUser = User & { password: string; monthly_usd_limit?: number | null };
+const MOCK_USERS: MockUser[] = [
   { id: "U-01", email: "admin@haydari.local", display_name: "Haydari Admin", role: "admin", password: "changeme-admin" },
   { id: "U-02", email: "creator@haydari.local", display_name: "Creator", role: "creator", password: "password123" },
   { id: "U-03", email: "reader@haydari.local", display_name: "Reader", role: "reader", password: "password123" },
 ];
-function publicUser(u: User & { password: string }): User {
-  const { password: _pw, ...rest } = u;
+function publicUser(u: MockUser): User {
+  const { password: _pw, monthly_usd_limit: _l, ...rest } = u;
   return rest;
 }
 let mockSession: User | null = publicUser(MOCK_USERS[0]);
+
+// Admin-editable runtime config (mock mirror of the settings table).
+const MOCK_SETTINGS_DEFAULTS = { global_monthly_usd: 50, user_monthly_usd_default: 5, max_pages_per_run: 20 };
+const mockSettings = { ...MOCK_SETTINGS_DEFAULTS } as {
+  global_monthly_usd: number | null;
+  user_monthly_usd_default: number | null;
+  max_pages_per_run: number;
+};
+function guardAdmin(): void {
+  if (!mockSession) throw new ApiError(401, "authentication required");
+  if (mockSession.role !== "admin") throw new ApiError(403, "admin only");
+}
 
 // Every mutating method calls this so mock mode mirrors the backend: not
 // signed in -> 401 (mutations stop after logout()), and reader-role -> 403
@@ -148,7 +161,7 @@ export const mockApi: HaydariAPI = {
     // require_admin (403).
     if (!mockSession) throw new ApiError(401, "authentication required");
     if (mockSession.role !== "admin") throw new ApiError(403, "admin only");
-    const created: User & { password: string } = {
+    const created: User & { password: string; monthly_usd_limit?: number | null } = {
       id: "U-" + body.email.slice(0, 4),
       email: body.email,
       display_name: body.display_name ?? null,
@@ -157,6 +170,66 @@ export const mockApi: HaydariAPI = {
     };
     MOCK_USERS.push(created); // so the new account can actually log in
     return delay<User>(publicUser(created));
+  },
+
+  usageMe() {
+    if (!mockSession) throw new ApiError(401, "authentication required");
+    const isAdmin = mockSession.role === "admin";
+    const cap = isAdmin ? null : mockSettings.user_monthly_usd_default;
+    const spent = 0.42;
+    return delay({
+      month: "2026-07",
+      spent_usd: spent,
+      limit_usd: cap,
+      remaining_usd: cap == null ? null : Math.max(0, cap - spent),
+      enforced: !isAdmin,
+    });
+  },
+  usageOverview() {
+    guardAdmin();
+    return delay({
+      month: "2026-07",
+      global_spent_usd: 4.2,
+      global_limit_usd: mockSettings.global_monthly_usd,
+      global_remaining_usd:
+        mockSettings.global_monthly_usd == null ? null : Math.max(0, mockSettings.global_monthly_usd - 4.2),
+      user_limit_default_usd: mockSettings.user_monthly_usd_default,
+      by_user: MOCK_USERS.map((u, i) => ({ user_id: u.id, cost_usd: [4.2, 0, 0][i] ?? 0, tokens: 12000, calls: 3 })),
+    });
+  },
+  getSettings() {
+    guardAdmin();
+    return delay({ ...mockSettings, defaults: { ...MOCK_SETTINGS_DEFAULTS } });
+  },
+  updateSettings(patch) {
+    guardAdmin();
+    // "off" = no cap (null); null = clear override → env default; number = set.
+    const cap = (v: number | null | "off" | undefined, dflt: number | null) =>
+      v === undefined ? undefined : v === "off" ? null : v === null ? dflt : v;
+    const g = cap(patch.global_monthly_usd, MOCK_SETTINGS_DEFAULTS.global_monthly_usd);
+    const d = cap(patch.user_monthly_usd_default, MOCK_SETTINGS_DEFAULTS.user_monthly_usd_default);
+    if (g !== undefined) mockSettings.global_monthly_usd = g;
+    if (d !== undefined) mockSettings.user_monthly_usd_default = d;
+    if (patch.max_pages_per_run != null) mockSettings.max_pages_per_run = patch.max_pages_per_run;
+    return delay({ ...mockSettings, defaults: { ...MOCK_SETTINGS_DEFAULTS } });
+  },
+  listUsers() {
+    guardAdmin();
+    return delay(
+      MOCK_USERS.map((u) => ({
+        ...publicUser(u),
+        monthly_usd_limit: u.monthly_usd_limit ?? null,
+        spent_usd: u.role === "admin" ? 4.2 : 0,
+      })),
+    );
+  },
+  updateUser(id, patch) {
+    guardAdmin();
+    const u = MOCK_USERS.find((m) => m.id === id);
+    if (!u) throw new ApiError(404, "user not found");
+    if (patch.monthly_usd_limit !== undefined) u.monthly_usd_limit = patch.monthly_usd_limit;
+    if (patch.role) u.role = patch.role;
+    return delay({ ...publicUser(u), monthly_usd_limit: u.monthly_usd_limit ?? null, spent_usd: 0 });
   },
 
   async listBooks() {

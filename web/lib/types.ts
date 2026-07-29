@@ -17,6 +17,47 @@ export interface NewUser {
   role?: UserRole;
 }
 
+// Admin-editable runtime config (spend caps + per-run page limit). A null cap
+// means "no limit". `defaults` are the env fallbacks, shown for reference.
+export interface AdminSettings {
+  global_monthly_usd: number | null;
+  user_monthly_usd_default: number | null;
+  max_pages_per_run: number;
+  defaults: {
+    global_monthly_usd: number | null;
+    user_monthly_usd_default: number | null;
+    max_pages_per_run: number;
+  };
+}
+export interface SettingsPatch {
+  // number = set cap · null = clear override (use env default) · "off" = no cap
+  global_monthly_usd?: number | null | "off";
+  user_monthly_usd_default?: number | null | "off";
+  max_pages_per_run?: number | null;
+}
+// GET /api/usage/me — the signed-in user's month-to-date spend vs their cap.
+export interface UsageMe {
+  month: string;
+  spent_usd: number;
+  limit_usd: number | null;
+  remaining_usd: number | null;
+  enforced: boolean;
+}
+// GET /api/usage — admin overview.
+export interface UsageOverview {
+  month: string;
+  global_spent_usd: number;
+  global_limit_usd: number | null;
+  global_remaining_usd: number | null;
+  user_limit_default_usd: number | null;
+  by_user: { user_id: string | null; cost_usd: number; tokens: number; calls: number }[];
+}
+// Admin user row (list + edit).
+export interface AdminUser extends User {
+  monthly_usd_limit: number | null;
+  spent_usd: number;
+}
+
 export type SegmentKind = "body" | "footnote" | "sacred";
 export type SegmentStatus = "draft" | "needs_review" | "approved";
 export type ReviewAction = "approve" | "reject" | "skip";
@@ -192,6 +233,14 @@ export interface HaydariAPI {
   login(email: string, password: string): Promise<User>;
   logout(): Promise<{ ok: boolean }>;
   createUser(body: NewUser): Promise<User>;
+
+  // --- admin config + usage ---
+  usageMe(): Promise<UsageMe>;
+  usageOverview(): Promise<UsageOverview>;
+  getSettings(): Promise<AdminSettings>;
+  updateSettings(patch: SettingsPatch): Promise<AdminSettings>;
+  listUsers(): Promise<AdminUser[]>;
+  updateUser(id: string, patch: { monthly_usd_limit?: number | null; role?: UserRole }): Promise<AdminUser>;
 
   listBooks(): Promise<Book[]>;
   getBook(id: string): Promise<Book>;

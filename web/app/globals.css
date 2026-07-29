@@ -555,3 +555,30 @@ sup.fn { font-family: var(--sans); font-size: .58em; color: var(--lapis); font-w
 .modal-title { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; }
 .modal-sub { color: var(--ink-2); font-size: var(--fs-sm); margin: 4px 0 18px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+/* ---------- admin settings panel ---------- */
+.admin-card { max-width: 560px; max-height: 88vh; overflow-y: auto; }
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.admin-grid .auth-field:last-child { grid-column: 1 / -1; }
+.admin-hint { font-size: var(--fs-xs); color: var(--ink-3); margin: 4px 0 12px; line-height: 1.5; }
+.admin-usage {
+  font-size: var(--fs-sm); color: var(--ink-2); background: var(--panel-2);
+  border-radius: var(--r-sm); padding: 9px 12px; margin-top: 6px;
+}
+.admin-usage b { color: var(--ink); }
+.admin-users { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.admin-user-row {
+  display: flex; align-items: center; gap: 12px; padding: 8px 4px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.au-id { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.au-id b { font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.au-spent { font-size: var(--fs-xs); color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+.au-limit { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.au-limit span { font-size: var(--fs-xs); color: var(--ink-3); }
+.au-limit input {
+  width: 84px; font-family: inherit; font-size: var(--fs-sm); color: var(--ink); background: var(--ground);
+  border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 9px; text-align: right;
+}
+.au-limit input:disabled { opacity: .5; }
+.au-limit input:focus-visible { outline: 2px solid var(--lapis); outline-offset: 1px; border-color: var(--lapis); }

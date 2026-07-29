@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS users (
     role          TEXT NOT NULL DEFAULT 'creator'
                       CHECK (role IN ('admin', 'creator', 'reader')),
     bio           TEXT,                       -- future: scholar profile
+    -- Per-user monthly USD spend cap; NULL = use the HAYDARI_USER_MONTHLY_USD default.
+    monthly_usd_limit REAL,
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
@@ -190,3 +192,32 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE INDEX IF NOT EXISTS idx_events_type ON events (type);
 CREATE INDEX IF NOT EXISTS idx_events_ts ON events (ts);
+
+-- ---------------------------------------------------------------------------
+-- settings  (admin-editable runtime config: spend caps, per-run page limit).
+--   A row OVERRIDES the corresponding env default; absent = use the env value.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS settings (
+    name  TEXT PRIMARY KEY,
+    value TEXT
+);
+
+-- ---------------------------------------------------------------------------
+-- usage_ledger  (append-only spend log for per-user quotas + a global cap)
+--   One row per model-spending action (an ingest run, a chat turn). Costs are
+--   the REAL per-call USD OpenRouter reports (NULL if it didn't). No FKs: spend
+--   history is immutable and must outlive the book/user it was incurred for.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usage_ledger (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id           TEXT,                 -- who is billed (book owner / actor); NULL = legacy/system
+    book_id           TEXT,
+    stage             TEXT NOT NULL,        -- 'ingest' | 'chat'
+    prompt_tokens     INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
+    cost_usd          REAL,                 -- NULL when the provider didn't report a cost
+    created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_usage_user_time ON usage_ledger (user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_usage_time ON usage_ledger (created_at);

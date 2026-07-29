@@ -2,11 +2,16 @@
 // Endpoints match ARCHITECTURE.md §"HTTP API" exactly.
 
 import type {
+  AdminSettings,
+  AdminUser,
   Book,
   CatalogEntry,
   ChatMessage,
   ChatResult,
   HaydariAPI,
+  SettingsPatch,
+  UsageMe,
+  UsageOverview,
   IngestOptions,
   IngestStatus,
   LearningSummary,
@@ -130,6 +135,27 @@ export const httpApi: HaydariAPI = {
     return request<User>("/auth/users", {
       method: "POST",
       body: JSON.stringify(body),
+    });
+  },
+  usageMe() {
+    return request<UsageMe>("/usage/me");
+  },
+  usageOverview() {
+    return request<UsageOverview>("/usage");
+  },
+  getSettings() {
+    return request<AdminSettings>("/settings");
+  },
+  updateSettings(patch: SettingsPatch) {
+    return request<AdminSettings>("/settings", { method: "PUT", body: JSON.stringify(patch) });
+  },
+  listUsers() {
+    return request<AdminUser[]>("/auth/users");
+  },
+  updateUser(id, patch) {
+    return request<AdminUser>(`/auth/users/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
     });
   },
 

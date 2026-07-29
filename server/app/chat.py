@@ -211,12 +211,34 @@ def chat(conn, messages: list[dict], book_id: str | None = None,
         *[{"role": m["role"], "content": m.get("content", "")} for m in messages],
     ]
     actions: list[dict] = []
+    # Accumulate real spend across every model call in the tool loop, so the
+    # caller can record it to the usage ledger (feeds per-user / global quotas).
+    spend = {"prompt_tokens": 0, "completion_tokens": 0, "cost": 0.0, "cost_known": True}
+
+    def _tally(data: dict) -> None:
+        u = data.get("usage") or {}
+        spend["prompt_tokens"] += int(u.get("prompt_tokens") or 0)
+        spend["completion_tokens"] += int(u.get("completion_tokens") or 0)
+        c = u.get("cost")
+        if c is None:
+            spend["cost_known"] = False
+        else:
+            spend["cost"] += float(c)
+
+    def _usage() -> dict:
+        return {
+            "prompt_tokens": spend["prompt_tokens"],
+            "completion_tokens": spend["completion_tokens"],
+            "cost_usd": spend["cost"] if spend["cost_known"] else None,
+        }
+
     for _ in range(_MAX_TOOL_TURNS):
         data = _call_openrouter(convo)
+        _tally(data)
         msg = (data.get("choices") or [{}])[0].get("message") or {}
         tool_calls = msg.get("tool_calls") or []
         if not tool_calls:
-            return {"reply": msg.get("content") or "", "actions": actions}
+            return {"reply": msg.get("content") or "", "actions": actions, "usage": _usage()}
         # Record the assistant's tool-call message, then execute each call.
         convo.append({"role": "assistant", "content": msg.get("content") or "",
                       "tool_calls": tool_calls})
@@ -238,4 +260,5 @@ def chat(conn, messages: list[dict], book_id: str | None = None,
                 "name": name, "content": json.dumps(result),
             })
     return {"reply": "I wasn't able to finish that in a reasonable number of steps. "
-                     "Could you rephrase or break it into smaller steps?", "actions": actions}
+                     "Could you rephrase or break it into smaller steps?",
+            "actions": actions, "usage": _usage()}

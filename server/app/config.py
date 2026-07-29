@@ -78,3 +78,28 @@ def sync_ingest() -> bool:
     """When true, the ingest pipeline runs inline (used by tests) instead of
     on the background worker thread."""
     return os.environ.get("HAYDARI_SYNC_INGEST", "0") in ("1", "true", "True")
+
+
+def _usd_env(name: str, default: str) -> float | None:
+    """Read a USD cap from the environment. An empty value DISABLES the cap
+    (returns None); an unset value uses ``default``."""
+    raw = os.environ.get(name, default).strip()
+    if raw == "":
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        return float(default)
+
+
+def user_monthly_usd_default() -> float | None:
+    """Default per-user monthly spend cap (USD). Overridable per user via
+    users.monthly_usd_limit. Set HAYDARI_USER_MONTHLY_USD='' to disable."""
+    return _usd_env("HAYDARI_USER_MONTHLY_USD", "5.00")
+
+
+def global_monthly_usd() -> float | None:
+    """System-wide monthly spend cap (USD) across all users — the backstop so a
+    misconfigured account can't run up the owner's whole bill. Set
+    HAYDARI_GLOBAL_MONTHLY_USD='' to disable."""
+    return _usd_env("HAYDARI_GLOBAL_MONTHLY_USD", "50.00")

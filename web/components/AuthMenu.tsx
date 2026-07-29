@@ -7,6 +7,7 @@ import { api, ApiError } from "@/lib/api";
 import { isAdmin, useAuth } from "@/lib/auth";
 import type { UserRole } from "@/lib/types";
 import { T, useToast } from "./Toast";
+import { AdminPanel } from "./AdminPanel";
 
 function initials(name: string | null, email: string): string {
   const base = (name || email || "?").trim();
@@ -100,6 +101,7 @@ export function AuthMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   if (loading) return <div className="who" aria-hidden />;
 
@@ -133,16 +135,28 @@ export function AuthMenu() {
             </div>
             {user.display_name && <div className="authmenu-email">{user.email}</div>}
             {isAdmin(user) && (
-              <button
-                className="authmenu-item"
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  setAdding(true);
-                }}
-              >
-                Add team member…
-              </button>
+              <>
+                <button
+                  className="authmenu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false);
+                    setAdding(true);
+                  }}
+                >
+                  Add team member…
+                </button>
+                <button
+                  className="authmenu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false);
+                    setSettingsOpen(true);
+                  }}
+                >
+                  Admin settings…
+                </button>
+              </>
             )}
             <button
               className="authmenu-item"
@@ -158,6 +172,7 @@ export function AuthMenu() {
         </>
       )}
       {adding && <AddUserDialog onClose={() => setAdding(false)} />}
+      {settingsOpen && <AdminPanel onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

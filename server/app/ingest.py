@@ -44,6 +44,11 @@ DEFAULT_MAX_PAGES_PER_RUN = int(os.environ.get("HAYDARI_MAX_PAGES_PER_RUN", "20"
 # Options passed with each queued job, keyed by book id (from_page/to_page/max_pages).
 JOB_OPTS: dict[str, dict] = {}
 
+# The user who triggered each queued job, keyed by book id. Used to bill spend
+# for a legacy owner-less book to the actor, and to re-check their quota at run
+# time (the request-time check can't see spend from other still-queued runs).
+JOB_ACTOR: dict[str, str] = {}
+
 # Live, human-readable progress detail per book, surfaced to the UI so the
 # reviewer always sees exactly what's happening (never a silent "ingesting…").
 JOB_DETAIL: dict[str, dict] = {}
@@ -178,8 +183,13 @@ def _target_pages(conn, book_id: str, total: int, options: dict) -> list[int]:
         to_page = min(to_page, total)
     to_page = max(to_page, from_page)
 
-    cap = int(options.get("max_pages") or DEFAULT_MAX_PAGES_PER_RUN)
-    cap = max(1, min(cap, DEFAULT_MAX_PAGES_PER_RUN))
+    # Admin-configurable per-run page limit (token-budget safety); the caller may
+    # request a SMALLER cap for this run, never a larger one. An explicit 0/None
+    # means "use the run cap" (not zero pages).
+    run_cap = db.resolved_max_pages_per_run(conn, DEFAULT_MAX_PAGES_PER_RUN)
+    requested = options.get("max_pages")
+    cap = run_cap if not requested else max(1, int(requested))
+    cap = min(cap, run_cap)
 
     # force=True re-does already-finished pages in the range (to pick up pipeline
     # improvements); otherwise completed pages are skipped (normal resume).
@@ -356,6 +366,48 @@ def _final_status(conn, book_id: str) -> str:
     return "in_review" if db.pages_done(conn, book_id) > 0 else "uploaded"
 
 
+def _usage_module():
+    """The pipeline's in-process token/cost recorder (absent if the pipeline
+    package can't be imported, e.g. a trimmed offline checkout)."""
+    try:
+        from pipeline.translate import usage
+        return usage
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _persist_run_usage(book_id: str, owner_id: str | None) -> None:
+    """Record this run's real model spend to the usage ledger, attributed to the
+    book's owner (the payer). Uses its OWN connection so committing the ledger
+    row can never commit partially-written pipeline state on the worker's
+    connection (whose failed page must stay rollback-able)."""
+    u = _usage_module()
+    if u is None:
+        return
+    try:
+        s = u.summary()
+    except Exception:  # noqa: BLE001
+        return
+    if not s or not s.get("calls"):
+        return  # nothing spent (e.g. the mock pipeline) — no ledger noise
+    c = db.connect()
+    try:
+        db.record_usage(
+            c, user_id=owner_id, book_id=book_id, stage="ingest",
+            prompt_tokens=s.get("prompt_tokens", 0),
+            completion_tokens=s.get("completion_tokens", 0),
+            cost_usd=s.get("cost_usd"),
+        )
+        c.commit()
+    except Exception:  # noqa: BLE001 — accounting must never break ingestion
+        try:
+            c.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+    finally:
+        c.close()
+
+
 def _process(book_id: str, options: dict | None = None) -> None:
     conn = db.connect()
     options = options or JOB_OPTS.get(book_id) or {}
@@ -370,12 +422,45 @@ def _process(book_id: str, options: dict | None = None) -> None:
             JOB_STATE[book_id] = "processing"  # someone else owns it; don't double-run
             return
 
+        # Who pays for this run: the book's owner, or the triggering user for a
+        # legacy owner-less book.
+        owner_id = (db.get_book(conn, book_id) or {}).get("owner_id")
+        payer_id = owner_id or JOB_ACTOR.get(book_id)
+        payer = db.get_user(conn, payer_id) if payer_id else None
+
+        # Re-check the quota AT RUN TIME. The request-time gate can't see spend
+        # from other runs still queued behind this one; by now those have each
+        # recorded their spend, so a burst of queued ingests can overshoot by at
+        # most this single run. Over cap → release the claim and skip, unspent.
+        reason = db.over_spend_quota(
+            conn, user_id=payer_id, role=(payer or {}).get("role"),
+            user_limit=(payer or {}).get("monthly_usd_limit"),
+        )
+        if reason:
+            db.set_book_status(conn, book_id, _final_status(conn, book_id))
+            _set_detail(book_id, phase="idle", last_error=f"skipped: {reason}")
+            write_event(conn, actor="worker", type="ingest.quota_blocked",
+                        payload={"book_id": book_id, "reason": reason, "payer": payer_id})
+            conn.commit()
+            JOB_STATE[book_id] = "blocked"
+            return
+
         JOB_STATE[book_id] = "processing"
         write_event(conn, actor="worker", type="ingest.start", payload={"book_id": book_id})
         conn.commit()
 
-        # The pipeline commits page-by-page; each completed page is durable.
-        PIPELINE_HOOK(conn, book_id, options)
+        # Meter real model spend for this run and bill the payer. reset() before,
+        # persist in finally so partial spend on a mid-run failure is still
+        # recorded (the worker is single-threaded, so this global recorder is
+        # safe to scope per run).
+        u = _usage_module()
+        if u is not None:
+            u.reset()
+        try:
+            # The pipeline commits page-by-page; each completed page is durable.
+            PIPELINE_HOOK(conn, book_id, options)
+        finally:
+            _persist_run_usage(book_id, payer_id)
 
         db.set_book_status(conn, book_id, _final_status(conn, book_id))
         write_event(conn, actor="worker", type="ingest.done",
@@ -404,6 +489,7 @@ def _process(book_id: str, options: dict | None = None) -> None:
             pass
     finally:
         JOB_OPTS.pop(book_id, None)
+        JOB_ACTOR.pop(book_id, None)
         conn.close()
 
 
@@ -424,14 +510,17 @@ def _ensure_worker() -> None:
             _WORKER.start()
 
 
-def enqueue(book_id: str, options: dict | None = None) -> str:
+def enqueue(book_id: str, options: dict | None = None, actor_id: str | None = None) -> str:
     """Queue a book for ingestion. Returns the job state after enqueue.
 
     ``options`` may carry ``from_page`` / ``to_page`` / ``max_pages`` to bound
-    the run (page range + per-run cap). In sync mode the pipeline runs inline
-    (state == 'done'); otherwise it is queued for the background worker.
+    the run (page range + per-run cap). ``actor_id`` is the user who triggered
+    the run (billed when the book has no owner). In sync mode the pipeline runs
+    inline (state == 'done'); otherwise it is queued for the background worker.
     """
     JOB_OPTS[book_id] = options or {}
+    if actor_id is not None:
+        JOB_ACTOR[book_id] = actor_id
     if config.sync_ingest():
         JOB_STATE[book_id] = "queued"
         _process(book_id, options)

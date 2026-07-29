@@ -112,15 +112,20 @@ def init_db(conn: Conn, schema_file: str | None = None) -> None:
     conn.commit()
 
 
-def _book_columns(conn: Conn) -> set[str]:
+def _table_columns(conn: Conn, table: str) -> set[str]:
     if conn.backend == "postgres":
         rows = conn.execute(
             "SELECT column_name AS name FROM information_schema.columns "
-            "WHERE table_name = 'books'"
+            "WHERE table_name = ?", (table,)
         ).fetchall()
     else:
-        rows = conn.execute("PRAGMA table_info(books)").fetchall()
+        # PRAGMA can't be parameterized; table names here are internal literals.
+        rows = conn.execute(f"PRAGMA table_info({table})").fetchall()  # noqa: S608
     return {r["name"] for r in rows}
+
+
+def _book_columns(conn: Conn) -> set[str]:
+    return _table_columns(conn, "books")
 
 
 def _insert_id(conn: Conn, sql: str, params: Iterable) -> int:
@@ -169,6 +174,14 @@ def _migrate(conn: Conn) -> None:
     )
     _seed_id_counter(conn, "book")
     _seed_id_counter(conn, "user")
+
+    # Phase 3: per-user monthly spend cap column (NULL = use the env default).
+    if "monthly_usd_limit" not in _table_columns(conn, "users"):
+        col = "DOUBLE PRECISION" if conn.backend == "postgres" else "REAL"
+        conn.execute(f"ALTER TABLE users ADD COLUMN monthly_usd_limit {col}")
+
+    # Admin-editable runtime settings (spend caps, per-run page limit).
+    conn.execute("CREATE TABLE IF NOT EXISTS settings (name TEXT PRIMARY KEY, value TEXT)")
 
 
 # ---------------------------------------------------------------------------
@@ -293,11 +306,13 @@ def next_user_id(conn: sqlite3.Connection) -> str:
 
 def create_user(conn: sqlite3.Connection, *, user_id: str, email: str,
                 password_hash: str, display_name: str | None,
-                role: str = "creator", bio: str | None = None) -> str:
+                role: str = "creator", bio: str | None = None,
+                monthly_usd_limit: float | None = None) -> str:
     conn.execute(
-        "INSERT INTO users (id, email, password_hash, display_name, role, bio) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
-        (user_id, email.lower().strip(), password_hash, display_name, role, bio),
+        "INSERT INTO users (id, email, password_hash, display_name, role, bio, monthly_usd_limit) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (user_id, email.lower().strip(), password_hash, display_name, role, bio,
+         monthly_usd_limit),
     )
     return user_id
 
@@ -318,6 +333,155 @@ def get_user_by_email(conn: sqlite3.Connection, email: str) -> dict | None:
 
 def count_users(conn: sqlite3.Connection) -> int:
     return int(conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"])
+
+
+def list_users(conn: sqlite3.Connection) -> list[dict]:
+    rows = conn.execute("SELECT * FROM users ORDER BY id").fetchall()
+    return [_row_to_dict(r) for r in rows]
+
+
+def set_user_monthly_limit(conn: sqlite3.Connection, user_id: str, limit: float | None) -> None:
+    conn.execute("UPDATE users SET monthly_usd_limit = ? WHERE id = ?", (limit, user_id))
+
+
+def set_user_role(conn: sqlite3.Connection, user_id: str, role: str) -> None:
+    conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+
+
+# ---------------------------------------------------------------------------
+# Usage ledger / spend quotas (Phase 3)
+# ---------------------------------------------------------------------------
+def _month_start() -> str:
+    """First instant of the current UTC calendar month, in the same ISO format
+    as created_at, so a lexicographic ``created_at >= _month_start()`` compare
+    selects this month's rows without any date parsing."""
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+    return f"{now.year:04d}-{now.month:02d}-01T00:00:00.000000Z"
+
+
+def current_month_label() -> str:
+    """The active quota window as ``YYYY-MM`` (UTC)."""
+    return _month_start()[:7]
+
+
+def record_usage(conn: sqlite3.Connection, *, user_id: str | None, book_id: str | None,
+                 stage: str, prompt_tokens: int = 0, completion_tokens: int = 0,
+                 cost_usd: float | None = None) -> None:
+    """Append one spend record. cost_usd is the real per-call USD OpenRouter
+    reports (None if it didn't)."""
+    conn.execute(
+        "INSERT INTO usage_ledger "
+        "(user_id, book_id, stage, prompt_tokens, completion_tokens, cost_usd, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (user_id, book_id, stage, int(prompt_tokens or 0), int(completion_tokens or 0),
+         float(cost_usd) if cost_usd is not None else None, _now()),
+    )
+
+
+def user_spend_this_month(conn: sqlite3.Connection, user_id: str) -> float:
+    row = conn.execute(
+        "SELECT COALESCE(SUM(cost_usd), 0) AS s FROM usage_ledger "
+        "WHERE user_id = ? AND created_at >= ?",
+        (user_id, _month_start()),
+    ).fetchone()
+    return float(row["s"] or 0.0)
+
+
+def global_spend_this_month(conn: sqlite3.Connection) -> float:
+    row = conn.execute(
+        "SELECT COALESCE(SUM(cost_usd), 0) AS s FROM usage_ledger WHERE created_at >= ?",
+        (_month_start(),),
+    ).fetchone()
+    return float(row["s"] or 0.0)
+
+
+# --- admin-editable settings (override the env defaults at runtime) ----------
+def get_setting(conn: sqlite3.Connection, name: str) -> str | None:
+    row = conn.execute("SELECT value FROM settings WHERE name = ?", (name,)).fetchone()
+    return row["value"] if row else None
+
+
+def set_setting(conn: sqlite3.Connection, name: str, value: str | None) -> None:
+    """Upsert a setting. value=None clears the override (falls back to env)."""
+    if value is None:
+        conn.execute("DELETE FROM settings WHERE name = ?", (name,))
+        return
+    conn.execute(
+        "INSERT INTO settings (name, value) VALUES (?, ?) "
+        "ON CONFLICT (name) DO UPDATE SET value = excluded.value",
+        (name, str(value)),
+    )
+
+
+def _resolved_cap(conn: sqlite3.Connection, name: str, env_fallback: float | None) -> float | None:
+    """A USD cap: admin setting if present ('' = disabled/None), else env."""
+    raw = get_setting(conn, name)
+    if raw is None:
+        return env_fallback
+    raw = raw.strip()
+    if raw == "":
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        return env_fallback
+
+
+def resolved_global_cap(conn: sqlite3.Connection) -> float | None:
+    return _resolved_cap(conn, "global_monthly_usd", config.global_monthly_usd())
+
+
+def resolved_user_default_cap(conn: sqlite3.Connection) -> float | None:
+    return _resolved_cap(conn, "user_monthly_usd_default", config.user_monthly_usd_default())
+
+
+def resolved_max_pages_per_run(conn: sqlite3.Connection, env_default: int) -> int:
+    """Per-run page cap (token-budget safety): admin setting if a positive int,
+    else the env default."""
+    raw = get_setting(conn, "max_pages_per_run")
+    if raw is not None:
+        try:
+            n = int(float(raw.strip()))
+            if n >= 1:
+                return n
+        except (ValueError, AttributeError):
+            pass
+    return env_default
+
+
+def over_spend_quota(conn: sqlite3.Connection, *, user_id: str | None, role: str | None,
+                     user_limit: float | None) -> str | None:
+    """Return a human-readable reason if a paid action should be blocked for this
+    payer, else None. The global cap applies to everyone (a backstop on the
+    owner's total bill); the per-user cap applies to non-admins. Enforced on
+    spend already accrued this month. Shared by the request path (gates before
+    enqueue) and the worker (re-checks at run time, so a burst of queued runs
+    can't collectively blow past the cap)."""
+    gcap = resolved_global_cap(conn)
+    if gcap is not None and global_spend_this_month(conn) >= gcap:
+        return "global monthly spend cap reached; contact the administrator"
+    if role == "admin":
+        return None
+    cap = user_limit if user_limit is not None else resolved_user_default_cap(conn)
+    if cap is not None and user_id is not None and user_spend_this_month(conn, user_id) >= cap:
+        return f"monthly usage limit of ${cap:.2f} reached; it resets next month"
+    return None
+
+
+def spend_by_user_this_month(conn: sqlite3.Connection) -> list[dict]:
+    rows = conn.execute(
+        "SELECT user_id, COALESCE(SUM(cost_usd), 0) AS cost_usd, "
+        "SUM(prompt_tokens + completion_tokens) AS tokens, COUNT(*) AS calls "
+        "FROM usage_ledger WHERE created_at >= ? GROUP BY user_id ORDER BY cost_usd DESC",
+        (_month_start(),),
+    ).fetchall()
+    return [
+        {"user_id": r["user_id"], "cost_usd": round(float(r["cost_usd"] or 0.0), 6),
+         "tokens": int(r["tokens"] or 0), "calls": int(r["calls"] or 0)}
+        for r in rows
+    ]
 
 
 def list_published_books(conn: sqlite3.Connection) -> list[dict]:

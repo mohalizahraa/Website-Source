@@ -8,6 +8,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import math
 import os
 import re
 import sqlite3
@@ -140,6 +141,16 @@ def _require_book_access(conn, book: dict | None, user, *, write: bool) -> dict:
     raise HTTPException(status_code=403, detail="you do not have access to this book")
 
 
+def _enforce_spend_quota(conn, user) -> None:
+    """Block a paid action (ingest / chat) with 402 when a monthly cap is already
+    reached. Enforced on spend ALREADY accrued (not a pre-estimate); the worker
+    re-checks at run time so a burst of queued ingests can't overshoot."""
+    reason = db.over_spend_quota(conn, user_id=user["id"], role=user.get("role"),
+                                 user_limit=user.get("monthly_usd_limit"))
+    if reason:
+        raise HTTPException(status_code=402, detail=reason)
+
+
 # ---------------------------------------------------------------------------
 # Auth endpoints
 # ---------------------------------------------------------------------------
@@ -187,10 +198,19 @@ async def create_user_endpoint(request: Request, _admin=Depends(require_admin),
     if db.get_user_by_email(conn, email):
         raise HTTPException(status_code=409, detail="email already registered")
     role = body.get("role") if body.get("role") in ("admin", "creator", "reader") else "creator"
+    # Optional per-user monthly spend cap (USD); null/absent = the env default.
+    limit = body.get("monthly_usd_limit")
+    try:
+        limit = float(limit) if limit is not None else None
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="monthly_usd_limit must be a number")
+    if limit is not None and (not math.isfinite(limit) or limit < 0):
+        raise HTTPException(status_code=400, detail="monthly_usd_limit must be finite and non-negative")
     uid = db.next_user_id(conn)
     db.create_user(conn, user_id=uid, email=email,
                    password_hash=auth.hash_password(password),
-                   display_name=body.get("display_name"), role=role)
+                   display_name=body.get("display_name"), role=role,
+                   monthly_usd_limit=limit)
     write_event(conn, actor=_admin["id"], type="user.create", payload={"id": uid, "role": role})
     conn.commit()
     return _user_wire(db.get_user(conn, uid))
@@ -444,6 +464,7 @@ async def ingest_book(
     Omit all three to process the next window (resume) with the default cap.
     """
     _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
+    _enforce_spend_quota(conn, user)  # ingestion spends model tokens
 
     options: dict = {}
     try:
@@ -463,7 +484,7 @@ async def ingest_book(
         payload={"book_id": book_id, "options": options},
     )
     conn.commit()
-    state = ingest.enqueue(book_id, options)
+    state = ingest.enqueue(book_id, options, actor_id=user["id"])
     return {"book_id": book_id, "job": state, "options": options}
 
 
@@ -520,6 +541,7 @@ async def chat_endpoint(request: Request, user=Depends(require_creator),
     # access to any book it is scoped to.
     if book_id:
         _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
+    _enforce_spend_quota(conn, user)  # the assistant calls the model (spends)
 
     # Authorize EVERY book the assistant's tools try to touch (a tool call can
     # carry an arbitrary book_id), not just the top-level one.
@@ -536,6 +558,17 @@ async def chat_endpoint(request: Request, user=Depends(require_creator),
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail=f"assistant error: {exc}")
+
+    # Ledger the assistant's real spend against the caller so chat counts toward
+    # personal + global caps. Kept off the client wire contract ({reply, actions}).
+    usage = result.pop("usage", None)
+    if usage and (usage.get("cost_usd") is not None
+                  or usage.get("prompt_tokens") or usage.get("completion_tokens")):
+        db.record_usage(conn, user_id=user["id"], book_id=book_id, stage="chat",
+                        prompt_tokens=usage.get("prompt_tokens", 0),
+                        completion_tokens=usage.get("completion_tokens", 0),
+                        cost_usd=usage.get("cost_usd"))
+        conn.commit()
     return result
 
 
@@ -866,6 +899,175 @@ def add_style_rule(
 @app.get("/api/learning/summary", response_model=LearningSummary)
 def learning_summary(_user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
     return _learning_summary(conn)
+
+
+# ---------------------------------------------------------------------------
+# Usage / spend quotas (Phase 3)
+# ---------------------------------------------------------------------------
+@app.get("/api/usage/me")
+def usage_me(user=Depends(require_user), conn: sqlite3.Connection = Depends(get_conn)):
+    """This month's spend for the signed-in user, against their effective cap."""
+    is_admin = user.get("role") == "admin"
+    cap = user.get("monthly_usd_limit")
+    if cap is None:
+        cap = db.resolved_user_default_cap(conn)
+    spent = db.user_spend_this_month(conn, user["id"])
+    # Admins aren't personally capped (only the global cap applies), so report
+    # that honestly rather than showing a limit that isn't enforced.
+    return {
+        "month": db.current_month_label(),
+        "spent_usd": round(spent, 4),
+        "limit_usd": None if is_admin else cap,
+        "remaining_usd": None if (is_admin or cap is None) else round(max(0.0, cap - spent), 4),
+        "enforced": not is_admin,
+    }
+
+
+@app.get("/api/usage")
+def usage_overview(_admin=Depends(require_admin), conn: sqlite3.Connection = Depends(get_conn)):
+    """Admin: this month's global spend vs the cap, plus a per-user breakdown."""
+    gcap = db.resolved_global_cap(conn)
+    gspent = db.global_spend_this_month(conn)
+    return {
+        "month": db.current_month_label(),
+        "global_spent_usd": round(gspent, 4),
+        "global_limit_usd": gcap,
+        "global_remaining_usd": None if gcap is None else round(max(0.0, gcap - gspent), 4),
+        "user_limit_default_usd": db.resolved_user_default_cap(conn),
+        "by_user": db.spend_by_user_this_month(conn),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Admin-editable settings (spend caps + per-run page limit)
+# ---------------------------------------------------------------------------
+def _settings_payload(conn) -> dict:
+    """Effective config now, plus the env defaults for reference in the UI."""
+    return {
+        "global_monthly_usd": db.resolved_global_cap(conn),
+        "user_monthly_usd_default": db.resolved_user_default_cap(conn),
+        "max_pages_per_run": db.resolved_max_pages_per_run(conn, ingest.DEFAULT_MAX_PAGES_PER_RUN),
+        "defaults": {
+            "global_monthly_usd": config.global_monthly_usd(),
+            "user_monthly_usd_default": config.user_monthly_usd_default(),
+            "max_pages_per_run": ingest.DEFAULT_MAX_PAGES_PER_RUN,
+        },
+    }
+
+
+def _parse_cap(value) -> tuple[bool, str | None]:
+    """Normalize an incoming USD-cap value → (clear_override, stored_value).
+
+    null → clear the override (fall back to env). "", "off", "none",
+    "unlimited" → disabled (no cap). A number → that cap. Raises on garbage."""
+    if value is None:
+        return True, None
+    if isinstance(value, str) and value.strip().lower() in ("", "off", "none", "unlimited"):
+        return False, ""  # stored empty = no cap
+    try:
+        n = float(value)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="cap must be a number, null, or 'off'")
+    if not math.isfinite(n) or n < 0:
+        raise HTTPException(status_code=400, detail="cap must be a finite, non-negative number")
+    return False, str(n)
+
+
+@app.get("/api/settings")
+def get_settings(_admin=Depends(require_admin), conn: sqlite3.Connection = Depends(get_conn)):
+    return _settings_payload(conn)
+
+
+@app.put("/api/settings")
+async def update_settings(request: Request, admin=Depends(require_admin),
+                          conn: sqlite3.Connection = Depends(get_conn)):
+    """Admin: change spend caps / per-run page limit at runtime. Any subset of
+    {global_monthly_usd, user_monthly_usd_default, max_pages_per_run}."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="expected a JSON object")
+
+    for key in ("global_monthly_usd", "user_monthly_usd_default"):
+        if key in body:
+            clear, stored = _parse_cap(body[key])
+            db.set_setting(conn, key, None if clear else stored)
+    if "max_pages_per_run" in body:
+        v = body["max_pages_per_run"]
+        if v is None:
+            db.set_setting(conn, "max_pages_per_run", None)
+        else:
+            # Reject booleans and non-integral floats (1.9, NaN) — only a real
+            # integer (or an integer-valued string) is a valid page count.
+            if isinstance(v, bool):
+                raise HTTPException(status_code=400, detail="max_pages_per_run must be an integer")
+            if isinstance(v, float) and (not math.isfinite(v) or not v.is_integer()):
+                raise HTTPException(status_code=400, detail="max_pages_per_run must be an integer")
+            try:
+                n = int(v)
+            except (TypeError, ValueError, OverflowError):
+                raise HTTPException(status_code=400, detail="max_pages_per_run must be an integer")
+            if n < 1:
+                raise HTTPException(status_code=400, detail="max_pages_per_run must be >= 1")
+            db.set_setting(conn, "max_pages_per_run", str(n))
+
+    write_event(conn, actor=admin["id"], type="settings.update", payload={"keys": list(body.keys())})
+    conn.commit()
+    return _settings_payload(conn)
+
+
+# ---------------------------------------------------------------------------
+# Admin user management (list + edit role / spend limit)
+# ---------------------------------------------------------------------------
+@app.get("/api/auth/users")
+def list_users(_admin=Depends(require_admin), conn: sqlite3.Connection = Depends(get_conn)):
+    spend = {r["user_id"]: r["cost_usd"] for r in db.spend_by_user_this_month(conn)}
+    out = []
+    for u in db.list_users(conn):
+        w = _user_wire(u)
+        w["monthly_usd_limit"] = u.get("monthly_usd_limit")
+        w["spent_usd"] = round(float(spend.get(u["id"], 0.0)), 4)
+        out.append(w)
+    return out
+
+
+@app.patch("/api/auth/users/{user_id}")
+async def update_user_account(user_id: str, request: Request, admin=Depends(require_admin),
+                              conn: sqlite3.Connection = Depends(get_conn)):
+    """Admin: set a user's per-user monthly cap and/or role."""
+    if db.get_user(conn, user_id) is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+
+    if "monthly_usd_limit" in body:
+        v = body["monthly_usd_limit"]
+        if v is None:
+            db.set_user_monthly_limit(conn, user_id, None)  # null = use the default
+        else:
+            try:
+                n = float(v)
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=400, detail="monthly_usd_limit must be a number or null")
+            if not math.isfinite(n) or n < 0:
+                raise HTTPException(status_code=400, detail="monthly_usd_limit must be finite and non-negative")
+            db.set_user_monthly_limit(conn, user_id, n)
+    if "role" in body:
+        if body["role"] not in ("admin", "creator", "reader"):
+            raise HTTPException(status_code=400, detail="role must be admin, creator, or reader")
+        db.set_user_role(conn, user_id, body["role"])
+
+    write_event(conn, actor=admin["id"], type="user.update",
+                payload={"id": user_id, "keys": list(body.keys())})
+    conn.commit()
+    u = db.get_user(conn, user_id)
+    w = _user_wire(u)
+    w["monthly_usd_limit"] = u.get("monthly_usd_limit")
+    return w
 
 
 @app.get("/api/health")
