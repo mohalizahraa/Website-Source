@@ -1,0 +1,83 @@
+# Render Blueprint — one-click infra for Haydari.
+# Create it via Render Dashboard -> "New +" -> "Blueprint" -> pick this repo.
+# Values marked `sync: false` are NOT stored in git — set them in the dashboard
+# after the first deploy (see DEPLOY_RENDER.md). Plan slugs and region are
+# adjustable in the dashboard if a value here isn't offered on your account.
+
+databases:
+  - name: haydari-db
+    databaseName: haydari
+    user: haydari
+    plan: basic-256mb          # smallest paid Postgres; bump anytime
+    region: oregon
+
+services:
+  # -------------------------------------------------------------------------
+  # Backend API + in-process ingest worker (Docker: needs poppler-utils).
+  # Keep at ONE instance — the ingest queue/worker are in-memory.
+  # -------------------------------------------------------------------------
+  - type: web
+    name: haydari-api
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .           # repo root, so pipeline/ is in the build
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: haydari-db
+          property: connectionString
+      - key: HAYDARI_ENV
+        value: production
+      - key: HAYDARI_COOKIE_SECURE
+        value: "true"
+      - key: HAYDARI_SECRET_KEY   # signs session cookies; rotating logs everyone out
+        generateValue: true
+      - key: STORAGE_BACKEND
+        value: s3
+      - key: S3_REGION
+        value: auto               # Cloudflare R2
+      - key: TRANSLATION_MODEL_BULK
+        value: google/gemini-2.5-flash
+      - key: TRANSLATION_MODEL_FRONTIER
+        value: google/gemini-2.5-pro
+      - key: OCR_MODEL
+        value: google/gemini-2.5-flash
+      # ---- set these in the Render dashboard (sync:false = not committed) ----
+      - key: HAYDARI_ADMIN_EMAIL
+        sync: false
+      - key: HAYDARI_ADMIN_PASSWORD
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT_URL          # https://<account_id>.r2.cloudflarestorage.com
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: HAYDARI_CORS_ORIGINS     # exact frontend origin, e.g. https://haydari.com
+        sync: false
+
+  # -------------------------------------------------------------------------
+  # Frontend (Next.js) — native Node so NEXT_PUBLIC_* inline at build time.
+  # -------------------------------------------------------------------------
+  - type: web
+    name: haydari-web
+    runtime: node
+    rootDir: web
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_DATA_SOURCE
+        value: api
+      - key: NEXT_PUBLIC_API_BASE     # https://api.<yourdomain>/api
+        sync: false

@@ -1,0 +1,27 @@
+# Keep the backend image small and secret-free. Build context is the repo root.
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+
+# Secrets & local data — must never enter the image
+**/.env
+**/.env.*
+!**/.env.local.example
+server/data/
+**/uploads/
+*.db
+*.sqlite
+
+# Frontend build/deps (the backend image doesn't need web/)
+web/node_modules
+web/.next
+node_modules
+
+# VCS / editor / OS cruft
+.git
+.gitignore
+**/.DS_Store
+*.log
+scratchpad/
