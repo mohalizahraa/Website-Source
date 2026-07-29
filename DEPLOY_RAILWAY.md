@@ -8,7 +8,7 @@ repo, each with a different Root Directory:
 | Railway service | Root Directory | Builds |
 |---|---|---|
 | **haydari-api** (backend + ingest worker) | `/` (repo root) | `server/Dockerfile` (via `railway.json`) — includes `pipeline/` + poppler |
-| **haydari-web** (Next.js) | `web` | `web/Dockerfile` (node:20) |
+| **haydari-web** (Next.js) | `/web` | `web/Dockerfile` (node:20), configured by `/web/railway.json` |
 | **Postgres** | — | Railway managed database |
 
 Replace `haydari.org` with your domain throughout.
@@ -20,14 +20,17 @@ That service is building from the **repo root** (where Railway sees the Python
 backend — no npm). Point it at the web folder:
 
 1. Open the frontend service → **Settings → Source / Build**.
-2. Set **Root Directory = `web`**.
-3. Redeploy. Railway now uses `web/Dockerfile` (node:20) → npm is present → build succeeds.
+2. Set **Root Directory = `/web`**.
+3. Under **Config as Code**, set **Railway Config File = `/web/railway.json`**.
+   This is required because config-file lookup does not follow Root Directory;
+   otherwise the repo-level `/railway.json` selects the backend Dockerfile.
+4. Redeploy. Railway now uses `web/Dockerfile` (node:20) → npm is present → build succeeds.
 
 That's the whole fix for the error you hit. The rest below is the full setup.
 
 ## 1. Backend service (haydari-api)
 1. **New → Deploy from GitHub repo →** `hhabdul/haydari`.
-2. **Settings → Root Directory = `/`** (blank/root). Railway reads `railway.json`
+2. **Settings → Root Directory = `/`** (blank/root) and **Railway Config File = `/railway.json`**. Railway reads `railway.json`
    → builds `server/Dockerfile` with the repo root as context.
 3. Railway sets `PORT`; the app binds it. Health check is `/api/health`.
 
