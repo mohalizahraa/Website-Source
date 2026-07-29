@@ -65,19 +65,19 @@ services:
         sync: false
 
   # -------------------------------------------------------------------------
-  # Frontend (Next.js) — native Node so NEXT_PUBLIC_* inline at build time.
+  # Frontend (Next.js) — Docker (node:20) so the build always has npm, and
+  # NEXT_PUBLIC_* inline at build time (defaulted to prod in web/Dockerfile).
   # -------------------------------------------------------------------------
   - type: web
     name: haydari-web
-    runtime: node
-    rootDir: web
+    runtime: docker
+    dockerfilePath: ./web/Dockerfile
+    dockerContext: ./web
     plan: starter
     region: oregon
     autoDeploy: true
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_DATA_SOURCE
         value: api
-      - key: NEXT_PUBLIC_API_BASE     # https://api.<yourdomain>/api
-        sync: false
+      - key: NEXT_PUBLIC_API_BASE
+        value: https://api.haydari.org/api
