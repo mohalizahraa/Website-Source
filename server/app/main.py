@@ -399,7 +399,10 @@ async def upload_books(
             logger.exception("Storage write failed for book %s at key %s", book_id, key)
             conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
             conn.commit()
-            raise HTTPException(status_code=502, detail=f"storage write failed: {exc}")
+            # Use a non-5xx dependency status so reverse proxies preserve the
+            # actionable R2 error response for the browser instead of replacing
+            # it with a generic gateway/network error.
+            raise HTTPException(status_code=424, detail=f"storage write failed: {exc}")
         if notes and notes.strip():
             db.set_book_notes(conn, book_id, notes.strip())
         write_event(conn, actor=user["id"], type="book.upload",
