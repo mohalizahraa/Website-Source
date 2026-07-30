@@ -23,6 +23,26 @@ When `DATABASE_URL` is set, the app uses Postgres (schema auto-created from
 | `S3_REGION` | — | `auto` for R2, else the AWS region |
 | `S3_ACCESS_KEY_ID` | — | access key |
 | `S3_SECRET_ACCESS_KEY` | — | secret key |
+| `HAYDARI_MAX_UPLOAD_BYTES` | 5 GiB | optional direct-upload ceiling |
+
+Production PDFs are uploaded directly from the browser to R2 using a short-lived
+presigned `PUT` URL. Configure this CORS policy on the R2 bucket (replace the
+origin if the frontend domain changes):
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://haydari.org"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+This route supports a PDF up to 5 GiB without proxying its bytes through the API.
+Local storage retains the original multipart endpoint for development.
 
 ### Auth (Phase 2)
 | Var | Notes |

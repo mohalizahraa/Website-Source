@@ -84,6 +84,47 @@ def test_upload_multiple_files(client):
     assert len(set(ids)) == 2
 
 
+def test_direct_upload_is_verified_before_book_becomes_uploaded(client, monkeypatch):
+    from app import storage
+
+    class FakeDirectStorage:
+        def presigned_upload_url(self, key, content_type, expires=3600):
+            assert key.endswith("/large_book.pdf")
+            assert content_type == "application/pdf"
+            return "https://r2.example.test/presigned-put"
+
+        def object_info(self, key):
+            assert key.endswith("/large_book.pdf")
+            return {"ContentLength": 250_000_000, "ContentType": "application/pdf"}
+
+    monkeypatch.setattr(storage, "get_storage", lambda: FakeDirectStorage())
+    start = client.post(
+        "/api/books/upload/initiate",
+        json={"filename": "large book.pdf", "size": 250_000_000, "title_en": "Large Book"},
+    )
+    assert start.status_code == 200, start.text
+    prepared = start.json()
+    assert prepared["upload_url"].startswith("https://r2.example.test/")
+
+    pending = client.get(f"/api/books/{prepared['id']}").json()
+    assert pending["status"] == "uploading"
+
+    complete = client.post(
+        f"/api/books/{prepared['id']}/upload-complete",
+        json={"size": 250_000_000},
+    )
+    assert complete.status_code == 200, complete.text
+    assert client.get(f"/api/books/{prepared['id']}").json()["status"] == "uploaded"
+
+
+def test_direct_upload_rejects_non_pdf(client):
+    response = client.post(
+        "/api/books/upload/initiate",
+        json={"filename": "not-a-book.zip", "size": 10},
+    )
+    assert response.status_code == 400
+
+
 def test_import_catalog(client):
     resp = client.post(
         "/api/books/import",

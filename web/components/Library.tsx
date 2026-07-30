@@ -12,6 +12,7 @@ import { T, useToast } from "./Toast";
 import { canWrite, useAuth } from "@/lib/auth";
 
 const STATUS_LABEL: Record<Book["status"], string> = {
+  uploading: "Uploading",
   uploaded: "Uploaded",
   processing: "Processing",
   in_review: "In review",

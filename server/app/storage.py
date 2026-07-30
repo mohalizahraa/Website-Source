@@ -64,6 +64,16 @@ class Storage:
     def signed_url(self, key: str, expires: int = 3600) -> str | None:
         return None
 
+    def presigned_upload_url(
+        self, key: str, content_type: str, expires: int = 3600
+    ) -> str | None:
+        """Return a direct-upload URL, or ``None`` when unsupported."""
+        return None
+
+    def object_info(self, key: str) -> dict | None:
+        """Return object metadata used to verify a direct upload."""
+        return None
+
 
 class LocalStorage(Storage):
     """Files under a local root (``config.upload_dir()`` by default)."""
@@ -155,6 +165,22 @@ class S3Storage(Storage):
         return self.client.generate_presigned_url(
             "get_object", Params={"Bucket": self.bucket, "Key": key}, ExpiresIn=expires
         )
+
+    def presigned_upload_url(
+        self, key: str, content_type: str, expires: int = 3600
+    ) -> str | None:
+        return self.client.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": self.bucket,
+                "Key": safe_key(key),
+                "ContentType": content_type,
+            },
+            ExpiresIn=expires,
+        )
+
+    def object_info(self, key: str) -> dict | None:
+        return self.client.head_object(Bucket=self.bucket, Key=safe_key(key))
 
 
 _STORAGE: Storage | None = None

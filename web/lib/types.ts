@@ -64,7 +64,7 @@ export type ReviewAction = "approve" | "reject" | "skip";
 export type Scope = "global" | "book";
 
 // Book lifecycle status shown as a pill in the Library.
-export type BookStatus = "uploaded" | "processing" | "in_review" | "published";
+export type BookStatus = "uploading" | "uploaded" | "processing" | "in_review" | "published";
 
 export interface SegmentQA {
   bt_sim: number | null;
@@ -149,6 +149,8 @@ export interface UploadMeta {
   author?: string;
   notes?: string; // per-book translation instructions
 }
+
+export type UploadProgress = (file: File, percent: number) => void;
 
 // POST /chat
 export interface ChatMessage {
@@ -246,7 +248,11 @@ export interface HaydariAPI {
   getBook(id: string): Promise<Book>;
   deleteBook(id: string): Promise<{ ok: boolean }>;
   updateBook(id: string, patch: { translation_notes?: string }): Promise<Book>;
-  uploadBooks(files: File[], meta?: UploadMeta): Promise<{ id: string }[]>;
+  uploadBooks(
+    files: File[],
+    meta?: UploadMeta,
+    onProgress?: UploadProgress,
+  ): Promise<{ id: string }[]>;
   importBooks(catalog: CatalogEntry[]): Promise<{ id: string }[]>;
   ingestBook(id: string, options?: IngestOptions): Promise<IngestStatus>;
   getBookStatus(id: string): Promise<IngestStatus>;

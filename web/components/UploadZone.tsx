@@ -11,6 +11,7 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
   const [busy, setBusy] = useState(false);
   const [meta, setMeta] = useState<UploadMeta>({});
   const [queued, setQueued] = useState<string[]>([]);
+  const [progress, setProgress] = useState<Record<string, number>>({});
   const fileInput = useRef<HTMLInputElement>(null);
   const csvInput = useRef<HTMLInputElement>(null);
 
@@ -24,8 +25,11 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
       }
       setBusy(true);
       setQueued(files.map((f) => f.name));
+      setProgress(Object.fromEntries(files.map((f) => [f.name, 0])));
       try {
-        const created = await api.uploadBooks(files, meta);
+        const created = await api.uploadBooks(files, meta, (file, percent) => {
+          setProgress((current) => ({ ...current, [file.name]: percent }));
+        });
         // Do NOT auto-ingest — ingestion costs tokens. The reviewer chooses a
         // page range and starts it deliberately from each book card.
         learn([
@@ -40,7 +44,10 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
         learn([T.strong("Upload failed."), T.text(String(e))]);
       } finally {
         setBusy(false);
-        setTimeout(() => setQueued([]), 1200);
+        setTimeout(() => {
+          setQueued([]);
+          setProgress({});
+        }, 1200);
       }
     },
     [meta, learn, onUploaded],
@@ -112,7 +119,7 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
               <div className="queued-item" key={n}>
                 <span className="qi-name">{n}</span>
                 <span className="qi-bar">
-                  <i style={{ width: busy ? "70%" : "100%" }} />
+                  <i style={{ width: `${progress[n] ?? (busy ? 0 : 100)}%` }} />
                 </span>
               </div>
             ))}

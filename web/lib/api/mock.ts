@@ -250,7 +250,7 @@ export const mockApi: HaydariAPI = {
     return delay({ ok: true });
   },
 
-  async uploadBooks(files: File[], meta?: UploadMeta) {
+  async uploadBooks(files: File[], meta?: UploadMeta, onProgress?: (file: File, percent: number) => void) {
     guardSession();
     const created = files.map((file, i) => {
       const id = `B-${String(state.nextId++).padStart(2, "0")}`;
@@ -265,6 +265,7 @@ export const mockApi: HaydariAPI = {
         progress: 0,
         translation_notes: meta?.notes || null,
       });
+      onProgress?.(file, 100);
       return { id };
     });
     return delay(created);

@@ -23,6 +23,7 @@ import type {
   StyleRuleBody,
   TermBody,
   UploadMeta,
+  UploadProgress,
   User,
 } from "../types";
 
@@ -67,6 +68,42 @@ async function upload<T>(path: string, form: FormData): Promise<T> {
     throw new ApiError(res.status, `POST ${path} -> ${res.status} ${text}`);
   }
   return res.json() as Promise<T>;
+}
+
+// Send a File directly to a presigned R2 URL. XMLHttpRequest is intentional:
+// unlike fetch it exposes upload progress, which matters for book-sized PDFs.
+function putFile(
+  url: string,
+  file: File,
+  contentType: string,
+  onProgress?: UploadProgress,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", contentType);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && event.total > 0) {
+        onProgress?.(file, Math.min(100, Math.round((event.loaded / event.total) * 100)));
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress?.(file, 100);
+        resolve();
+      } else {
+        reject(new ApiError(xhr.status, `R2 PUT -> ${xhr.status} ${xhr.responseText || "upload rejected"}`));
+      }
+    };
+    xhr.onerror = () => {
+      reject(
+        new Error(
+          "Direct R2 upload could not connect. Confirm the bucket CORS rule allows PUT from this website.",
+        ),
+      );
+    };
+    xhr.send(file);
+  });
 }
 
 // The backend sends `progress` as an object ({fraction, approved, …}) on Book
@@ -176,14 +213,57 @@ export const httpApi: HaydariAPI = {
       }),
     );
   },
-  uploadBooks(files: File[], meta?: UploadMeta) {
-    const form = new FormData();
-    files.forEach((f) => form.append("files", f, f.name));
-    if (meta?.title_ar) form.append("title_ar", meta.title_ar);
-    if (meta?.title_en) form.append("title_en", meta.title_en);
-    if (meta?.author) form.append("author", meta.author);
-    if (meta?.notes) form.append("notes", meta.notes);
-    return upload<{ id: string }[]>("/books/upload", form);
+  async uploadBooks(files: File[], meta?: UploadMeta, onProgress?: UploadProgress) {
+    const created: { id: string }[] = [];
+    for (const file of files) {
+      let prepared: {
+        id: string;
+        upload_url: string;
+        content_type: string;
+      };
+      try {
+        prepared = await request<typeof prepared>("/books/upload/initiate", {
+          method: "POST",
+          body: JSON.stringify({
+            filename: file.name,
+            size: file.size,
+            title_ar: meta?.title_ar,
+            title_en: meta?.title_en,
+            author: meta?.author,
+            notes: meta?.notes,
+          }),
+        });
+      } catch (error) {
+        // Local disk storage cannot issue presigned URLs; retain the original
+        // multipart path for local development and offline deployments.
+        if (error instanceof ApiError && error.status === 409 && created.length === 0) {
+          const form = new FormData();
+          files.forEach((f) => form.append("files", f, f.name));
+          if (meta?.title_ar) form.append("title_ar", meta.title_ar);
+          if (meta?.title_en) form.append("title_en", meta.title_en);
+          if (meta?.author) form.append("author", meta.author);
+          if (meta?.notes) form.append("notes", meta.notes);
+          return upload<{ id: string }[]>("/books/upload", form);
+        }
+        throw error;
+      }
+
+      try {
+        await putFile(prepared.upload_url, file, prepared.content_type, onProgress);
+      } catch (error) {
+        // Remove the temporary "uploading" book and any partial object. This is
+        // best-effort; the original upload error is the useful one to show.
+        await request(`/books/${encodeURIComponent(prepared.id)}`, { method: "DELETE" }).catch(() => undefined);
+        throw error;
+      }
+      created.push(
+        await request<{ id: string }>(`/books/${encodeURIComponent(prepared.id)}/upload-complete`, {
+          method: "POST",
+          body: JSON.stringify({ size: file.size }),
+        }),
+      );
+    }
+    return created;
   },
   importBooks(catalog: CatalogEntry[]) {
     return request<{ id: string }[]>("/books/import", {

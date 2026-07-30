@@ -385,6 +385,7 @@ sup.fn { font-family: var(--sans); font-size: .58em; color: var(--lapis); font-w
 .bc-en { font-family: var(--serif); font-size: 1.05rem; font-weight: 500; color: var(--ink); margin-top: 4px; }
 .bc-author { font-size: var(--fs-xs); color: var(--ink-3); margin-top: 4px; }
 .pill { font-family: var(--sans); font-size: var(--fs-xs); font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; flex: 0 0 auto; text-transform: capitalize; }
+.pill.uploading { background: var(--lapis-soft); color: var(--lapis-ink); }
 .pill.uploaded { background: var(--panel-2); color: var(--ink-2); border: 1px solid var(--line); }
 .pill.processing { background: var(--lapis-soft); color: var(--lapis-ink); }
 .pill.in_review { background: var(--warn-soft); color: var(--warn); }

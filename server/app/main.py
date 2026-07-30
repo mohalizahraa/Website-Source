@@ -412,6 +412,139 @@ async def upload_books(
     return created
 
 
+@app.post("/api/books/upload/initiate")
+async def initiate_direct_book_upload(
+    request: Request,
+    user=Depends(require_creator),
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    """Create a short-lived direct-to-S3/R2 upload for one PDF.
+
+    Only the small JSON control request crosses the API proxy. The browser sends
+    the PDF directly to object storage, avoiding Cloudflare request-size limits
+    and keeping Railway from buffering an entire book in memory.
+    """
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+
+    base = os.path.basename(str(body.get("filename") or "upload.pdf"))
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", base).strip("._") or "upload.pdf"
+    if not safe_name.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="only PDF files are supported")
+    try:
+        size = int(body.get("size"))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="a valid file size is required")
+    max_size = int(os.environ.get("HAYDARI_MAX_UPLOAD_BYTES", str(5 * 1024**3)))
+    if size <= 0:
+        raise HTTPException(status_code=400, detail="the PDF is empty")
+    if size > max_size:
+        raise HTTPException(
+            status_code=413,
+            detail=f"PDF exceeds the configured {max_size}-byte upload limit",
+        )
+
+    blob_store = storage.get_storage()
+    book_id = db.next_book_id(conn)
+    key = f"books/{book_id}/{safe_name}"
+    try:
+        upload_url = blob_store.presigned_upload_url(
+            key, "application/pdf", expires=3600
+        )
+    except Exception as exc:  # noqa: BLE001
+        conn.rollback()
+        logger.exception("Could not create direct upload URL for %s", key)
+        raise HTTPException(status_code=424, detail=f"could not prepare R2 upload: {exc}")
+    if not upload_url:
+        conn.rollback()
+        # The frontend uses the existing multipart API in local development.
+        raise HTTPException(status_code=409, detail="direct upload is not configured")
+
+    stem = os.path.splitext(safe_name)[0]
+    title_ar = body.get("title_ar")
+    title_en = body.get("title_en")
+    author = body.get("author")
+    notes = body.get("notes")
+    db.insert_book(
+        conn,
+        book_id=book_id,
+        title_ar=str(title_ar or stem),
+        title_en=str(title_en) if title_en else None,
+        author=str(author) if author else None,
+        status="uploading",
+        source_pdf=key,
+        owner_id=user["id"],
+    )
+    if notes and str(notes).strip():
+        db.set_book_notes(conn, book_id, str(notes).strip())
+    write_event(
+        conn,
+        actor=user["id"],
+        type="book.upload.initiated",
+        payload={"id": book_id, "file": safe_name, "size": size},
+    )
+    conn.commit()
+    return {
+        "id": book_id,
+        "upload_url": upload_url,
+        "content_type": "application/pdf",
+        "expires_in": 3600,
+    }
+
+
+@app.post("/api/books/{book_id}/upload-complete")
+async def complete_direct_book_upload(
+    book_id: str,
+    request: Request,
+    user=Depends(require_creator),
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    """Verify a direct upload exists in R2 before enabling ingestion."""
+    book = _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
+    if book["status"] == "uploaded":
+        return {"id": book_id}
+    if book["status"] != "uploading":
+        raise HTTPException(status_code=409, detail="book is not awaiting an upload")
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+
+    key = book.get("source_pdf") or ""
+    try:
+        info = storage.get_storage().object_info(key)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Could not verify direct upload for book %s", book_id)
+        raise HTTPException(status_code=424, detail=f"could not verify R2 upload: {exc}")
+    if not info:
+        raise HTTPException(status_code=424, detail="the uploaded PDF was not found in R2")
+
+    actual_size = int(info.get("ContentLength") or 0)
+    try:
+        expected_size = int(body.get("size"))
+    except (TypeError, ValueError):
+        expected_size = 0
+    if actual_size <= 0:
+        raise HTTPException(status_code=409, detail="R2 contains an empty PDF")
+    if expected_size > 0 and actual_size != expected_size:
+        raise HTTPException(
+            status_code=409,
+            detail=f"R2 stored {actual_size} bytes; expected {expected_size}",
+        )
+
+    db.set_book_status(conn, book_id, "uploaded")
+    write_event(
+        conn,
+        actor=user["id"],
+        type="book.upload",
+        payload={"id": book_id, "file": os.path.basename(key), "size": actual_size},
+    )
+    conn.commit()
+    return {"id": book_id}
+
+
 @app.post("/api/books/import")
 async def import_books(request: Request, user=Depends(require_creator), conn: sqlite3.Connection = Depends(get_conn)):
     """Bulk-register books from a catalog.
