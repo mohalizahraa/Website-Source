@@ -10,9 +10,12 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
+# Both server/ and pipeline/ are copied beneath /app. Keep the repository root
+# importable even when uvicorn starts from /app/server.
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app \
     HAYDARI_ENV=production
 
 WORKDIR /app
