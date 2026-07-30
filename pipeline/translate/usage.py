@@ -26,11 +26,13 @@ def reset() -> None:
         _RECORDS.clear()
 
 
-def record(*, stage: str, model: str, prompt_tokens=0, completion_tokens=0, cost=None) -> None:
+def record(*, stage: str, model: str, prompt_tokens=0, completion_tokens=0, cost=None,
+           operation: str | None = None) -> None:
     with _LOCK:
         _RECORDS.append({
             "stage": stage,
             "model": model,
+            "operation": operation,
             "prompt_tokens": int(prompt_tokens or 0),
             "completion_tokens": int(completion_tokens or 0),
             "cost": float(cost) if cost is not None else None,

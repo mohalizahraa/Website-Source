@@ -50,6 +50,7 @@ export function ContextPanel({
   const [teaching, setTeaching] = useState<"term" | "style" | null>(null);
   const lvl = levelOf(seg);
   const sacred = seg.kind === "sacred";
+  const canonicalMissing = sacred && seg.engine === "canonical-missing";
   const ref = sacred ? "Qurʾān · al-Ḥadīd 57:3" : "";
 
   return (
@@ -64,6 +65,21 @@ export function ContextPanel({
           {seg.ar}
         </div>
       </div>
+
+      {/* Canonical source not matched: never auto-translate sacred text — ask a
+          human to supply verified wording rather than showing an empty box. */}
+      {canonicalMissing && (
+        <div className="ctx-sec">
+          <div className="canon-missing" role="note">
+            <b>Canonical source not found.</b>
+            <span>
+              This sacred passage has no verified match in the canonical store.
+              Enter the confirmed canonical wording — machine translation is not
+              used for sacred text.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Source scan */}
       <div className="ctx-sec">
@@ -135,7 +151,9 @@ export function ContextPanel({
             </div>
           </div>
         )}
-        {!readOnly && (
+        {/* Never offer machine review of sacred text — the backend also rejects
+            it (422). Reviewers supply verified canonical wording instead. */}
+        {!readOnly && !sacred && (
           <div className="llm-review">
             <button
               type="button"

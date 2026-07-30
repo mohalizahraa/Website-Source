@@ -209,6 +209,15 @@ sup.fn { font-family: var(--sans); font-size: .58em; color: var(--lapis); font-w
   background: var(--gilt-soft); border: 1px solid var(--gilt-line); border-radius: 20px; padding: 1px 8px; margin-left: 6px;
 }
 
+/* Canonical-source-not-found callout: sacred text left blank for a human to
+   supply verified wording (never machine-translated). */
+.canon-missing {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
+  background: var(--warn-soft); border: 1px solid var(--warn); border-radius: var(--r-sm);
+}
+.canon-missing b { font-size: var(--fs-sm); color: var(--warn); }
+.canon-missing span { font-size: var(--fs-xs); line-height: 1.45; color: var(--ink-2); }
+
 /* ---------- action bar ---------- */
 .actions {
   position: sticky; bottom: 0; background: linear-gradient(to top, var(--ground) 60%, transparent);

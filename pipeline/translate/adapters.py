@@ -237,7 +237,7 @@ class OpenAITranslator(Translator):
             )
         return self.api_key
 
-    def _chat(self, prompt: Prompt) -> str:  # pragma: no cover - network
+    def _chat(self, prompt: Prompt, *, operation: str = "draft") -> str:  # pragma: no cover - network
         key = self._require()
         headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         body = {
@@ -255,7 +255,7 @@ class OpenAITranslator(Translator):
         out = _post_json(f"{self.base_url}/chat/completions", body, headers)
         u = out.get("usage") or {}
         usage.record(
-            stage="translate", model=self.model,
+            stage="translate", model=self.model, operation=operation,
             prompt_tokens=u.get("prompt_tokens"),
             completion_tokens=u.get("completion_tokens"),
             cost=u.get("cost"),
@@ -267,11 +267,11 @@ class OpenAITranslator(Translator):
 
     def translate(self, prompt: Prompt, *, ar: str, context: Context) -> TranslationResult:
         self._require()
-        return TranslationResult(text=self._chat(prompt), confidence=0.86).clamp()
+        return TranslationResult(text=self._chat(prompt, operation="draft"), confidence=0.86).clamp()
 
     def refine(self, draft, *, prompt, ar, context) -> TranslationResult:
         self._require()
-        return TranslationResult(text=self._chat(prompt), confidence=0.89).clamp()
+        return TranslationResult(text=self._chat(prompt, operation="refine"), confidence=0.89).clamp()
 
 
 class OpenRouterTranslator(OpenAITranslator):

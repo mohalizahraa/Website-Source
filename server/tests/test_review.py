@@ -227,6 +227,30 @@ def test_llm_review_is_non_destructive_and_metered(client, monkeypatch):
     assert usage["completion_tokens"] == 20
 
 
+def test_llm_review_refused_for_sacred_text(client, monkeypatch):
+    """Sacred passages are never machine-reviewed: the endpoint rejects them
+    before any model call, so no LLM suggestion for Qurʾān/Hadith is possible."""
+    from app import llm_review
+
+    def must_not_call(**kwargs):
+        raise AssertionError("sacred text must never reach the review model")
+
+    monkeypatch.setattr(llm_review, "review_translation", must_not_call)
+    # B-01:042:04 is the seeded sacred (Qurʾān 57:3) segment.
+    r = client.post("/api/segments/B-01:042:04/llm-review", json={"en_edited": "anything"})
+    assert r.status_code == 422, r.text
+
+    conn = _open()
+    n_ledger = conn.execute(
+        "SELECT COUNT(*) AS n FROM usage_ledger WHERE stage='llm_review'"
+    ).fetchone()["n"]
+    n_events = conn.execute(
+        "SELECT COUNT(*) AS n FROM usage_events WHERE stage='llm_review'"
+    ).fetchone()["n"]
+    conn.close()
+    assert n_ledger == 0 and n_events == 0  # a refused review spends nothing
+
+
 def test_llm_review_withholds_suggestion_that_drops_footnote_anchor(client, monkeypatch):
     from app import llm_review
 

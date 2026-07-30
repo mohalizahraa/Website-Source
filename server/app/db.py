@@ -433,6 +433,110 @@ def record_usage(conn: sqlite3.Connection, *, user_id: str | None, book_id: str 
     )
 
 
+def record_usage_event(conn: sqlite3.Connection, *, user_id: str | None,
+                       book_id: str | None, stage: str, model: str | None,
+                       operation: str | None = None, prompt_tokens: int = 0,
+                       completion_tokens: int = 0, cost_usd: float | None = None,
+                       meta: dict | None = None) -> None:
+    """Append one *per-call* attribution row (observability, not billing).
+
+    Unlike record_usage (which stores one aggregate row that quotas read), this
+    records the concrete model and pass for a single model call so spend can be
+    broken down by model/stage/operation. Never raise into a caller's critical
+    path — accounting must not break translation, chat, or ingest.
+
+    The insert is wrapped in a SAVEPOINT so a telemetry failure rolls back only
+    this row, not the caller's transaction. This matters on Postgres, where a
+    failed statement aborts the whole transaction: without the savepoint a bad
+    event insert would take down the aggregate usage_ledger row that billing
+    reads (both live in the caller's transaction). SAVEPOINT works identically
+    on SQLite and Postgres.
+    """
+    # Establishing the savepoint should not fail on the normal path (callers are
+    # mid-transaction with autocommit off). If it does — e.g. a driver with no
+    # active transaction — fall back to a plain best-effort insert. Note: if a PG
+    # transaction were already aborted, nothing here can heal it; the savepoint
+    # only isolates failures of THIS insert, which is the case that matters.
+    try:
+        conn.execute("SAVEPOINT usage_evt")
+    except Exception:  # noqa: BLE001 — no active tx / unsupported: fall back to plain insert
+        try:
+            conn.execute(
+                "INSERT INTO usage_events "
+                "(user_id, book_id, stage, model, operation, prompt_tokens, "
+                " completion_tokens, cost_usd, meta, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (user_id, book_id, stage, model, operation,
+                 int(prompt_tokens or 0), int(completion_tokens or 0),
+                 float(cost_usd) if cost_usd is not None else None,
+                 json.dumps(meta, ensure_ascii=False) if meta else None, _now()),
+            )
+        except Exception:  # noqa: BLE001
+            pass
+        return
+    try:
+        conn.execute(
+            "INSERT INTO usage_events "
+            "(user_id, book_id, stage, model, operation, prompt_tokens, "
+            " completion_tokens, cost_usd, meta, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (user_id, book_id, stage, model, operation,
+             int(prompt_tokens or 0), int(completion_tokens or 0),
+             float(cost_usd) if cost_usd is not None else None,
+             json.dumps(meta, ensure_ascii=False) if meta else None, _now()),
+        )
+        conn.execute("RELEASE SAVEPOINT usage_evt")
+    except Exception:  # noqa: BLE001 — per-call telemetry is best-effort
+        try:
+            conn.execute("ROLLBACK TO SAVEPOINT usage_evt")
+            conn.execute("RELEASE SAVEPOINT usage_evt")
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def usage_events_breakdown(conn: sqlite3.Connection, since: str | None = None) -> dict:
+    """Per-call spend grouped by model and by stage/operation since ``since``
+    (defaults to the start of the current month).
+
+    Fails closed to empty breakdowns: this is additive observability, so a
+    problem here must never take down the existing aggregate usage view that
+    shares the /api/usage response. The sort repeats the aggregate expression
+    (``SUM(cost_usd) IS NULL, SUM(cost_usd) DESC``) rather than the output alias
+    ``cost``: Postgres allows an alias only as a standalone ORDER BY key, not
+    inside an expression, and avoiding ``NULLS LAST`` keeps it portable to
+    SQLite < 3.30. Result: non-null costs first (largest → smallest), NULLs last.
+    """
+    since = since or _month_start()
+    try:
+        by_model = [
+            {"model": r["model"] or "unknown", "calls": int(r["calls"]),
+             "prompt_tokens": int(r["pt"] or 0), "completion_tokens": int(r["ct"] or 0),
+             "cost_usd": round(float(r["cost"] or 0.0), 6)}
+            for r in conn.execute(
+                "SELECT model, COUNT(*) AS calls, SUM(prompt_tokens) AS pt, "
+                "SUM(completion_tokens) AS ct, SUM(cost_usd) AS cost "
+                "FROM usage_events WHERE created_at >= ? "
+                "GROUP BY model ORDER BY SUM(cost_usd) IS NULL, SUM(cost_usd) DESC",
+                (since,),
+            ).fetchall()
+        ]
+        by_operation = [
+            {"stage": r["stage"], "operation": r["operation"], "calls": int(r["calls"]),
+             "prompt_tokens": int(r["pt"] or 0), "completion_tokens": int(r["ct"] or 0),
+             "cost_usd": round(float(r["cost"] or 0.0), 6)}
+            for r in conn.execute(
+                "SELECT stage, operation, COUNT(*) AS calls, SUM(prompt_tokens) AS pt, "
+                "SUM(completion_tokens) AS ct, SUM(cost_usd) AS cost "
+                "FROM usage_events WHERE created_at >= ? "
+                "GROUP BY stage, operation ORDER BY SUM(cost_usd) IS NULL, SUM(cost_usd) DESC",
+                (since,),
+            ).fetchall()
+        ]
+    except Exception:  # noqa: BLE001 — telemetry read must not break aggregate usage
+        return {"by_model": [], "by_operation": []}
+    return {"by_model": by_model, "by_operation": by_operation}
+
+
 def user_spend_this_month(conn: sqlite3.Connection, user_id: str) -> float:
     row = conn.execute(
         "SELECT COALESCE(SUM(cost_usd), 0) AS s FROM usage_ledger "

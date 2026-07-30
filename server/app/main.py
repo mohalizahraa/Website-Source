@@ -807,6 +807,17 @@ async def chat_endpoint(request: Request, user=Depends(require_creator),
                         prompt_tokens=usage.get("prompt_tokens", 0),
                         completion_tokens=usage.get("completion_tokens", 0),
                         cost_usd=usage.get("cost_usd"))
+        # Chat is a deliberate exception to per-call attribution: chat.py
+        # accumulates every tool-loop call into one usage dict, so this is one row
+        # per chat turn (aggregated across tool rounds), not per provider call.
+        # Accepted because model attribution is still exact (every round uses
+        # CHAT_MODEL) and per-turn spend is the useful unit here. True per-call
+        # rows would require threading record_usage_event into chat.py's loop.
+        db.record_usage_event(conn, user_id=user["id"], book_id=book_id, stage="chat",
+                              model=chat_mod.CHAT_MODEL, operation="chat",
+                              prompt_tokens=usage.get("prompt_tokens", 0),
+                              completion_tokens=usage.get("completion_tokens", 0),
+                              cost_usd=usage.get("cost_usd"))
         conn.commit()
     return result
 
@@ -1065,7 +1076,19 @@ def llm_review_segment(
     seg = db.get_segment(conn, seg_id)
     if seg is None:
         raise HTTPException(status_code=404, detail="segment not found")
+    # Authorize BEFORE branching on segment content, so an unauthorized caller
+    # can't distinguish sacred (422) from non-sacred (403) segments in another
+    # book by probing predictable IDs.
     book = _require_book_access(conn, db.get_book(conn, seg["book_id"]), user, write=True)
+    # Sacred text is never machine-reviewed: an LLM suggestion for Qurʾān/Hadith
+    # is exactly the fabrication the canonical store exists to prevent. This is
+    # the real enforcement boundary — the UI also hides the control, but a client
+    # must not be able to obtain a machine rendering of sacred wording here.
+    if seg["kind"] == "sacred":
+        raise HTTPException(
+            status_code=422,
+            detail="LLM review is unavailable for sacred passages — enter verified canonical wording.",
+        )
     _enforce_spend_quota(conn, user)
     # Only send glossary entries that actually occur in this source. This keeps
     # review focused and prevents termbase growth from bloating every prompt.
@@ -1112,6 +1135,17 @@ def llm_review_segment(
         user_id=user["id"],
         book_id=seg["book_id"],
         stage="llm_review",
+        prompt_tokens=usage.get("prompt_tokens", 0),
+        completion_tokens=usage.get("completion_tokens", 0),
+        cost_usd=usage.get("cost_usd"),
+    )
+    db.record_usage_event(
+        conn,
+        user_id=user["id"],
+        book_id=seg["book_id"],
+        stage="llm_review",
+        model=result["model"],
+        operation="review",
         prompt_tokens=usage.get("prompt_tokens", 0),
         completion_tokens=usage.get("completion_tokens", 0),
         cost_usd=usage.get("cost_usd"),
@@ -1277,6 +1311,8 @@ def usage_overview(_admin=Depends(require_admin), conn: sqlite3.Connection = Dep
         "global_remaining_usd": None if gcap is None else round(max(0.0, gcap - gspent), 4),
         "user_limit_default_usd": db.resolved_user_default_cap(conn),
         "by_user": db.spend_by_user_this_month(conn),
+        # Per-call attribution: which model / pass actually spent this month.
+        **db.usage_events_breakdown(conn),
     }
 
 

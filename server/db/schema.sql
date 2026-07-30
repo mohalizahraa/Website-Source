@@ -227,3 +227,27 @@ CREATE TABLE IF NOT EXISTS usage_ledger (
 
 CREATE INDEX IF NOT EXISTS idx_usage_user_time ON usage_ledger (user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_usage_time ON usage_ledger (created_at);
+
+-- ---------------------------------------------------------------------------
+-- usage_events  (granular per-call attribution — the "which model/pass spent
+--   this token" ledger that usage_ledger's aggregate rows can't answer)
+--   One row per individual model call (each draft, refine, OCR page, chat turn,
+--   LLM review). This is observability, NOT billing: quotas still read the
+--   aggregate usage_ledger, so this table is purely additive and safe to lose.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usage_events (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id           TEXT,                 -- payer (book owner / actor); NULL = system
+    book_id           TEXT,
+    stage             TEXT NOT NULL,        -- 'translate' | 'ocr' | 'chat' | 'llm_review'
+    model             TEXT,                 -- concrete provider model for THIS call
+    operation         TEXT,                 -- 'draft' | 'refine' | 'chat' | 'review' | NULL
+    prompt_tokens     INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
+    cost_usd          REAL,                 -- NULL when the provider didn't report a cost
+    meta              TEXT,                 -- optional JSON (route reason, page/seg, latency)
+    created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_usage_events_time ON usage_events (created_at);
+CREATE INDEX IF NOT EXISTS idx_usage_events_book ON usage_events (book_id, created_at);

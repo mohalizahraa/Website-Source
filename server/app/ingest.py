@@ -409,6 +409,18 @@ def _persist_run_usage(book_id: str, owner_id: str | None) -> None:
             completion_tokens=s.get("completion_tokens", 0),
             cost_usd=s.get("cost_usd"),
         )
+        # Granular attribution: one usage_events row per model call in this run,
+        # so spend can be broken down by model and by pass (draft vs refine vs
+        # OCR). The aggregate row above still drives billing/quota.
+        for rec in u.records():
+            db.record_usage_event(
+                c, user_id=owner_id, book_id=book_id,
+                stage=rec.get("stage", "translate"), model=rec.get("model"),
+                operation=rec.get("operation"),
+                prompt_tokens=rec.get("prompt_tokens", 0),
+                completion_tokens=rec.get("completion_tokens", 0),
+                cost_usd=rec.get("cost"),
+            )
         c.commit()
     except Exception:  # noqa: BLE001 — accounting must never break ingestion
         try:

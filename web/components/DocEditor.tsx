@@ -167,10 +167,16 @@ export const DocEditor = forwardRef<
             // Sacred segments keep their golden styling but are now EDITABLE: a
             // canonical hit shows "canonical"; a fallback/blank asks you to verify.
             const canonical = sacred && s.engine === "canonical";
+            // A canonical MISS is deliberately left blank — no machine rendering
+            // of sacred text. The tag asks the reviewer to supply verified
+            // wording rather than implying there's a draft to "verify".
+            const canonicalMissing = sacred && s.engine === "canonical-missing";
             const tag = sacred
               ? canonical
                 ? "Qurʾān · canonical"
-                : "Qurʾān · verify translation"
+                : canonicalMissing
+                  ? "Qurʾān · enter canonical wording"
+                  : "Qurʾān · verify translation"
               : edited
                 ? "edited by you"
                 : `${Math.round(s.confidence * 100)}% confidence`;
