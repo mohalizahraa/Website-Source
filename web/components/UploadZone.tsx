@@ -30,10 +30,19 @@ export function UploadZone({ onUploaded }: { onUploaded: () => void }) {
         const created = await api.uploadBooks(files, meta, (file, percent) => {
           setProgress((current) => ({ ...current, [file.name]: percent }));
         });
+        const duplicates = created.filter((item) => item.duplicate).length;
+        const uploaded = created.length - duplicates;
         // Do NOT auto-ingest — ingestion costs tokens. The reviewer chooses a
         // page range and starts it deliberately from each book card.
         learn([
-          T.strong(`Uploaded ${created.length} ${created.length === 1 ? "book" : "books"}.`),
+          T.strong(
+            uploaded > 0
+              ? `Uploaded ${uploaded} ${uploaded === 1 ? "book" : "books"}.`
+              : "No duplicate books were added.",
+          ),
+          ...(duplicates > 0
+            ? [T.text(`Skipped ${duplicates} duplicate ${duplicates === 1 ? "book" : "books"}.`)]
+            : []),
           T.text(
             "Choose a page range on the book card and press Ingest to start OCR → translate → QA.",
           ),

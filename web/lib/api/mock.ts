@@ -156,6 +156,15 @@ export const mockApi: HaydariAPI = {
     mockSession = null;
     return delay({ ok: true });
   },
+  changePassword(currentPassword, newPassword) {
+    if (!mockSession) throw new ApiError(401, "authentication required");
+    const user = MOCK_USERS.find((candidate) => candidate.id === mockSession?.id);
+    if (!user || user.password !== currentPassword || newPassword.length < 8) {
+      throw new ApiError(400, "password change rejected");
+    }
+    user.password = newPassword;
+    return delay({ ok: true });
+  },
   createUser(body) {
     // Match the real endpoint's dependency chain: require_user (401) then
     // require_admin (403).
@@ -167,6 +176,7 @@ export const mockApi: HaydariAPI = {
       display_name: body.display_name ?? null,
       role: body.role ?? "creator",
       password: body.password,
+      monthly_usd_limit: body.monthly_usd_limit ?? null,
     };
     MOCK_USERS.push(created); // so the new account can actually log in
     return delay<User>(publicUser(created));
@@ -266,7 +276,7 @@ export const mockApi: HaydariAPI = {
         translation_notes: meta?.notes || null,
       });
       onProgress?.(file, 100);
-      return { id };
+      return { id, duplicate: false };
     });
     return delay(created);
   },

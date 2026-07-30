@@ -22,12 +22,19 @@ function AddUserDialog({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<UserRole>("creator");
+  const [monthlyCap, setMonthlyCap] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    const capText = monthlyCap.trim();
+    const cap = capText === "" ? null : Number(capText);
+    if (cap !== null && (!Number.isFinite(cap) || cap < 0)) {
+      setError("The monthly limit must be a non-negative number or left blank.");
+      return;
+    }
     setBusy(true);
     try {
       const u = await api.createUser({
@@ -35,6 +42,7 @@ function AddUserDialog({ onClose }: { onClose: () => void }) {
         password,
         display_name: displayName.trim() || undefined,
         role,
+        monthly_usd_limit: role === "admin" ? null : cap,
       });
       learn([T.strong("Account created."), T.text(`${u.email} can now sign in as ${u.role}.`)]);
       onClose();
@@ -78,6 +86,16 @@ function AddUserDialog({ onClose }: { onClose: () => void }) {
             <option value="admin">Admin — full access</option>
           </select>
         </label>
+        <label className="auth-field">
+          <span>Monthly limit in USD (optional)</span>
+          <input
+            inputMode="decimal"
+            placeholder={role === "admin" ? "Admins use the global limit" : "Use team default"}
+            disabled={role === "admin"}
+            value={monthlyCap}
+            onChange={(e) => setMonthlyCap(e.target.value)}
+          />
+        </label>
         {error && (
           <div className="auth-error" role="alert">
             {error}
@@ -96,12 +114,96 @@ function AddUserDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
+function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
+  const { learn } = useToast();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    if (newPassword.length < 8) {
+      setError("The new password must be at least 8 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("The new passwords do not match.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.changePassword(currentPassword, newPassword);
+      learn([T.strong("Password changed."), T.text("Use the new password the next time you sign in.")]);
+      onClose();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        setError("The current password is incorrect or the new password is invalid.");
+      } else {
+        setError("Couldn't change the password.");
+      }
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-scrim" onClick={onClose}>
+      <form className="modal-card" onClick={(event) => event.stopPropagation()} onSubmit={submit}>
+        <h2 className="modal-title">Change password</h2>
+        <p className="modal-sub">Replace the temporary or current password for your account.</p>
+        <label className="auth-field">
+          <span>Current password</span>
+          <input
+            type="password"
+            required
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(event) => setCurrentPassword(event.target.value)}
+          />
+        </label>
+        <label className="auth-field">
+          <span>New password (8+ characters)</span>
+          <input
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+          />
+        </label>
+        <label className="auth-field">
+          <span>Confirm new password</span>
+          <input
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+          />
+        </label>
+        {error && <div className="auth-error" role="alert">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-ghost sm" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn btn-primary sm" disabled={busy}>
+            {busy ? "Saving…" : "Change password"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export function AuthMenu() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   if (loading) return <div className="who" aria-hidden />;
 
@@ -163,6 +265,16 @@ export function AuthMenu() {
               role="menuitem"
               onClick={() => {
                 setOpen(false);
+                setChangingPassword(true);
+              }}
+            >
+              Change password…
+            </button>
+            <button
+              className="authmenu-item"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
                 void logout();
               }}
             >
@@ -172,7 +284,16 @@ export function AuthMenu() {
         </>
       )}
       {adding && <AddUserDialog onClose={() => setAdding(false)} />}
-      {settingsOpen && <AdminPanel onClose={() => setSettingsOpen(false)} />}
+      {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}
+      {settingsOpen && (
+        <AdminPanel
+          onClose={() => setSettingsOpen(false)}
+          onAddUser={() => {
+            setSettingsOpen(false);
+            setAdding(true);
+          }}
+        />
+      )}
     </div>
   );
 }

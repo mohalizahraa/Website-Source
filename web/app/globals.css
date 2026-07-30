@@ -558,7 +558,7 @@ sup.fn { font-family: var(--sans); font-size: .58em; color: var(--lapis); font-w
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
 /* ---------- admin settings panel ---------- */
-.admin-card { max-width: 560px; max-height: 88vh; overflow-y: auto; }
+.admin-card { max-width: 760px; max-height: 88vh; overflow-y: auto; }
 .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
 .admin-grid .auth-field:last-child { grid-column: 1 / -1; }
 .admin-hint { font-size: var(--fs-xs); color: var(--ink-3); margin: 4px 0 12px; line-height: 1.5; }
@@ -567,19 +567,31 @@ sup.fn { font-family: var(--sans); font-size: .58em; color: var(--lapis); font-w
   border-radius: var(--r-sm); padding: 9px 12px; margin-top: 6px;
 }
 .admin-usage b { color: var(--ink); }
+.admin-team-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.admin-team-head .section-label { flex: 1; margin: 0; }
 .admin-users { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .admin-user-row {
-  display: flex; align-items: center; gap: 12px; padding: 8px 4px;
+  display: flex; align-items: flex-end; gap: 10px; padding: 10px 4px;
   border-bottom: 1px solid var(--line-soft);
 }
 .au-id { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
 .au-id b { font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .au-spent { font-size: var(--fs-xs); color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
-.au-limit { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
-.au-limit span { font-size: var(--fs-xs); color: var(--ink-3); }
+.au-role, .au-limit { display: flex; flex-direction: column; gap: 3px; flex: 0 0 auto; }
+.au-role span, .au-limit span { font-size: var(--fs-xs); color: var(--ink-3); }
+.au-role select {
+  width: 92px; font-family: inherit; font-size: var(--fs-sm); color: var(--ink); background: var(--ground);
+  border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 7px;
+}
 .au-limit input {
   width: 84px; font-family: inherit; font-size: var(--fs-sm); color: var(--ink); background: var(--ground);
   border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 9px; text-align: right;
 }
 .au-limit input:disabled { opacity: .5; }
-.au-limit input:focus-visible { outline: 2px solid var(--lapis); outline-offset: 1px; border-color: var(--lapis); }
+.au-limit input:focus-visible, .au-role select:focus-visible { outline: 2px solid var(--lapis); outline-offset: 1px; border-color: var(--lapis); }
+@media (max-width: 680px) {
+  .admin-user-row { align-items: stretch; flex-wrap: wrap; }
+  .au-id { flex-basis: 100%; }
+  .au-role, .au-limit { flex: 1 1 120px; align-items: stretch; }
+  .au-role select, .au-limit input { width: 100%; }
+}

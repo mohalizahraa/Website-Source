@@ -33,12 +33,18 @@ CREATE TABLE IF NOT EXISTS books (
     author         TEXT,
     status         TEXT NOT NULL DEFAULT 'draft',
     source_pdf     TEXT,
+    source_fingerprint TEXT,
+    source_size    BIGINT,
     google_doc_url TEXT,
     pages_total    INTEGER NOT NULL DEFAULT 0,
     translation_notes TEXT,
     owner_id       TEXT REFERENCES users(id) ON DELETE SET NULL,
     updated_at     TEXT NOT NULL DEFAULT to_char(now() AT TIME ZONE 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_books_owner_source_fingerprint
+    ON books (COALESCE(owner_id, ''), source_fingerprint)
+    WHERE source_fingerprint IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS pages (
     book_id       TEXT NOT NULL,

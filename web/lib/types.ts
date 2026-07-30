@@ -15,6 +15,7 @@ export interface NewUser {
   password: string;
   display_name?: string;
   role?: UserRole;
+  monthly_usd_limit?: number | null;
 }
 
 // Admin-editable runtime config (spend caps + per-run page limit). A null cap
@@ -151,6 +152,10 @@ export interface UploadMeta {
 }
 
 export type UploadProgress = (file: File, percent: number) => void;
+export interface UploadResult {
+  id: string;
+  duplicate?: boolean;
+}
 
 // POST /chat
 export interface ChatMessage {
@@ -234,6 +239,7 @@ export interface HaydariAPI {
   me(): Promise<User | null>;
   login(email: string, password: string): Promise<User>;
   logout(): Promise<{ ok: boolean }>;
+  changePassword(currentPassword: string, newPassword: string): Promise<{ ok: boolean }>;
   createUser(body: NewUser): Promise<User>;
 
   // --- admin config + usage ---
@@ -252,7 +258,7 @@ export interface HaydariAPI {
     files: File[],
     meta?: UploadMeta,
     onProgress?: UploadProgress,
-  ): Promise<{ id: string }[]>;
+  ): Promise<UploadResult[]>;
   importBooks(catalog: CatalogEntry[]): Promise<{ id: string }[]>;
   ingestBook(id: string, options?: IngestOptions): Promise<IngestStatus>;
   getBookStatus(id: string): Promise<IngestStatus>;

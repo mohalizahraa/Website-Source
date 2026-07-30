@@ -117,6 +117,12 @@ def test_admin_can_edit_caps_at_runtime(client):
     assert s["global_monthly_usd"] == 123.0
     assert s["user_monthly_usd_default"] == 7.5
     assert s["max_pages_per_run"] == 33
+    # A separate request opens a fresh DB connection; values must persist, not
+    # merely live in process memory or the response that saved them.
+    persisted = client.get("/api/settings").json()
+    assert persisted["global_monthly_usd"] == 123.0
+    assert persisted["user_monthly_usd_default"] == 7.5
+    assert persisted["max_pages_per_run"] == 33
     # A newly-created creator with no explicit limit now sees the new default.
     _make_creator(client, "def@h.local")
     assert client.get("/api/usage/me").json()["limit_usd"] == 7.5
@@ -178,6 +184,42 @@ def test_admin_lists_and_edits_user_limit(client):
     # clearing it (null) falls back to the default
     r = client.patch(f"/api/auth/users/{creator['id']}", json={"monthly_usd_limit": None})
     assert r.json()["monthly_usd_limit"] is None
+
+
+def test_created_account_can_sign_in_and_admin_can_change_its_role(client):
+    created = client.post("/api/auth/users", json={
+        "email": "managed@h.local",
+        "password": "password123",
+        "display_name": "Managed User",
+        "role": "creator",
+        "monthly_usd_limit": 2.5,
+    })
+    assert created.status_code == 200, created.text
+    user_id = created.json()["id"]
+
+    login = client.post("/api/auth/login", json={
+        "email": "managed@h.local", "password": "password123"})
+    assert login.status_code == 200 and login.json()["role"] == "creator"
+    assert client.get("/api/usage/me").json()["limit_usd"] == 2.5
+    assert client.get("/api/settings").status_code == 403
+
+    client.post("/api/auth/login", json={
+        "email": "admin@haydari.local", "password": "changeme-admin"})
+    changed = client.patch(f"/api/auth/users/{user_id}", json={
+        "role": "admin", "monthly_usd_limit": None})
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["role"] == "admin"
+
+    client.post("/api/auth/login", json={
+        "email": "managed@h.local", "password": "password123"})
+    assert client.get("/api/settings").status_code == 200
+
+
+def test_only_admin_cannot_remove_their_own_admin_access(client):
+    me = client.get("/api/auth/me").json()
+    refused = client.patch(f"/api/auth/users/{me['id']}", json={"role": "creator"})
+    assert refused.status_code == 409
+    assert client.get("/api/auth/me").json()["role"] == "admin"
 
 
 def test_worker_rechecks_quota_at_run_time(client, monkeypatch):

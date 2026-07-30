@@ -29,11 +29,21 @@ function fmtUsd(n: number | null | undefined): string {
   return n == null ? "—" : `$${n.toFixed(2)}`;
 }
 
-export function AdminPanel({ onClose }: { onClose: () => void }) {
+type UserDraft = { role: AdminUser["role"]; limit: string };
+
+export function AdminPanel({
+  onClose,
+  onAddUser,
+}: {
+  onClose: () => void;
+  onAddUser: () => void;
+}) {
   const { learn } = useToast();
   const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [usage, setUsage] = useState<UsageOverview | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [userDrafts, setUserDrafts] = useState<Record<string, UserDraft>>({});
+  const [savingUser, setSavingUser] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   // Editable form state (strings so inputs can be cleared).
@@ -55,6 +65,17 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
         setSettings(s);
         setUsage(u);
         setUsers(list);
+        setUserDrafts(
+          Object.fromEntries(
+            list.map((member) => [
+              member.id,
+              {
+                role: member.role,
+                limit: member.monthly_usd_limit == null ? "" : String(member.monthly_usd_limit),
+              },
+            ]),
+          ),
+        );
         // A null cap means "no limit" — show it as "off" (blank would read as
         // "use the default" and silently re-enable a cap on the next save).
         setGlobalCap(s.global_monthly_usd == null ? "off" : String(s.global_monthly_usd));
@@ -96,19 +117,39 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const saveUserLimit = async (u: AdminUser, raw: string) => {
-    const t = raw.trim();
-    const value = t === "" ? null : Number(t); // blank → default; else a number
+  const saveUser = async (u: AdminUser) => {
+    const draft = userDrafts[u.id] ?? {
+      role: u.role,
+      limit: u.monthly_usd_limit == null ? "" : String(u.monthly_usd_limit),
+    };
+    const t = draft.limit.trim();
+    const value = draft.role === "admin" || t === "" ? null : Number(t);
     if (value !== null && (!Number.isFinite(value) || value < 0)) {
       learn([T.strong("Invalid limit."), T.text("Enter a non-negative number, or leave blank for the default.")]);
       return;
     }
+    setSavingUser(u.id);
     try {
-      const updated = await api.updateUser(u.id, { monthly_usd_limit: value });
+      const updated = await api.updateUser(u.id, {
+        monthly_usd_limit: value,
+        role: draft.role,
+      });
       setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, ...updated } : x)));
-      learn([T.strong("Limit updated."), T.text(`${u.email}: ${fmtUsd(updated.monthly_usd_limit)}`)]);
+      setUserDrafts((prev) => ({
+        ...prev,
+        [u.id]: {
+          role: updated.role,
+          limit: updated.monthly_usd_limit == null ? "" : String(updated.monthly_usd_limit),
+        },
+      }));
+      learn([
+        T.strong("Team member updated."),
+        T.text(`${u.email}: ${updated.role}, cap ${fmtUsd(updated.monthly_usd_limit)}.`),
+      ]);
     } catch (e) {
-      learn([T.strong("Couldn't update limit."), T.text(String(e))]);
+      learn([T.strong("Couldn't update team member."), T.text(String(e))]);
+    } finally {
+      setSavingUser(null);
     }
   };
 
@@ -171,33 +212,70 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <div className="section-label" style={{ marginTop: 18 }}>
-          Team members &amp; limits
+        <div className="admin-team-head">
+          <div className="section-label">Team members &amp; limits</div>
+          <button className="btn btn-primary sm" type="button" onClick={onAddUser}>
+            Add team member
+          </button>
         </div>
         <div className="admin-users">
           {users.map((u) => (
             <div className="admin-user-row" key={u.id}>
               <div className="au-id">
                 <b>{u.display_name || u.email}</b>
-                <span className={"authmenu-role"}>{u.role}</span>
               </div>
               <div className="au-spent">{fmtUsd(u.spent_usd)} used</div>
+              <label className="au-role">
+                <span>Role</span>
+                <select
+                  value={userDrafts[u.id]?.role ?? u.role}
+                  onChange={(e) =>
+                    setUserDrafts((prev) => ({
+                      ...prev,
+                      [u.id]: {
+                        role: e.target.value as AdminUser["role"],
+                        limit:
+                          prev[u.id]?.limit ??
+                          (u.monthly_usd_limit == null ? "" : String(u.monthly_usd_limit)),
+                      },
+                    }))
+                  }
+                >
+                  <option value="admin">Admin</option>
+                  <option value="creator">Creator</option>
+                  <option value="reader">Reader</option>
+                </select>
+              </label>
               <label className="au-limit">
                 <span>Cap</span>
                 <input
                   inputMode="decimal"
-                  defaultValue={u.monthly_usd_limit == null ? "" : String(u.monthly_usd_limit)}
+                  value={userDrafts[u.id]?.limit ?? ""}
                   placeholder={
-                    u.role === "admin" ? "unlimited" : fmtUsd(settings?.user_monthly_usd_default)
+                    (userDrafts[u.id]?.role ?? u.role) === "admin"
+                      ? "global only"
+                      : fmtUsd(settings?.user_monthly_usd_default)
                   }
-                  disabled={u.role === "admin"}
-                  onBlur={(e) => {
-                    const raw = e.target.value;
-                    const cur = u.monthly_usd_limit == null ? "" : String(u.monthly_usd_limit);
-                    if (raw.trim() !== cur) void saveUserLimit(u, raw);
-                  }}
+                  disabled={(userDrafts[u.id]?.role ?? u.role) === "admin"}
+                  onChange={(e) =>
+                    setUserDrafts((prev) => ({
+                      ...prev,
+                      [u.id]: {
+                        role: prev[u.id]?.role ?? u.role,
+                        limit: e.target.value,
+                      },
+                    }))
+                  }
                 />
               </label>
+              <button
+                className="btn sm"
+                type="button"
+                disabled={savingUser === u.id}
+                onClick={() => void saveUser(u)}
+              >
+                {savingUser === u.id ? "Saving…" : "Save"}
+              </button>
             </div>
           ))}
         </div>

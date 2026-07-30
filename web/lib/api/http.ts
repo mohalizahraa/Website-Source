@@ -24,6 +24,7 @@ import type {
   TermBody,
   UploadMeta,
   UploadProgress,
+  UploadResult,
   User,
 } from "../types";
 
@@ -168,6 +169,15 @@ export const httpApi: HaydariAPI = {
   logout() {
     return request<{ ok: boolean }>("/auth/logout", { method: "POST" });
   },
+  changePassword(currentPassword, newPassword) {
+    return request<{ ok: boolean }>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+  },
   createUser(body: NewUser) {
     return request<User>("/auth/users", {
       method: "POST",
@@ -214,7 +224,7 @@ export const httpApi: HaydariAPI = {
     );
   },
   async uploadBooks(files: File[], meta?: UploadMeta, onProgress?: UploadProgress) {
-    const created: { id: string }[] = [];
+    const created: UploadResult[] = [];
     for (const file of files) {
       let prepared: {
         id: string;
@@ -243,7 +253,7 @@ export const httpApi: HaydariAPI = {
           if (meta?.title_en) form.append("title_en", meta.title_en);
           if (meta?.author) form.append("author", meta.author);
           if (meta?.notes) form.append("notes", meta.notes);
-          return upload<{ id: string }[]>("/books/upload", form);
+          return upload<UploadResult[]>("/books/upload", form);
         }
         throw error;
       }
@@ -257,7 +267,7 @@ export const httpApi: HaydariAPI = {
         throw error;
       }
       created.push(
-        await request<{ id: string }>(`/books/${encodeURIComponent(prepared.id)}/upload-complete`, {
+        await request<UploadResult>(`/books/${encodeURIComponent(prepared.id)}/upload-complete`, {
           method: "POST",
           body: JSON.stringify({ size: file.size }),
         }),

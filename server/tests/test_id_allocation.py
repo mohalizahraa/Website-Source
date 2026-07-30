@@ -13,7 +13,7 @@ import io
 def _upload(client, name):
     r = client.post(
         "/api/books/upload",
-        files={"files": (name, io.BytesIO(b"%PDF-1.4 x"), "application/pdf")},
+        files={"files": (name, io.BytesIO(b"%PDF-1.4 " + name.encode()), "application/pdf")},
     )
     assert r.status_code == 200, r.text
     return r.json()[0]["id"]
@@ -29,8 +29,8 @@ def test_multi_file_upload_ids_are_distinct(client):
     r = client.post(
         "/api/books/upload",
         files=[
-            ("files", ("x.pdf", io.BytesIO(b"%PDF"), "application/pdf")),
-            ("files", ("y.pdf", io.BytesIO(b"%PDF"), "application/pdf")),
+            ("files", ("x.pdf", io.BytesIO(b"%PDF x"), "application/pdf")),
+            ("files", ("y.pdf", io.BytesIO(b"%PDF y"), "application/pdf")),
         ],
     )
     assert r.status_code == 200, r.text

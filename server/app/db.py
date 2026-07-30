@@ -164,6 +164,16 @@ def _migrate(conn: Conn) -> None:
         # No inline REFERENCES on ALTER (both backends dislike it); the column is
         # enough — new rows use the schema's FK, legacy rows stay NULL (public/system).
         conn.execute("ALTER TABLE books ADD COLUMN owner_id TEXT")
+    if "source_fingerprint" not in have:
+        conn.execute("ALTER TABLE books ADD COLUMN source_fingerprint TEXT")
+    if "source_size" not in have:
+        size_type = "BIGINT" if conn.backend == "postgres" else "INTEGER"
+        conn.execute(f"ALTER TABLE books ADD COLUMN source_size {size_type}")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_books_owner_source_fingerprint "
+        "ON books (COALESCE(owner_id, ''), source_fingerprint) "
+        "WHERE source_fingerprint IS NOT NULL"
+    )
 
     # Atomic id-allocation counters. Created here as well as in the schema files
     # so pre-existing DBs get the table, then seeded to the current MAX id so
@@ -272,14 +282,17 @@ def insert_book(
     author: str | None,
     status: str,
     source_pdf: str | None,
+    source_fingerprint: str | None = None,
+    source_size: int | None = None,
     google_doc_url: str | None = None,
     owner_id: str | None = None,
 ) -> str:
     conn.execute(
         """
         INSERT INTO books (id, title_ar, title_en, author, status, source_pdf,
-                           google_doc_url, owner_id, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           source_fingerprint, source_size, google_doc_url,
+                           owner_id, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             book_id,
@@ -288,12 +301,45 @@ def insert_book(
             author,
             status,
             source_pdf,
+            source_fingerprint,
+            source_size,
             google_doc_url,
             owner_id,
             _now(),
         ),
     )
     return book_id
+
+
+def find_book_by_source_fingerprint(
+    conn: sqlite3.Connection, owner_id: str | None, fingerprint: str
+) -> dict | None:
+    row = conn.execute(
+        "SELECT * FROM books WHERE source_fingerprint = ? "
+        "AND ((owner_id = ?) OR (owner_id IS NULL AND ? IS NULL)) LIMIT 1",
+        (fingerprint, owner_id, owner_id),
+    ).fetchone()
+    return _row_to_dict(row)
+
+
+def books_missing_source_fingerprint(conn: sqlite3.Connection) -> list[dict]:
+    return [
+        dict(row)
+        for row in conn.execute(
+            "SELECT * FROM books WHERE source_fingerprint IS NULL "
+            "AND source_pdf IS NOT NULL ORDER BY id"
+        ).fetchall()
+    ]
+
+
+def set_book_source_identity(
+    conn: sqlite3.Connection, book_id: str, fingerprint: str, size: int
+) -> None:
+    conn.execute(
+        "UPDATE books SET source_fingerprint = ?, source_size = ?, updated_at = ? "
+        "WHERE id = ?",
+        (fingerprint, int(size), _now(), book_id),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -346,6 +392,13 @@ def set_user_monthly_limit(conn: sqlite3.Connection, user_id: str, limit: float 
 
 def set_user_role(conn: sqlite3.Connection, user_id: str, role: str) -> None:
     conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+
+
+def set_user_password(conn: sqlite3.Connection, user_id: str, password_hash: str) -> None:
+    conn.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (password_hash, user_id),
+    )
 
 
 # ---------------------------------------------------------------------------

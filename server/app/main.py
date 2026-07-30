@@ -6,6 +6,7 @@ append-only event and commits atomically.
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import logging
@@ -119,6 +120,40 @@ def _cookie_secure() -> bool:
     return os.environ.get("HAYDARI_COOKIE_SECURE", "").strip().lower() in ("1", "true", "yes")
 
 
+def _object_fingerprint(info: dict | None) -> tuple[str, int] | None:
+    if not info:
+        return None
+    size = int(info.get("ContentLength") or 0)
+    etag = str(info.get("ETag") or "").strip().strip('"').lower()
+    if size <= 0 or not etag:
+        return None
+    return f"single-put:{etag}:{size}", size
+
+
+def _backfill_source_fingerprints(conn) -> None:
+    """Best-effort identity migration for books uploaded before deduplication.
+
+    Metadata-only HEAD requests are enough for R2. Existing duplicate rows are
+    deliberately left intact rather than deleting historical data automatically;
+    future uploads will still match the first fingerprinted copy.
+    """
+    blob_store = storage.get_storage()
+    for book in db.books_missing_source_fingerprint(conn):
+        key = book.get("source_pdf") or ""
+        if not key.startswith("books/"):
+            continue
+        try:
+            identity = _object_fingerprint(blob_store.object_info(key))
+            if not identity:
+                continue
+            fingerprint, size = identity
+            db.set_book_source_identity(conn, book["id"], fingerprint, size)
+            conn.commit()
+        except Exception as exc:  # noqa: BLE001 — migration must not block startup
+            conn.rollback()
+            logger.warning("Could not fingerprint existing book %s: %s", book["id"], exc)
+
+
 def _require_book_access(conn, book: dict | None, user, *, write: bool) -> dict:
     """Central access rule for a single book.
 
@@ -178,6 +213,31 @@ async def login(request: Request, response: Response,
 @app.post("/api/auth/logout")
 def logout(response: Response):
     response.delete_cookie(auth.COOKIE_NAME, path="/")
+    return {"ok": True}
+
+
+@app.post("/api/auth/change-password")
+async def change_password(
+    request: Request,
+    user=Depends(require_user),
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    """Change the signed-in user's password after verifying the current one."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+    current = body.get("current_password") or ""
+    new = body.get("new_password") or ""
+    if not auth.verify_password(current, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="current password is incorrect")
+    if len(new) < 8:
+        raise HTTPException(status_code=400, detail="new password must be at least 8 characters")
+    if current == new:
+        raise HTTPException(status_code=400, detail="new password must be different")
+    db.set_user_password(conn, user["id"], auth.hash_password(new))
+    write_event(conn, actor=user["id"], type="user.password.change", payload={"id": user["id"]})
+    conn.commit()
     return {"ok": True}
 
 
@@ -243,6 +303,7 @@ def _on_startup() -> None:
     conn = db.connect()
     try:
         db.init_db(conn)
+        _backfill_source_fingerprints(conn)
         reset = db.reset_stale_processing(conn)
         if reset:
             for bid in reset:
@@ -380,6 +441,14 @@ async def upload_books(
         safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", base).strip("._") or "upload.pdf"
         data = await f.read()
         stem = os.path.splitext(safe_name)[0]
+        # The production direct-upload path uses R2's single-PUT ETag (MD5).
+        # Computing the same identity here keeps local/legacy uploads compatible.
+        digest = hashlib.md5(data, usedforsecurity=False).hexdigest()  # noqa: S324
+        fingerprint = f"single-put:{digest}:{len(data)}"
+        existing = db.find_book_by_source_fingerprint(conn, user["id"], fingerprint)
+        if existing:
+            created.append({"id": existing["id"], "duplicate": True})
+            continue
 
         # Reserve the id by inserting the DB row FIRST (id allocation is atomic —
         # db.next_book_id serializes concurrent callers, so no PK race), then
@@ -389,6 +458,7 @@ async def upload_books(
             conn, book_id=book_id, title_ar=title_ar or stem,
             title_en=title_en, author=author, status="uploaded",
             source_pdf=f"books/{book_id}/{safe_name}", owner_id=user["id"],
+            source_fingerprint=fingerprint, source_size=len(data),
         )
         conn.commit()
 
@@ -408,7 +478,7 @@ async def upload_books(
         write_event(conn, actor=user["id"], type="book.upload",
                     payload={"id": book_id, "file": safe_name})
         conn.commit()
-        created.append({"id": book_id})
+        created.append({"id": book_id, "duplicate": False})
     return created
 
 
@@ -504,7 +574,7 @@ async def complete_direct_book_upload(
     """Verify a direct upload exists in R2 before enabling ingestion."""
     book = _require_book_access(conn, db.get_book(conn, book_id), user, write=True)
     if book["status"] == "uploaded":
-        return {"id": book_id}
+        return {"id": book_id, "duplicate": False}
     if book["status"] != "uploading":
         raise HTTPException(status_code=409, detail="book is not awaiting an upload")
     try:
@@ -534,6 +604,31 @@ async def complete_direct_book_upload(
             detail=f"R2 stored {actual_size} bytes; expected {expected_size}",
         )
 
+    identity = _object_fingerprint(info)
+    if not identity:
+        raise HTTPException(status_code=424, detail="R2 did not return an object ETag")
+    fingerprint, _ = identity
+    existing = db.find_book_by_source_fingerprint(conn, user["id"], fingerprint)
+    if existing and existing["id"] != book_id:
+        # The new key is unique to this attempted upload, so removing it cannot
+        # affect the existing book. Delete storage first; only then remove the
+        # temporary DB row so a transient R2 failure remains recoverable.
+        try:
+            storage.get_storage().delete(key)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Could not remove duplicate upload for book %s", book_id)
+            raise HTTPException(status_code=424, detail=f"could not clean up duplicate R2 object: {exc}")
+        conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
+        write_event(
+            conn,
+            actor=user["id"],
+            type="book.upload.duplicate",
+            payload={"discarded_id": book_id, "existing_id": existing["id"], "size": actual_size},
+        )
+        conn.commit()
+        return {"id": existing["id"], "duplicate": True}
+
+    db.set_book_source_identity(conn, book_id, fingerprint, actual_size)
     db.set_book_status(conn, book_id, "uploaded")
     write_event(
         conn,
@@ -542,7 +637,7 @@ async def complete_direct_book_upload(
         payload={"id": book_id, "file": os.path.basename(key), "size": actual_size},
     )
     conn.commit()
-    return {"id": book_id}
+    return {"id": book_id, "duplicate": False}
 
 
 @app.post("/api/books/import")
@@ -1177,7 +1272,8 @@ def list_users(_admin=Depends(require_admin), conn: sqlite3.Connection = Depends
 async def update_user_account(user_id: str, request: Request, admin=Depends(require_admin),
                               conn: sqlite3.Connection = Depends(get_conn)):
     """Admin: set a user's per-user monthly cap and/or role."""
-    if db.get_user(conn, user_id) is None:
+    target = db.get_user(conn, user_id)
+    if target is None:
         raise HTTPException(status_code=404, detail="user not found")
     try:
         body = await request.json()
@@ -1199,6 +1295,13 @@ async def update_user_account(user_id: str, request: Request, admin=Depends(requ
     if "role" in body:
         if body["role"] not in ("admin", "creator", "reader"):
             raise HTTPException(status_code=400, detail="role must be admin, creator, or reader")
+        if target.get("role") == "admin" and body["role"] != "admin":
+            admins = [u for u in db.list_users(conn) if u.get("role") == "admin"]
+            if len(admins) <= 1:
+                raise HTTPException(
+                    status_code=409,
+                    detail="create another admin before changing the only admin's role",
+                )
         db.set_user_role(conn, user_id, body["role"])
 
     write_event(conn, actor=admin["id"], type="user.update",

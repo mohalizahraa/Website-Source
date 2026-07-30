@@ -88,6 +88,8 @@ def test_direct_upload_is_verified_before_book_becomes_uploaded(client, monkeypa
     from app import storage
 
     class FakeDirectStorage:
+        deleted = []
+
         def presigned_upload_url(self, key, content_type, expires=3600):
             assert key.endswith("/large_book.pdf")
             assert content_type == "application/pdf"
@@ -95,7 +97,14 @@ def test_direct_upload_is_verified_before_book_becomes_uploaded(client, monkeypa
 
         def object_info(self, key):
             assert key.endswith("/large_book.pdf")
-            return {"ContentLength": 250_000_000, "ContentType": "application/pdf"}
+            return {
+                "ContentLength": 250_000_000,
+                "ContentType": "application/pdf",
+                "ETag": '"3d0e6f2f2f6f3f0e2f4a0123456789ab"',
+            }
+
+        def delete(self, key):
+            self.deleted.append(key)
 
     monkeypatch.setattr(storage, "get_storage", lambda: FakeDirectStorage())
     start = client.post(
@@ -116,6 +125,21 @@ def test_direct_upload_is_verified_before_book_becomes_uploaded(client, monkeypa
     assert complete.status_code == 200, complete.text
     assert client.get(f"/api/books/{prepared['id']}").json()["status"] == "uploaded"
 
+    # A second upload with the same R2 ETag + size resolves to the existing book
+    # and its redundant object/temporary DB row are removed.
+    second = client.post(
+        "/api/books/upload/initiate",
+        json={"filename": "large book.pdf", "size": 250_000_000},
+    ).json()
+    duplicate = client.post(
+        f"/api/books/{second['id']}/upload-complete",
+        json={"size": 250_000_000},
+    )
+    assert duplicate.status_code == 200, duplicate.text
+    assert duplicate.json() == {"id": prepared["id"], "duplicate": True}
+    assert client.get(f"/api/books/{second['id']}").status_code == 404
+    assert FakeDirectStorage.deleted
+
 
 def test_direct_upload_rejects_non_pdf(client):
     response = client.post(
@@ -123,6 +147,20 @@ def test_direct_upload_rejects_non_pdf(client):
         json={"filename": "not-a-book.zip", "size": 10},
     )
     assert response.status_code == 400
+
+
+def test_legacy_upload_skips_duplicate_pdf_content(client):
+    payload = b"%PDF-1.4 exact same book"
+    first = client.post(
+        "/api/books/upload",
+        files={"files": ("first-name.pdf", io.BytesIO(payload), "application/pdf")},
+    )
+    second = client.post(
+        "/api/books/upload",
+        files={"files": ("renamed-copy.pdf", io.BytesIO(payload), "application/pdf")},
+    )
+    assert first.status_code == second.status_code == 200
+    assert second.json() == [{"id": first.json()[0]["id"], "duplicate": True}]
 
 
 def test_import_catalog(client):

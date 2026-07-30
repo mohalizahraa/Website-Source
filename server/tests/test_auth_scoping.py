@@ -11,7 +11,7 @@ import io
 def _upload(client, name="b.pdf"):
     r = client.post(
         "/api/books/upload",
-        files={"files": (name, io.BytesIO(b"%PDF-1.4 x"), "application/pdf")},
+        files={"files": (name, io.BytesIO(b"%PDF-1.4 " + name.encode()), "application/pdf")},
     )
     assert r.status_code == 200, r.text
     return r.json()[0]["id"]
@@ -25,6 +25,28 @@ def test_me_returns_bootstrapped_admin(client):
 def test_bad_login_rejected(client):
     r = client.post("/api/auth/login", json={"email": "admin@haydari.local", "password": "wrong"})
     assert r.status_code == 401
+
+
+def test_user_can_replace_temporary_password(client):
+    created = client.post("/api/auth/users", json={
+        "email": "rotate@haydari.local",
+        "password": "temporary123",
+        "role": "creator",
+    })
+    assert created.status_code == 200, created.text
+    assert client.post("/api/auth/login", json={
+        "email": "rotate@haydari.local", "password": "temporary123"}).status_code == 200
+
+    changed = client.post("/api/auth/change-password", json={
+        "current_password": "temporary123",
+        "new_password": "replacement456",
+    })
+    assert changed.status_code == 200, changed.text
+    client.post("/api/auth/logout")
+    assert client.post("/api/auth/login", json={
+        "email": "rotate@haydari.local", "password": "temporary123"}).status_code == 401
+    assert client.post("/api/auth/login", json={
+        "email": "rotate@haydari.local", "password": "replacement456"}).status_code == 200
 
 
 def test_anonymous_cannot_mutate(client):

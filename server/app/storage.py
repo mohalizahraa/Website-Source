@@ -10,6 +10,7 @@ S3/R2 env: ``S3_BUCKET`` (required), ``S3_ENDPOINT_URL`` (R2 account endpoint),
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import tempfile
 from pathlib import Path
@@ -103,6 +104,20 @@ class LocalStorage(Storage):
 
     def materialize(self, key: str) -> str:
         return str(self._p(key))
+
+    def object_info(self, key: str) -> dict | None:
+        path = self._p(key)
+        if not path.exists():
+            return None
+        digest = hashlib.md5(usedforsecurity=False)  # noqa: S324
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return {
+            "ContentLength": path.stat().st_size,
+            "ContentType": "application/pdf",
+            "ETag": f'"{digest.hexdigest()}"',
+        }
 
 
 class S3Storage(Storage):

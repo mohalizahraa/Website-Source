@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS books (
     author         TEXT,
     status         TEXT NOT NULL DEFAULT 'draft',
     source_pdf     TEXT,
+    source_fingerprint TEXT,
+    source_size    INTEGER,
     google_doc_url TEXT,
     -- Total physical pages in the source PDF (from pdfinfo; 0 until known).
     pages_total    INTEGER NOT NULL DEFAULT 0,
@@ -58,6 +60,10 @@ CREATE TABLE IF NOT EXISTS books (
     owner_id       TEXT REFERENCES users(id) ON DELETE SET NULL,
     updated_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_books_owner_source_fingerprint
+    ON books (COALESCE(owner_id, ''), source_fingerprint)
+    WHERE source_fingerprint IS NOT NULL;
 
 -- ---------------------------------------------------------------------------
 -- pages  (composite PK: one row per physical page of a book)
