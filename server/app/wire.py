@@ -44,6 +44,10 @@ def segment_to_wire(seg: dict) -> dict:
         "anchor": seg.get("anchor"),
         "ar": seg["ar"],
         "en": en,
+        # Original model output stays available after a saved edit so the UI
+        # can render tracked changes and approvals can create draft→final
+        # training pairs after a leave/reload cycle.
+        "en_draft": seg.get("en_draft"),
         "engine": seg.get("engine"),
         "confidence": seg.get("confidence"),
         "qa": {

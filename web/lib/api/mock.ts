@@ -367,6 +367,16 @@ export const mockApi: HaydariAPI = {
     return delay({ ...seg });
   },
 
+  async saveSegmentDraft(id, enEdited) {
+    guardSession();
+    const seg = findSegment(id);
+    if (!seg) throw new Error(`Unknown segment ${id}`);
+    seg.en_draft = seg.en_draft ?? seg.en;
+    seg.en = enEdited;
+    seg.status = "draft";
+    return delay({ ...seg });
+  },
+
   async reviewSegment(id, body: ReviewBody) {
     guardSession();
     const seg = findSegment(id);
@@ -380,7 +390,11 @@ export const mockApi: HaydariAPI = {
       }
     } else if (body.action === "reject") {
       seg.status = "needs_review";
-    } // skip -> unchanged
+    } else {
+      // Skip preserves the editor's current text without changing status.
+      seg.en_draft = seg.en_draft ?? seg.en;
+      seg.en = body.en_edited;
+    }
 
     const edited = !!body.en_edited && body.en_edited !== (seg.en_draft ?? seg.en);
     const terms = body.mqm.includes("Terminology") ? ["المتكلّمون → the mutakallimūn"] : [];
@@ -399,6 +413,18 @@ export const mockApi: HaydariAPI = {
       },
     };
     return delay(result);
+  },
+
+  async reviewWithLLM(id, enEdited) {
+    guardSession();
+    const seg = findSegment(id);
+    if (!seg) throw new Error(`Unknown segment ${id}`);
+    return delay({
+      model: "mock-frontier-reviewer",
+      assessment: "The rendering is faithful overall; verify the technical terminology.",
+      suggestion: enEdited,
+      issues: [],
+    });
   },
 
   async addTerm(_body: TermBody) {

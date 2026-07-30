@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
-import type { IngestStatus, PagePayload, ReviewAction, Segment } from "@/lib/types";
+import type {
+  IngestStatus,
+  LLMReviewResult,
+  PagePayload,
+  ReviewAction,
+  Scope,
+  Segment,
+} from "@/lib/types";
 import { canWrite, useAuth } from "@/lib/auth";
 import { T, useToast } from "./Toast";
 import { TopBar, type SaveState } from "./TopBar";
@@ -54,10 +61,16 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
   const [mqmById, setMqmById] = useState<Record<string, string[]>>({});
   const [err, setErr] = useState<string | null>(null);
   const [live, setLive] = useState<IngestStatus | null>(null);
+  const [actionBusy, setActionBusy] = useState<ReviewAction | "draft" | null>(null);
+  const [llmById, setLlmById] = useState<Record<string, LLMReviewResult>>({});
+  const [llmReviewingId, setLlmReviewingId] = useState<string | null>(null);
 
   const docRef = useRef<DocEditorHandle>(null);
   const pagesRef = useRef<number[]>([]);
   const loadedOnceRef = useRef(false); // have we ever fetched the page list OK?
+  const pendingDraftsRef = useRef<Record<string, string>>({});
+  const saveTimersRef = useRef<Map<string, number>>(new Map());
+  const saveChainsRef = useRef<Map<string, Promise<void>>>(new Map());
 
   // Which pages actually exist (ingestion can be a non-contiguous range).
   const refreshPages = useCallback(async () => {
@@ -150,55 +163,143 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
   const scores = scoresById[activeId] ?? EMPTY_SCORES;
   const mqm = mqmById[activeId] ?? [];
 
-  const markDirty = useCallback(() => setSaveState("unsaved"), []);
-
-  const select = useCallback((id: string) => setActiveId(id), []);
-
-  const step = useCallback(
-    (dir: 1 | -1) => {
-      const ids = railSegments.map((s) => s.id);
-      const idx = ids.indexOf(activeId);
-      const next = ids[Math.min(ids.length - 1, Math.max(0, idx + dir))];
-      if (next) setActiveId(next);
-    },
-    [railSegments, activeId],
-  );
-
   const patchSegment = useCallback((id: string, patch: Partial<Segment>) => {
     setData((d) =>
       d ? { ...d, segments: d.segments.map((s) => (s.id === id ? { ...s, ...patch } : s)) } : d,
     );
   }, []);
 
-  const doSave = useCallback(() => {
-    if (!manage) return; // read-only viewers have nothing to save
-    setSaveState("saving");
-    // No dedicated draft endpoint; persistence of the edited text happens on
-    // approve. Here we confirm the local capture and cue the reviewer.
-    window.setTimeout(() => {
-      setSaveState("saved");
-      learn([T.strong("Draft saved."), T.text("Edits captured to translation memory.")]);
-    }, 150);
-  }, [learn, manage]);
+  const persistDraft = useCallback(
+    (id: string, text: string, announce = false): Promise<void> => {
+      const timer = saveTimersRef.current.get(id);
+      if (timer !== undefined) window.clearTimeout(timer);
+      saveTimersRef.current.delete(id);
+      setSaveState("saving");
+
+      // Serialize saves per segment so a slower old request can never overwrite
+      // a newer edit at the database.
+      const previous = saveChainsRef.current.get(id) ?? Promise.resolve();
+      const task = previous
+        .catch(() => undefined)
+        .then(async () => {
+          const saved = await api.saveSegmentDraft(id, text);
+          if (pendingDraftsRef.current[id] === text) {
+            delete pendingDraftsRef.current[id];
+            setSaveState(
+              Object.keys(pendingDraftsRef.current).length === 0 ? "saved" : "unsaved",
+            );
+          }
+          // Updating status is safe while typing; avoid replacing `en` in React
+          // state because dangerouslySetInnerHTML would move the active caret.
+          patchSegment(id, { status: saved.status, en_draft: saved.en_draft });
+          if (announce) {
+            learn([T.strong("Draft saved."), T.text("It will be restored when you return.")]);
+          }
+        })
+        .catch((error) => {
+          setSaveState("unsaved");
+          if (announce) {
+            learn([T.strong("Draft was not saved."), T.text(String(error))]);
+          }
+          throw error;
+        });
+      saveChainsRef.current.set(id, task);
+      return task;
+    },
+    [learn, patchSegment],
+  );
+
+  const markDirty = useCallback(
+    (id: string, text: string) => {
+      if (!manage) return;
+      pendingDraftsRef.current[id] = text;
+      setSaveState("unsaved");
+      const old = saveTimersRef.current.get(id);
+      if (old !== undefined) window.clearTimeout(old);
+      const timer = window.setTimeout(() => {
+        void persistDraft(id, text).catch(() => undefined);
+      }, 700);
+      saveTimersRef.current.set(id, timer);
+    },
+    [manage, persistDraft],
+  );
+
+  const doSave = useCallback(async () => {
+    if (!manage || !active) return;
+    const text = docRef.current?.getText(active.id) ?? active.en;
+    pendingDraftsRef.current[active.id] = text;
+    setActionBusy("draft");
+    try {
+      await persistDraft(active.id, text, true);
+    } catch {
+      // persistDraft already leaves the visible state unsaved and explains why.
+    } finally {
+      setActionBusy(null);
+    }
+  }, [active, manage, persistDraft]);
+
+  const flushPending = useCallback(async () => {
+    const entries = Object.entries(pendingDraftsRef.current);
+    if (!entries.length) return true;
+    const results = await Promise.allSettled(entries.map(([id, text]) => persistDraft(id, text)));
+    return results.every((result) => result.status === "fulfilled");
+  }, [persistDraft]);
+
+  const select = useCallback(
+    (id: string) => {
+      if (id === activeId) return;
+      const pending = pendingDraftsRef.current[activeId];
+      if (!(activeId in pendingDraftsRef.current)) {
+        setActiveId(id);
+        setSaveState(
+          Object.keys(pendingDraftsRef.current).length === 0 ? "saved" : "unsaved",
+        );
+        return;
+      }
+      void persistDraft(activeId, pending)
+        .then(() => setActiveId(id))
+        .catch(() => undefined);
+    },
+    [activeId, persistDraft],
+  );
+
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      const ids = railSegments.map((s) => s.id);
+      const idx = ids.indexOf(activeId);
+      const next = ids[Math.min(ids.length - 1, Math.max(0, idx + dir))];
+      if (next) select(next);
+    },
+    [railSegments, activeId, select],
+  );
 
   const review = useCallback(
     async (action: ReviewAction) => {
-      if (!active) return;
+      if (!active || actionBusy) return;
       const en_edited = docRef.current?.getText(active.id) ?? active.en;
       // Training signal: does the final text differ from the model's ORIGINAL
       // draft (en_draft when present, else the current en)?
       const draft = (active.en_draft ?? active.en).replace(/\[\[FN-\d+\]\]/g, "").trim();
-      const changed = en_edited.trim() !== draft;
+      const changed = en_edited.replace(/\[\[FN-\d+\]\]/g, "").trim() !== draft;
+      const timer = saveTimersRef.current.get(active.id);
+      if (timer !== undefined) window.clearTimeout(timer);
+      saveTimersRef.current.delete(active.id);
+      setActionBusy(action);
       try {
+        // If the debounce already fired, wait for that older draft write before
+        // sending the final action. Otherwise a slow autosave could land after
+        // Approve/Reject and incorrectly move the segment back to `draft`.
+        await saveChainsRef.current.get(active.id)?.catch(() => undefined);
         const res = await api.reviewSegment(active.id, {
           en_edited,
           action,
           scores,
           mqm,
         });
-        patchSegment(active.id, { status: res.status });
+        delete pendingDraftsRef.current[active.id];
+        patchSegment(active.id, { status: res.status, en: en_edited });
+        setSaveState("saved");
         if (action === "approve") {
-          setSaveState("saved");
           learn(
             changed
               ? [
@@ -208,16 +309,20 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
               : [T.strong("Approved."), T.text("Segment locked into the approved set.")],
           );
         } else if (action === "reject") {
-          learn([T.strong("Sent back."), T.text("This segment was queued for regeneration.")]);
+          learn([T.strong("Rejected."), T.text("Your edit was saved and the segment remains in review.")]);
           step(1);
         } else {
+          learn([T.strong("Skipped."), T.text("Your current edit was saved without approving it.")]);
           step(1);
         }
       } catch (e) {
+        setSaveState("unsaved");
         learn([T.strong("Something went wrong."), T.text(String(e))]);
+      } finally {
+        setActionBusy(null);
       }
     },
-    [active, scores, mqm, patchSegment, learn, step],
+    [active, actionBusy, scores, mqm, patchSegment, learn, step],
   );
 
   const applyAlt = useCallback(
@@ -225,41 +330,61 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
       if (!active) return;
       docRef.current?.setText(active.id, text);
       setSaveState("unsaved");
-      learn([T.strong("Applied."), T.text("Replaced the phrase and logged your preference.")]);
+      learn([T.strong("Applied."), T.text("Review the replacement, then save or approve it.")]);
     },
     [active, learn],
   );
 
-  const teachTerm = useCallback(async () => {
-    await api.addTerm({
-      term_ar: "المتكلّمون",
-      term_en: "the mutakallimūn",
-      note: "Prefer transliteration for technical kalām terms.",
-      scope: "global",
-    });
-    learn([
-      T.strong("Learned."),
-      T.text("Added"),
-      T.ar("المتكلّمون → “the mutakallimūn”"),
-      T.text("to your termbase — enforced in 7 upcoming segments."),
-    ]);
-  }, [learn]);
+  const teachTerm = useCallback(async (termAr: string, termEn: string, scope: Scope) => {
+    try {
+      await api.addTerm({
+        term_ar: termAr,
+        term_en: termEn,
+        scope,
+        book_id: scope === "book" ? bookId : undefined,
+      });
+      learn([
+        T.strong("Term learned."),
+        T.ar(`${termAr} → ${termEn}`),
+        T.text(scope === "book" ? "Saved for this book." : "Saved for all books."),
+      ]);
+    } catch (e) {
+      learn([T.strong("Couldn’t save term."), T.text(String(e))]);
+      throw e;
+    }
+  }, [learn, bookId]);
 
-  const teachStyle = useCallback(async () => {
+  const teachStyle = useCallback(async (rule: string, scope: Scope) => {
     try {
       await api.addStyleRule({
-        rule: "Prefer transliterated technical terms over loose glosses.",
-        scope: "book",
-        book_id: bookId,
+        rule,
+        scope,
+        book_id: scope === "book" ? bookId : undefined,
       });
       learn([
         T.strong("Style rule saved."),
-        T.text("The model will prefer transliterated technical terms. Applied to this book and future ones."),
+        T.text(scope === "book" ? "It will guide this book." : "It will guide all books."),
       ]);
     } catch (e) {
       learn([T.strong("Couldn’t save style rule."), T.text(String(e))]);
+      throw e;
     }
   }, [learn, bookId]);
+
+  const requestLLMReview = useCallback(async () => {
+    if (!active || llmReviewingId) return;
+    const text = docRef.current?.getText(active.id) ?? active.en;
+    setLlmReviewingId(active.id);
+    try {
+      const result = await api.reviewWithLLM(active.id, text);
+      setLlmById((current) => ({ ...current, [active.id]: result }));
+      learn([T.strong("LLM review ready."), T.text("Nothing was changed automatically.")]);
+    } catch (e) {
+      learn([T.strong("LLM review failed."), T.text(String(e))]);
+    } finally {
+      setLlmReviewingId(null);
+    }
+  }, [active, learn, llmReviewingId]);
 
   const setScore = useCallback(
     (dim: keyof Scores, v: number) => {
@@ -303,6 +428,27 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [doSave, step, review, manage]);
+
+  // Autosave normally finishes within 700 ms. If the tab is hidden, start any
+  // pending writes immediately; if the browser is closing while a request is
+  // still unsaved, show its native leave warning instead of silently losing it.
+  useEffect(() => {
+    if (!manage) return;
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") void flushPending();
+    };
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (Object.keys(pendingDraftsRef.current).length === 0) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+  }, [flushPending, manage]);
 
   // No reviewable pages yet — a friendly wait state, not a scary error.
   if (pagesReady && pages.length === 0) {
@@ -366,8 +512,15 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
         book={data.book}
         page={page}
         pageCount={totalPages}
-        onPrev={() => prevPage != null && setPage(prevPage)}
-        onNext={() => nextPage != null && setPage(nextPage)}
+        onBack={async () => {
+          if (await flushPending()) router.push("/");
+        }}
+        onPrev={() => {
+          if (prevPage != null) void flushPending().then((ok) => ok && setPage(prevPage));
+        }}
+        onNext={() => {
+          if (nextPage != null) void flushPending().then((ok) => ok && setPage(nextPage));
+        }}
         hasPrev={prevPage != null}
         hasNext={nextPage != null}
         saveState={saveState}
@@ -405,18 +558,18 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
             manage ? (
               <div className="actions">
                 <div className="inner">
-                  <button className="btn btn-primary" onClick={() => void review("approve")}>
+                  <button className="btn btn-primary" disabled={actionBusy !== null} onClick={() => void review("approve")}>
                     Approve &amp; save edits <span className="k">A</span>
                   </button>
-                  <button className="btn" onClick={doSave}>
-                    Save draft <span className="k">⌘S</span>
+                  <button className="btn" disabled={actionBusy !== null} onClick={() => void doSave()}>
+                    {actionBusy === "draft" ? "Saving…" : "Save draft"} <span className="k">⌘S</span>
                   </button>
-                  <button className="btn btn-ghost" onClick={() => void review("skip")}>
+                  <button className="btn btn-ghost" disabled={actionBusy !== null} onClick={() => void review("skip")}>
                     Skip
                   </button>
                   <div className="spacer" />
-                  <button className="btn btn-danger" onClick={() => void review("reject")}>
-                    Reject &amp; regenerate
+                  <button className="btn btn-danger" disabled={actionBusy !== null} onClick={() => void review("reject")}>
+                    Reject
                   </button>
                 </div>
               </div>
@@ -435,6 +588,9 @@ export function Workbench({ bookId, initialPage = 1 }: { bookId: string; initial
           onApplyAlt={applyAlt}
           onTeachTerm={teachTerm}
           onTeachStyle={teachStyle}
+          onLLMReview={requestLLMReview}
+          llmReview={llmById[active.id] ?? null}
+          llmReviewing={llmReviewingId === active.id}
           readOnly={!manage}
         />
       </div>

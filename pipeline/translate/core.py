@@ -132,22 +132,17 @@ class Pipeline:
     def translate_segment(self, seg: Segment, context: Optional[Context] = None) -> dict:
         context = context or {}
 
-        # 1) Sacred → canonical detect-and-replace. On a hit we use the verified
-        # canonical Arabic + approved English. On a MISS we do NOT leave it blank
-        # (the reviewer can't act on an empty box): we produce an audited machine
-        # translation as a starting draft, flagged needs_review + needs_canonical
-        # so a human supplies/verifies the canonical wording. If even that yields
-        # nothing, fall back to the original Arabic so the box is never empty.
+        # 1) Sacred → canonical detect-and-replace. A miss is deliberately left
+        # for human verification: an authoritative-looking machine rendering is
+        # a quality regression here, even when produced by the frontier model.
         if seg.get("kind") == "sacred":
             replaced = substitute_sacred(seg, self.canonical_db)
             if replaced is not None:
                 return replaced
-            fallback = self._mt(seg, context, self.cloud)
-            text = fallback.text.strip() or seg.get("ar", "")
             return {
-                "en": text,
-                "engine": "mt-fallback-sacred",
-                "confidence": fallback.confidence,
+                "en": "",
+                "engine": "canonical-missing",
+                "confidence": 0.0,
                 "status": "needs_review",
                 "needs_canonical": True,
             }

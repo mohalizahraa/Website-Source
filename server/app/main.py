@@ -31,12 +31,16 @@ from pydantic import ValidationError
 
 from . import auth
 from . import chat as chat_mod
+from . import llm_review as llm_review_mod
 from . import config, db, ingest, storage
 from .diffing import compute_diff
 from .events import write_event
 from .schemas import (
     CatalogBook,
+    DraftRequest,
     LearningSummary,
+    LLMReviewRequest,
+    LLMReviewResponse,
     ReviewRequest,
     ReviewResponse,
     StyleRuleRequest,
@@ -897,6 +901,33 @@ def get_segment(seg_id: str, user=Depends(current_user),
     return segment_to_wire(seg)
 
 
+@app.patch("/api/segments/{seg_id}")
+def save_segment_draft(
+    seg_id: str,
+    body: DraftRequest,
+    user=Depends(require_user),
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    """Durably save the editor's current text without teaching from a partial draft.
+
+    Editing an approved segment moves it back to ``draft`` so published/approved
+    state can never silently disagree with the newly edited text.
+    """
+    seg = db.get_segment(conn, seg_id)
+    if seg is None:
+        raise HTTPException(status_code=404, detail="segment not found")
+    _require_book_access(conn, db.get_book(conn, seg["book_id"]), user, write=True)
+    db.update_segment(conn, seg_id, en_current=body.en_edited, status="draft")
+    write_event(
+        conn,
+        actor=user["id"],
+        type="segment.draft_saved",
+        payload={"segment_id": seg_id, "changed": body.en_edited != (seg.get("en_current") or "")},
+    )
+    conn.commit()
+    return segment_to_wire(db.get_segment(conn, seg_id))
+
+
 @app.post("/api/segments/{seg_id}/review", response_model=ReviewResponse)
 def review_segment(
     seg_id: str,
@@ -990,7 +1021,11 @@ def review_segment(
         db.update_segment(conn, seg_id, en_current=en_after, status="needs_review")
         new_status = "needs_review"
         conn.commit()
-    # else skip — leave status untouched, nothing to persist.
+    else:
+        # Skip means "not deciding yet", not "discard my typing". Preserve the
+        # current edit and status, then let the UI move to the next segment.
+        db.update_segment(conn, seg_id, en_current=en_after)
+        conn.commit()
 
     terms_suggested = _suggest_terms(diff)
 
@@ -1017,6 +1052,78 @@ def review_segment(
             "applied_to": applied_to,
         },
     }
+
+
+@app.post("/api/segments/{seg_id}/llm-review", response_model=LLMReviewResponse)
+def llm_review_segment(
+    seg_id: str,
+    body: LLMReviewRequest,
+    user=Depends(require_creator),
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    """Get frontier-model feedback without overwriting the editor's text."""
+    seg = db.get_segment(conn, seg_id)
+    if seg is None:
+        raise HTTPException(status_code=404, detail="segment not found")
+    book = _require_book_access(conn, db.get_book(conn, seg["book_id"]), user, write=True)
+    _enforce_spend_quota(conn, user)
+    # Only send glossary entries that actually occur in this source. This keeps
+    # review focused and prevents termbase growth from bloating every prompt.
+    from pipeline.translate import arabic as tr_arabic
+
+    rows = conn.execute(
+        "SELECT term_ar, term_en, note FROM termbase WHERE scope='global' OR book_id=?",
+        (seg["book_id"],),
+    ).fetchall()
+    glossary = [
+        {"term_ar": r["term_ar"], "term_en": r["term_en"], "note": r["note"]}
+        for r in rows
+        if tr_arabic.contains(seg["ar"], r["term_ar"])
+    ]
+    try:
+        result = llm_review_mod.review_translation(
+            ar=seg["ar"],
+            en=body.en_edited,
+            kind=seg["kind"],
+            instructions=book.get("translation_notes"),
+            glossary=glossary,
+            style_rules=db.style_rules_for(conn, seg["book_id"]),
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"LLM review failed: {exc}")
+    usage = result.pop("usage", {})
+    suggestion = result.get("suggestion") or ""
+    missing = _missing_anchors(seg["ar"], suggestion) if suggestion else []
+    if missing:
+        # Never offer a structurally unsafe suggestion for one-click apply.
+        # Approval also validates anchors, but blocking it here prevents a
+        # reviewer from accidentally saving a broken intermediate draft.
+        result["suggestion"] = ""
+        issues = list(result.get("issues") or [])
+        issues.append(
+            "Suggestion withheld because it dropped footnote anchor(s): "
+            + ", ".join(missing)
+        )
+        result["issues"] = issues
+    db.record_usage(
+        conn,
+        user_id=user["id"],
+        book_id=seg["book_id"],
+        stage="llm_review",
+        prompt_tokens=usage.get("prompt_tokens", 0),
+        completion_tokens=usage.get("completion_tokens", 0),
+        cost_usd=usage.get("cost_usd"),
+    )
+    write_event(
+        conn,
+        actor=user["id"],
+        type="segment.llm_review",
+        payload={"segment_id": seg_id, "model": result["model"]},
+    )
+    conn.commit()
+    return result
 
 
 # ---------------------------------------------------------------------------

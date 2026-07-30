@@ -25,6 +25,18 @@ class ReviewRequest(BaseModel):
     reviewer: Optional[str] = None
 
 
+class DraftRequest(BaseModel):
+    """Durably save in-progress editor text without creating training signal."""
+
+    en_edited: str = Field(..., description="Current in-progress English text")
+
+
+class LLMReviewRequest(BaseModel):
+    """Ask the frontier reviewer for non-destructive feedback on current text."""
+
+    en_edited: str = Field(..., description="English text to review")
+
+
 class ReviewLearning(BaseModel):
     tm_added: int
     terms_suggested: list
@@ -34,6 +46,13 @@ class ReviewLearning(BaseModel):
 class ReviewResponse(BaseModel):
     status: str
     learning: ReviewLearning
+
+
+class LLMReviewResponse(BaseModel):
+    model: str
+    assessment: str
+    suggestion: str
+    issues: list[str] = Field(default_factory=list)
 
 
 class TermbaseRequest(BaseModel):

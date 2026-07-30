@@ -240,11 +240,22 @@ def _process_one_page(conn, book_id, pdf, page_no, work_dir, engine, pipe,
     for i, (sid, seg) in enumerate(seg_rows, 1):
         _set_detail(book_id, phase="translate", page=page_no, seg=i, seg_total=total)
         s = {"id": sid, "kind": seg.get("kind", "body"),
-             "anchor": seg.get("anchor"), "ar": seg.get("ar", "")}
+             "anchor": seg.get("anchor"), "ar": seg.get("ar", ""),
+             # Preserve OCR uncertainty for the model router. Previously this
+             # value was written to the DB but silently discarded here.
+             "confidence": seg.get("confidence")}
         # Feed the learning loop back into translation: enforced glossary terms,
         # active style rules, per-book instructions, and — crucially — reuse of
         # previously-approved translations for identical Arabic (translation memory).
-        ctx = {"glossary": glossary, "style_rules": style_rules or []}
+        # Inject only terms that can apply to this Arabic segment. Sending the
+        # entire growing termbase twice (draft + refine) adds distraction and
+        # tokens without improving terminology on absent words.
+        from pipeline.translate import arabic as tr_arabic
+        applicable_glossary = [
+            term for term in glossary
+            if tr_arabic.contains(s["ar"], term.get("term_ar", ""))
+        ]
+        ctx = {"glossary": applicable_glossary, "style_rules": style_rules or []}
         if notes:
             ctx["instructions"] = notes
         tm = db.tm_lookup(conn, s["ar"], book_id)

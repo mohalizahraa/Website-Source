@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { BrandMark } from "./BrandMark";
 import type { Book } from "@/lib/types";
 
@@ -18,6 +17,7 @@ export function TopBar({
   pageCount,
   onPrev,
   onNext,
+  onBack,
   hasPrev,
   hasNext,
   saveState,
@@ -29,6 +29,7 @@ export function TopBar({
   pageCount: number;
   onPrev: () => void;
   onNext: () => void;
+  onBack?: () => void | Promise<void>;
   hasPrev?: boolean; // overrides default page<=1 (for non-contiguous page sets)
   hasNext?: boolean; // overrides default page>=pageCount
   saveState: SaveState;
@@ -37,10 +38,10 @@ export function TopBar({
 }) {
   return (
     <header className="bar">
-      <Link href="/" className="brand" aria-label="Back to library">
+      <button type="button" className="brand" aria-label="Back to library" onClick={() => void onBack?.()}>
         <BrandMark />
         <b>Miʿrāj</b>
-      </Link>
+      </button>
       <div className="book">
         <span className="ar" dir="rtl">
           {book.title_ar}

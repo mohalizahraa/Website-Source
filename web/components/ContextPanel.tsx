@@ -1,6 +1,7 @@
 "use client";
 
-import type { Segment } from "@/lib/types";
+import { useState } from "react";
+import type { LLMReviewResult, Scope, Segment } from "@/lib/types";
 import { confTag, levelOf, pct } from "@/lib/ui";
 
 const DIMS = ["Adequacy", "Fluency", "Terminology", "Footnotes"] as const;
@@ -22,6 +23,9 @@ export function ContextPanel({
   onApplyAlt,
   onTeachTerm,
   onTeachStyle,
+  onLLMReview,
+  llmReview,
+  llmReviewing,
   readOnly = false,
 }: {
   seg: Segment;
@@ -31,10 +35,19 @@ export function ContextPanel({
   mqm: string[];
   onToggleMqm: (tag: string) => void;
   onApplyAlt: (text: string) => void;
-  onTeachTerm: () => void;
-  onTeachStyle: () => void;
+  onTeachTerm: (termAr: string, termEn: string, scope: Scope) => Promise<void>;
+  onTeachStyle: (rule: string, scope: Scope) => Promise<void>;
+  onLLMReview: () => Promise<void>;
+  llmReview: LLMReviewResult | null;
+  llmReviewing: boolean;
   readOnly?: boolean; // hide teaching controls for read-only visitors
 }) {
+  const [termAr, setTermAr] = useState("");
+  const [termEn, setTermEn] = useState("");
+  const [termScope, setTermScope] = useState<Scope>("book");
+  const [styleRule, setStyleRule] = useState("");
+  const [styleScope, setStyleScope] = useState<Scope>("book");
+  const [teaching, setTeaching] = useState<"term" | "style" | null>(null);
   const lvl = levelOf(seg);
   const sacred = seg.kind === "sacred";
   const ref = sacred ? "Qurʾān · al-Ḥadīd 57:3" : "";
@@ -122,6 +135,33 @@ export function ContextPanel({
             </div>
           </div>
         )}
+        {!readOnly && (
+          <div className="llm-review">
+            <button
+              type="button"
+              className="btn"
+              disabled={llmReviewing}
+              onClick={() => void onLLMReview()}
+            >
+              {llmReviewing ? "Reviewing…" : "Review with LLM"}
+            </button>
+            <small>The reviewer suggests changes but never overwrites your text.</small>
+            {llmReview && (
+              <div className="llm-result" aria-live="polite">
+                <b>{llmReview.model}</b>
+                <p>{llmReview.assessment}</p>
+                {llmReview.issues.length > 0 && (
+                  <ul>{llmReview.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>
+                )}
+                {llmReview.suggestion && (
+                  <button type="button" className="alt" onClick={() => onApplyAlt(llmReview.suggestion)}>
+                    <span>Apply suggested rendering</span><span className="apply">apply →</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quality score — review apparatus, creators/admins only */}
@@ -173,30 +213,67 @@ export function ContextPanel({
       {!readOnly && (
       <div className="ctx-sec" style={{ borderBottom: "none" }}>
         <div className="ctx-label">Teach the model</div>
-        <div className="teach">
-          <button type="button" onClick={onTeachTerm}>
-            <span className="ic" aria-hidden="true">
-              📖
-            </span>
-            <span>
-              <b>Add to termbase</b>
-              <small>
-                <span className="ar" dir="rtl">
-                  المتكلّمون
-                </span>{" "}
-                → “the mutakallimūn” · enforce everywhere
-              </small>
-            </span>
-          </button>
-          <button type="button" onClick={onTeachStyle}>
-            <span className="ic" aria-hidden="true">
-              ✎
-            </span>
-            <span>
-              <b>Save as style rule</b>
-              <small>Prefer transliterated technical terms over loose glosses</small>
-            </span>
-          </button>
+        <div className="teach teach-form">
+          <label>
+            Arabic term
+            <input dir="rtl" lang="ar" value={termAr} onChange={(e) => setTermAr(e.target.value)} placeholder="المتكلّمون" />
+          </label>
+          <label>
+            Required English
+            <input value={termEn} onChange={(e) => setTermEn(e.target.value)} placeholder="the mutakallimūn" />
+          </label>
+          <div className="teach-row">
+            <select value={termScope} onChange={(e) => setTermScope(e.target.value as Scope)} aria-label="Term scope">
+              <option value="book">This book</option>
+              <option value="global">All books</option>
+            </select>
+            <button
+              type="button"
+              disabled={teaching !== null || !termAr.trim() || !termEn.trim()}
+              onClick={async () => {
+                setTeaching("term");
+                try {
+                  await onTeachTerm(termAr.trim(), termEn.trim(), termScope);
+                  setTermAr("");
+                  setTermEn("");
+                } catch {
+                  // The parent displays the API error in a toast; keep the
+                  // entered values so the reviewer can retry without retyping.
+                } finally {
+                  setTeaching(null);
+                }
+              }}
+            >
+              {teaching === "term" ? "Saving…" : "Add term"}
+            </button>
+          </div>
+          <label>
+            Translation style rule
+            <textarea rows={3} value={styleRule} onChange={(e) => setStyleRule(e.target.value)} placeholder="Prefer precise scholarly English…" />
+          </label>
+          <div className="teach-row">
+            <select value={styleScope} onChange={(e) => setStyleScope(e.target.value as Scope)} aria-label="Style rule scope">
+              <option value="book">This book</option>
+              <option value="global">All books</option>
+            </select>
+            <button
+              type="button"
+              disabled={teaching !== null || !styleRule.trim()}
+              onClick={async () => {
+                setTeaching("style");
+                try {
+                  await onTeachStyle(styleRule.trim(), styleScope);
+                  setStyleRule("");
+                } catch {
+                  // Keep the rule for a retry; the parent owns error feedback.
+                } finally {
+                  setTeaching(null);
+                }
+              }}
+            >
+              {teaching === "style" ? "Saving…" : "Save rule"}
+            </button>
+          </div>
         </div>
       </div>
       )}

@@ -54,6 +54,13 @@ def test_router_initial_tier_classifies_sacred_and_doctrinal():
     assert r.initial_tier({"kind": "body", "ar": "x", "doctrinal": True}).tier == "cloud"
 
 
+def test_low_ocr_confidence_routes_directly_to_cloud():
+    r = Router(source_confidence_threshold=0.75)
+    decision = r.initial_tier({"kind": "body", "ar": "نص عادي", "confidence": 0.4})
+    assert decision.tier == "cloud"
+    assert "OCR confidence" in decision.reason
+
+
 def test_should_escalate_threshold():
     r = Router(confidence_threshold=0.8)
     assert r.should_escalate(0.79) is True

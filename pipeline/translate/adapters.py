@@ -295,6 +295,9 @@ class OpenRouterTranslator(OpenAITranslator):
         self.base_url = os.environ.get(
             "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
         ).rstrip("/")
+        # Persist the concrete model on each segment instead of the ambiguous
+        # shared label "openrouter-cloud" for both bulk and frontier calls.
+        self.name = f"openrouter:{self.model}"
 
     def _require(self) -> str:
         if not self.api_key:

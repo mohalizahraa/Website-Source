@@ -15,6 +15,7 @@ import type {
   IngestOptions,
   IngestStatus,
   LearningSummary,
+  LLMReviewResult,
   PagePayload,
   ReviewBody,
   ReviewResult,
@@ -324,10 +325,22 @@ export const httpApi: HaydariAPI = {
   getSegment(id) {
     return request<Segment>(`/segments/${encodeURIComponent(id)}`);
   },
+  saveSegmentDraft(id, enEdited) {
+    return request<Segment>(`/segments/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ en_edited: enEdited }),
+    });
+  },
   reviewSegment(id, body: ReviewBody) {
     return request<ReviewResult>(`/segments/${encodeURIComponent(id)}/review`, {
       method: "POST",
       body: JSON.stringify(body),
+    });
+  },
+  reviewWithLLM(id, enEdited) {
+    return request<LLMReviewResult>(`/segments/${encodeURIComponent(id)}/llm-review`, {
+      method: "POST",
+      body: JSON.stringify({ en_edited: enEdited }),
     });
   },
   addTerm(body: TermBody) {

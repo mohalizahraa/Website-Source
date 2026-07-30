@@ -40,10 +40,12 @@ class Router:
         *,
         confidence_threshold: float = 0.8,
         long_segment_chars: int = 600,
+        source_confidence_threshold: float = 0.75,
         doctrinal_markers: List[str] | None = None,
     ):
         self.confidence_threshold = confidence_threshold
         self.long_segment_chars = long_segment_chars
+        self.source_confidence_threshold = source_confidence_threshold
         self.doctrinal_markers = doctrinal_markers or DOCTRINAL_MARKERS
 
     # -- classification ---------------------------------------------------
@@ -70,6 +72,15 @@ class Router:
             return RouteDecision(
                 engine="cloud", tier="cloud",
                 reason="doctrinal content → cloud for accuracy",
+            )
+        source_confidence = seg.get("confidence")
+        if source_confidence is not None and float(source_confidence) < self.source_confidence_threshold:
+            return RouteDecision(
+                engine="cloud", tier="cloud",
+                reason=(
+                    f"OCR confidence ({float(source_confidence):.2f}) below "
+                    f"{self.source_confidence_threshold:.2f} → cloud"
+                ),
             )
         if self.is_long(seg):
             return RouteDecision(

@@ -210,12 +210,20 @@ export interface ReviewResult {
   learning: ReviewLearning;
 }
 
+export interface LLMReviewResult {
+  model: string;
+  assessment: string;
+  suggestion: string;
+  issues: string[];
+}
+
 // POST /termbase
 export interface TermBody {
   term_ar: string;
   term_en: string;
-  note: string;
+  note?: string;
   scope: Scope;
+  book_id?: string;
 }
 
 // POST /style-rules
@@ -267,7 +275,9 @@ export interface HaydariAPI {
   importTermbase(file: File): Promise<{ imported: number }>;
   getPage(bookId: string, n: number): Promise<PagePayload>;
   getSegment(id: string): Promise<Segment>;
+  saveSegmentDraft(id: string, enEdited: string): Promise<Segment>;
   reviewSegment(id: string, body: ReviewBody): Promise<ReviewResult>;
+  reviewWithLLM(id: string, enEdited: string): Promise<LLMReviewResult>;
   addTerm(body: TermBody): Promise<{ ok: boolean }>;
   addStyleRule(body: StyleRuleBody): Promise<{ ok: boolean }>;
   learningSummary(): Promise<LearningSummary>;

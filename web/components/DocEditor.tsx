@@ -9,7 +9,7 @@ import {
   useRef,
 } from "react";
 import type { Segment } from "@/lib/types";
-import { diffWords, levelOf, stripAnchors, tokenizeBody } from "@/lib/ui";
+import { diffWords, levelOf, tokenizeBody } from "@/lib/ui";
 
 export interface DocEditorHandle {
   getText(id: string): string;
@@ -35,9 +35,12 @@ function plainHTML(text: string): string {
 
 // Inline tracked-changes (draft -> current) as ins/del.
 function diffHTML(draft: string, current: string): string {
-  return diffWords(stripAnchors(draft), stripAnchors(current))
+  // Diff the complete wire text, including [[FN-n]] anchors. Each diff run is
+  // then rendered through plainHTML so anchors remain non-editable superscripts
+  // instead of disappearing after the first saved edit.
+  return diffWords(draft, current)
     .map((t) => {
-      const v = esc(t.value);
+      const v = plainHTML(t.value);
       if (t.type === "ins") return `<ins>${v}</ins>`;
       if (t.type === "del") return `<del>${v}</del>`;
       return v;
@@ -45,11 +48,17 @@ function diffHTML(draft: string, current: string): string {
     .join("");
 }
 
-// Read the current plain text from an editable node, excluding struck
-// (deleted) words and footnote markers.
-function readEditable(el: HTMLElement): string {
+// Read the current plain text from an editable node, excluding struck words
+// while restoring protected footnote markers to their stable API tokens.
+export function readEditable(el: HTMLElement): string {
   const clone = el.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll("del, sup.fn, .tag").forEach((n) => n.remove());
+  clone.querySelectorAll("del, .tag").forEach((n) => n.remove());
+  // Convert visible, protected footnote superscripts back to the API's stable
+  // [[FN-n]] tokens before reading textContent.
+  clone.querySelectorAll<HTMLElement>("sup.fn").forEach((node) => {
+    const anchor = node.dataset.fn;
+    node.replaceWith(document.createTextNode(anchor ? `[[${anchor}]]` : ""));
+  });
   return (clone.textContent || "").replace(/\s+/g, " ").trim();
 }
 
@@ -60,7 +69,7 @@ export const DocEditor = forwardRef<
     activeId: string;
     chapterTitle?: string;
     onSelect: (id: string) => void;
-    onDirty: () => void;
+    onDirty: (id: string, text: string) => void;
     footer?: React.ReactNode;
     readOnly?: boolean; // read-only view for anon/reader visitors (no editing)
   }
@@ -76,12 +85,12 @@ export const DocEditor = forwardRef<
   },
   ref,
 ) {
-  const nodes = useRef<Map<string, HTMLDivElement>>(new Map());
+  const nodes = useRef<Map<string, HTMLElement>>(new Map());
 
   const body = useMemo(() => segments.filter((s) => s.kind !== "footnote"), [segments]);
   const footnotes = useMemo(() => segments.filter((s) => s.kind === "footnote"), [segments]);
 
-  const setNode = useCallback((id: string, el: HTMLDivElement | null) => {
+  const setNode = useCallback((id: string, el: HTMLElement | null) => {
     if (el) nodes.current.set(id, el);
     else nodes.current.delete(id);
   }, []);
@@ -92,13 +101,13 @@ export const DocEditor = forwardRef<
       getText(id) {
         const el = nodes.current.get(id);
         const seg = segments.find((s) => s.id === id);
-        return el ? readEditable(el) : seg ? stripAnchors(seg.en).trim() : "";
+        return el ? readEditable(el) : seg ? seg.en.trim() : "";
       },
       getTexts() {
         const out: Record<string, string> = {};
         segments.forEach((s) => {
           const el = nodes.current.get(s.id);
-          out[s.id] = el ? readEditable(el) : stripAnchors(s.en).trim();
+          out[s.id] = el ? readEditable(el) : s.en.trim();
         });
         return out;
       },
@@ -109,7 +118,7 @@ export const DocEditor = forwardRef<
         const draft = seg?.en_draft ?? seg?.en ?? "";
         // Show the applied text as a tracked change against the model draft.
         el.innerHTML = diffHTML(draft, text);
-        onDirty();
+        onDirty(id, readEditable(el));
       },
       focusSegment(id) {
         const el = nodes.current.get(id);
@@ -187,7 +196,11 @@ export const DocEditor = forwardRef<
                 }
                 onClick={() => onSelect(s.id)}
                 onFocus={() => onSelect(s.id)}
-                onInput={readOnly ? undefined : onDirty}
+                onInput={
+                  readOnly
+                    ? undefined
+                    : (event) => onDirty(s.id, readEditable(event.currentTarget))
+                }
                 dangerouslySetInnerHTML={{
                   __html: `<span class="tag" contenteditable="false">${tag}</span>` + initialHTML,
                 }}
@@ -202,13 +215,32 @@ export const DocEditor = forwardRef<
             {footnotes.map((f) => {
               const n = f.anchor?.replace("FN-", "") ?? "•";
               const canonical = /canonical/i.test(f.engine);
+              const edited = !!f.en_draft && f.en_draft !== f.en;
+              const initialHTML = edited ? diffHTML(f.en_draft!, f.en) : plainHTML(f.en);
               return (
                 <div className="fnote" key={f.id}>
                   <span className="n">{n}</span>
-                  <span>
-                    {f.en}
+                  <div>
+                    <span
+                      ref={(el) => setNode(f.id, el)}
+                      data-id={f.id}
+                      className={f.id === activeId ? "active" : ""}
+                      contentEditable={!readOnly}
+                      suppressContentEditableWarning
+                      role="textbox"
+                      aria-label={readOnly ? `Footnote ${n} (read only)` : `Editable footnote ${n}`}
+                      aria-readonly={readOnly}
+                      onClick={() => onSelect(f.id)}
+                      onFocus={() => onSelect(f.id)}
+                      onInput={
+                        readOnly
+                          ? undefined
+                          : (event) => onDirty(f.id, readEditable(event.currentTarget))
+                      }
+                      dangerouslySetInnerHTML={{ __html: initialHTML }}
+                    />
                     {canonical && <span className="canon">✦ canonical source matched</span>}
-                  </span>
+                  </div>
                 </div>
               );
             })}

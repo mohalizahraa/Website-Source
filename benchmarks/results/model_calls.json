@@ -1,0 +1,529 @@
+{
+  "generated_on": "2026-07-30",
+  "mode": "offline-no-network",
+  "token_estimator": "ceil(unicode_characters / 3)",
+  "configured_models": {
+    "bulk": "google/gemini-2.5-flash",
+    "frontier": "google/gemini-2.5-pro",
+    "ocr": "google/gemini-2.5-flash",
+    "chat": "google/gemini-2.5-flash",
+    "cloud_translator": "openrouter",
+    "ocr_engine": "auto"
+  },
+  "inventory": [
+    {
+      "runtime": "deployed web pipeline",
+      "stage": "OCR",
+      "model": "google/gemini-2.5-flash",
+      "where": "pipeline/ocr/engines.py:196",
+      "when": "once per rendered page when OpenRouter OCR is selected/auto-detected",
+      "why": "vision transcription of Arabic page images",
+      "accounting": "successful response recorded by model/stage in memory; persisted only as aggregate ingest"
+    },
+    {
+      "runtime": "deployed web pipeline",
+      "stage": "bulk translation",
+      "model": "google/gemini-2.5-flash",
+      "where": "pipeline/translate/factory.py:45; pipeline/translate/core.py:162",
+      "when": "short non-doctrinal, non-sacred, non-TM segments; draft and refine",
+      "why": "default inexpensive translation tier",
+      "accounting": "per-call model known in memory; DB segment stores only openrouter-cloud and ledger aggregates ingest"
+    },
+    {
+      "runtime": "deployed web pipeline",
+      "stage": "frontier translation",
+      "model": "google/gemini-2.5-pro",
+      "where": "pipeline/translate/factory.py:45; pipeline/translate/router.py:62",
+      "when": "doctrinal, >600-char, low-OCR-confidence, blank bulk, or bulk confidence <0.8; draft and refine",
+      "why": "higher-quality handling of risky passages",
+      "accounting": "per-call model known in memory; reason and pass are not persisted"
+    },
+    {
+      "runtime": "deployed web pipeline",
+      "stage": "assistant chat",
+      "model": "google/gemini-2.5-flash",
+      "where": "server/app/chat.py:24",
+      "when": "every creator chat request, repeated for each tool loop up to five calls",
+      "why": "answer app questions and choose safe database tools",
+      "accounting": "whole chat turn persisted as one aggregate row without model/tool-turn detail"
+    },
+    {
+      "runtime": "deployed web pipeline",
+      "stage": "QA and embeddings",
+      "model": "offline deterministic mocks",
+      "where": "pipeline/qa/scoring.py:55; server/app/embedder.py:79",
+      "when": "every translated segment / translation-memory insert",
+      "why": "placeholder scoring and deterministic vectors",
+      "accounting": "zero provider tokens; despite names, no live back-translator, embedder, sampler, or LLM judge is wired"
+    },
+    {
+      "runtime": "manual legacy script only",
+      "stage": "lecture translation",
+      "model": "qwen2.5:3b via local Ollama",
+      "where": "books/lecture_pipeline.py:46",
+      "when": "only when that standalone script is manually run",
+      "why": "legacy local lecture translation",
+      "accounting": "not part of web ingest and not metered"
+    },
+    {
+      "runtime": "unreachable stubs",
+      "stage": "QARI/direct Gemini OCR and direct-provider translators",
+      "model": "configuration dependent",
+      "where": "pipeline/ocr/engines.py; pipeline/translate/adapters.py",
+      "when": "not used by the current OpenRouter web configuration",
+      "why": "adapter seams for future/local/provider-direct operation",
+      "accounting": "not applicable unless explicitly configured"
+    }
+  ],
+  "scenario_outcomes": [
+    {
+      "scenario": "short_standard",
+      "initial_tier": "local",
+      "route_reason": "short, non-doctrinal segment starts in the bulk tier",
+      "final_engine": "probe:google/gemini-2.5-flash",
+      "model_calls": 2,
+      "models_called": {
+        "google/gemini-2.5-flash": 2
+      },
+      "estimated_prompt_tokens": 1459,
+      "estimated_completion_tokens": 42,
+      "estimated_cost_usd": 0.0005427
+    },
+    {
+      "scenario": "doctrinal",
+      "initial_tier": "cloud",
+      "route_reason": "Arabic doctrinal marker routes directly to frontier",
+      "final_engine": "probe:google/gemini-2.5-pro",
+      "model_calls": 2,
+      "models_called": {
+        "google/gemini-2.5-pro": 2
+      },
+      "estimated_prompt_tokens": 1458,
+      "estimated_completion_tokens": 48,
+      "estimated_cost_usd": 0.0023025
+    },
+    {
+      "scenario": "long_segment",
+      "initial_tier": "cloud",
+      "route_reason": "source exceeds the 600-character frontier threshold",
+      "final_engine": "probe:google/gemini-2.5-pro",
+      "model_calls": 2,
+      "models_called": {
+        "google/gemini-2.5-pro": 2
+      },
+      "estimated_prompt_tokens": 1932,
+      "estimated_completion_tokens": 48,
+      "estimated_cost_usd": 0.002895
+    },
+    {
+      "scenario": "low_model_confidence_theoretical",
+      "initial_tier": "local",
+      "route_reason": "probe forces confidence below 0.8, causing bulk then frontier",
+      "final_engine": "probe:google/gemini-2.5-pro",
+      "model_calls": 4,
+      "models_called": {
+        "google/gemini-2.5-flash": 2,
+        "google/gemini-2.5-pro": 2
+      },
+      "estimated_prompt_tokens": 2921,
+      "estimated_completion_tokens": 90,
+      "estimated_cost_usd": 0.0028502
+    },
+    {
+      "scenario": "tm_exact",
+      "initial_tier": "local",
+      "route_reason": "approved exact Arabic match bypasses every model",
+      "final_engine": "tm-exact",
+      "model_calls": 0,
+      "models_called": {},
+      "estimated_prompt_tokens": 0,
+      "estimated_completion_tokens": 0,
+      "estimated_cost_usd": 0
+    },
+    {
+      "scenario": "sacred_canonical_hit",
+      "initial_tier": "canonical",
+      "route_reason": "seeded canonical match bypasses every model",
+      "final_engine": "canonical",
+      "model_calls": 0,
+      "models_called": {},
+      "estimated_prompt_tokens": 0,
+      "estimated_completion_tokens": 0,
+      "estimated_cost_usd": 0
+    },
+    {
+      "scenario": "sacred_canonical_miss",
+      "initial_tier": "canonical",
+      "route_reason": "missing canonical entry is held for human review without MT",
+      "final_engine": "canonical-missing",
+      "model_calls": 0,
+      "models_called": {},
+      "estimated_prompt_tokens": 0,
+      "estimated_completion_tokens": 0,
+      "estimated_cost_usd": 0
+    }
+  ],
+  "optimization_benchmarks": [
+    {
+      "configuration": "current: 12-term glossary + draft/refine",
+      "glossary_terms_sent": 12,
+      "model_calls": 2,
+      "estimated_prompt_tokens": 1459,
+      "estimated_completion_tokens": 42,
+      "estimated_cost_usd": 0.0005427,
+      "prompt_token_change_vs_current_pct": 0.0
+    },
+    {
+      "configuration": "filter glossary + draft/refine",
+      "glossary_terms_sent": 1,
+      "model_calls": 2,
+      "estimated_prompt_tokens": 1275,
+      "estimated_completion_tokens": 42,
+      "estimated_cost_usd": 0.0004875,
+      "prompt_token_change_vs_current_pct": -12.6
+    },
+    {
+      "configuration": "12-term glossary + draft only",
+      "glossary_terms_sent": 12,
+      "model_calls": 1,
+      "estimated_prompt_tokens": 670,
+      "estimated_completion_tokens": 21,
+      "estimated_cost_usd": 0.0002535,
+      "prompt_token_change_vs_current_pct": -54.1
+    },
+    {
+      "configuration": "filter glossary + draft only",
+      "glossary_terms_sent": 1,
+      "model_calls": 1,
+      "estimated_prompt_tokens": 578,
+      "estimated_completion_tokens": 21,
+      "estimated_cost_usd": 0.0002259,
+      "prompt_token_change_vs_current_pct": -60.4
+    },
+    {
+      "configuration": "future 100-term glossary + draft/refine",
+      "glossary_terms_sent": 100,
+      "model_calls": 2,
+      "estimated_prompt_tokens": 3338,
+      "estimated_completion_tokens": 42,
+      "estimated_cost_usd": 0.0011064,
+      "prompt_token_change_vs_current_pct": 128.8
+    },
+    {
+      "configuration": "chat one call on current Flash",
+      "glossary_terms_sent": null,
+      "model_calls": 1,
+      "estimated_prompt_tokens": 1244,
+      "estimated_completion_tokens": 25,
+      "estimated_cost_usd": 0.0004357,
+      "prompt_token_change_vs_current_pct": null
+    },
+    {
+      "configuration": "chat one call on Flash-Lite (same tokens)",
+      "glossary_terms_sent": null,
+      "model_calls": 1,
+      "estimated_prompt_tokens": 1244,
+      "estimated_completion_tokens": 25,
+      "estimated_cost_usd": 0.0001344,
+      "prompt_token_change_vs_current_pct": null
+    }
+  ],
+  "aggregate": {
+    "by_model": {
+      "google/gemini-2.5-flash": {
+        "calls": 6,
+        "estimated_prompt_tokens": 4308,
+        "estimated_completion_tokens": 109,
+        "estimated_cost_usd": 0.0015211,
+        "stages": [
+          "chat",
+          "ocr",
+          "translation"
+        ]
+      },
+      "google/gemini-2.5-pro": {
+        "calls": 6,
+        "estimated_prompt_tokens": 4852,
+        "estimated_completion_tokens": 144,
+        "estimated_cost_usd": 0.007505,
+        "stages": [
+          "translation"
+        ]
+      }
+    },
+    "by_stage": {
+      "translation": {
+        "calls": 10,
+        "estimated_prompt_tokens": 7770,
+        "estimated_completion_tokens": 228,
+        "estimated_cost_usd": 0.0085904,
+        "models": [
+          "google/gemini-2.5-flash",
+          "google/gemini-2.5-pro"
+        ]
+      },
+      "ocr": {
+        "calls": 1,
+        "estimated_prompt_tokens": 146,
+        "estimated_completion_tokens": 0,
+        "estimated_cost_usd": 0.0,
+        "models": [
+          "google/gemini-2.5-flash"
+        ]
+      },
+      "chat": {
+        "calls": 1,
+        "estimated_prompt_tokens": 1244,
+        "estimated_completion_tokens": 25,
+        "estimated_cost_usd": 0.0004357,
+        "models": [
+          "google/gemini-2.5-flash"
+        ]
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "priority": 1,
+      "finding": "Refine is unconditional for every model-translated segment.",
+      "evidence": "Offline scenarios produced 5 refine calls and 5 draft calls; refine prompts include the entire draft prompt again.",
+      "optimization": "A/B single-pass bulk translation; retain refine only for frontier/risk/QA failures.",
+      "estimated_effect": "Removes about 4187 estimated prompt tokens and 5 calls in this fixture suite.",
+      "quality_gate": "Paid blinded comparison on representative pages is required before changing behavior."
+    },
+    {
+      "priority": 2,
+      "finding": "All glossary terms are injected into every segment and duplicated in refine.",
+      "evidence": "The representative prompt includes 12 terms although only 1 appears in the short source.",
+      "optimization": "Filter glossary to source-matching terms plus a very small global must-include set.",
+      "estimated_effect": "Savings grow linearly with termbase size and are doubled by current refinement.",
+      "quality_gate": "Unit-test Arabic normalization and multi-word matching; no paid call needed."
+    },
+    {
+      "priority": 3,
+      "finding": "OCR confidence now reaches routing, but translation confidence is still hard-coded.",
+      "evidence": "Low-confidence OCR is routed directly to frontier; OpenRouter translation adapters still return fixed 0.86/0.89 values.",
+      "optimization": "Keep the OCR safeguard and later replace adapter constants with calibrated QA signals.",
+      "estimated_effect": "Targets frontier spend at visibly uncertain source text without reducing translation quality.",
+      "quality_gate": "Build a labeled OCR/translation error set and calibrate thresholds."
+    },
+    {
+      "priority": 4,
+      "finding": "Frontier Gemini Pro costs roughly 4x Flash at current list rates.",
+      "evidence": "$1.25/$10 versus $0.30/$2.50 per million input/output tokens.",
+      "optimization": "Keep Pro only where a blinded Arabic quality test proves material improvement; test Flash on long segments and Pro only on doctrinal/canonical misses.",
+      "estimated_effect": "Each moved frontier token costs about one quarter as much on Flash at list price.",
+      "quality_gate": "Human review by an Arabic/Islamic-text expert is mandatory."
+    },
+    {
+      "priority": 5,
+      "finding": "Chat resends a large static knowledge block and all tool schemas on every tool round.",
+      "evidence": "The chat loop allows five calls and accumulates the conversation while repeating the same system/tools prefix.",
+      "optimization": "Test Flash-Lite for chat and cap/compact history; preserve Flash fallback for tool failures.",
+      "estimated_effect": "Flash-Lite list rates are 67% lower for input and 84% lower for output than Flash, before quality/tool-reliability effects.",
+      "quality_gate": "Replay tool-choice and authorization test cases before switching."
+    },
+    {
+      "priority": 6,
+      "finding": "The production database cannot answer which model/pass/reason spent each token.",
+      "evidence": "usage_ledger persists only stage=ingest/chat totals; segment.engine is the shared label openrouter-cloud.",
+      "optimization": "Add a per-call audit table/JSON event with model, operation, route reason, page/segment, provider tokens, cost, latency, and retry count.",
+      "estimated_effect": "Observability improvement; no direct token saving, but enables evidence-based routing.",
+      "quality_gate": "Schema migration and privacy review before any production deployment."
+    }
+  ],
+  "calls": [
+    {
+      "scenario": "short_standard",
+      "stage": "translation",
+      "operation": "draft",
+      "model": "google/gemini-2.5-flash",
+      "tier": "bulk",
+      "reason": "default → local (cheap) draft",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2009,
+      "estimated_prompt_tokens": 670,
+      "completion_chars": 63,
+      "estimated_completion_tokens": 21,
+      "estimated_cost_usd": 0.0002535,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "short_standard",
+      "stage": "translation",
+      "operation": "refine",
+      "model": "google/gemini-2.5-flash",
+      "tier": "bulk",
+      "reason": "default → local (cheap) draft",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2367,
+      "estimated_prompt_tokens": 789,
+      "completion_chars": 63,
+      "estimated_completion_tokens": 21,
+      "estimated_cost_usd": 0.0002892,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "doctrinal",
+      "stage": "translation",
+      "operation": "draft",
+      "model": "google/gemini-2.5-pro",
+      "tier": "frontier",
+      "reason": "doctrinal content → cloud for accuracy",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2003,
+      "estimated_prompt_tokens": 668,
+      "completion_chars": 72,
+      "estimated_completion_tokens": 24,
+      "estimated_cost_usd": 0.001075,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "doctrinal",
+      "stage": "translation",
+      "operation": "refine",
+      "model": "google/gemini-2.5-pro",
+      "tier": "frontier",
+      "reason": "doctrinal content → cloud for accuracy",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2370,
+      "estimated_prompt_tokens": 790,
+      "completion_chars": 72,
+      "estimated_completion_tokens": 24,
+      "estimated_cost_usd": 0.0012275,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "long_segment",
+      "stage": "translation",
+      "operation": "draft",
+      "model": "google/gemini-2.5-pro",
+      "tier": "frontier",
+      "reason": "long segment (> 600 chars) → cloud",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2714,
+      "estimated_prompt_tokens": 905,
+      "completion_chars": 72,
+      "estimated_completion_tokens": 24,
+      "estimated_cost_usd": 0.00137125,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "long_segment",
+      "stage": "translation",
+      "operation": "refine",
+      "model": "google/gemini-2.5-pro",
+      "tier": "frontier",
+      "reason": "long segment (> 600 chars) → cloud",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 3081,
+      "estimated_prompt_tokens": 1027,
+      "completion_chars": 72,
+      "estimated_completion_tokens": 24,
+      "estimated_cost_usd": 0.00152375,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "low_model_confidence_theoretical",
+      "stage": "translation",
+      "operation": "draft",
+      "model": "google/gemini-2.5-flash",
+      "tier": "bulk",
+      "reason": "default → local (cheap) draft",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2009,
+      "estimated_prompt_tokens": 670,
+      "completion_chars": 63,
+      "estimated_completion_tokens": 21,
+      "estimated_cost_usd": 0.0002535,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "low_model_confidence_theoretical",
+      "stage": "translation",
+      "operation": "refine",
+      "model": "google/gemini-2.5-flash",
+      "tier": "bulk",
+      "reason": "default → local (cheap) draft",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2367,
+      "estimated_prompt_tokens": 789,
+      "completion_chars": 63,
+      "estimated_completion_tokens": 21,
+      "estimated_cost_usd": 0.0002892,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "low_model_confidence_theoretical",
+      "stage": "translation",
+      "operation": "draft",
+      "model": "google/gemini-2.5-pro",
+      "tier": "frontier",
+      "reason": "bulk result below confidence threshold or blank; escalate to frontier",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2009,
+      "estimated_prompt_tokens": 670,
+      "completion_chars": 72,
+      "estimated_completion_tokens": 24,
+      "estimated_cost_usd": 0.0010775,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "low_model_confidence_theoretical",
+      "stage": "translation",
+      "operation": "refine",
+      "model": "google/gemini-2.5-pro",
+      "tier": "frontier",
+      "reason": "bulk result below confidence threshold or blank; escalate to frontier",
+      "source": "pipeline/translate/core.py",
+      "prompt_chars": 2376,
+      "estimated_prompt_tokens": 792,
+      "completion_chars": 72,
+      "estimated_completion_tokens": 24,
+      "estimated_cost_usd": 0.00123,
+      "exact_provider_usage": false,
+      "notes": "Prompt is exact; token and cost values are estimates."
+    },
+    {
+      "scenario": "one_page_ocr",
+      "stage": "ocr",
+      "operation": "transcribe_page_image",
+      "model": "google/gemini-2.5-flash",
+      "tier": "vision",
+      "reason": "one vision request is made for every rendered PDF page",
+      "source": "pipeline/ocr/engines.py",
+      "prompt_chars": 437,
+      "estimated_prompt_tokens": 146,
+      "completion_chars": 0,
+      "estimated_completion_tokens": 0,
+      "estimated_cost_usd": null,
+      "exact_provider_usage": false,
+      "notes": "Image input and Arabic transcription output are unknown offline; provider usage is required."
+    },
+    {
+      "scenario": "one_chat_answer",
+      "stage": "chat",
+      "operation": "assistant_or_tool_decision",
+      "model": "google/gemini-2.5-flash",
+      "tier": "assistant",
+      "reason": "every creator chat turn calls the configured assistant model; tool loops can repeat it up to five times",
+      "source": "server/app/chat.py",
+      "prompt_chars": 3732,
+      "estimated_prompt_tokens": 1244,
+      "completion_chars": 73,
+      "estimated_completion_tokens": 25,
+      "estimated_cost_usd": 0.0004357,
+      "exact_provider_usage": false,
+      "notes": "One-call baseline. Each tool round resends system knowledge, tool schemas, and accumulated conversation."
+    }
+  ]
+}
