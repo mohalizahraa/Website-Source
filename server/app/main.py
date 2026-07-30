@@ -8,6 +8,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import logging
 import math
 import os
 import re
@@ -41,6 +42,8 @@ from .schemas import (
     TermbaseRequest,
 )
 from .wire import segment_to_wire
+
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(title="Haydari Translation Platform API", version="0.1.0")
 
@@ -393,6 +396,7 @@ async def upload_books(
         try:
             storage.get_storage().save_bytes(key, data, "application/pdf")
         except Exception as exc:  # noqa: BLE001 — don't leave a row with no blob
+            logger.exception("Storage write failed for book %s at key %s", book_id, key)
             conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
             conn.commit()
             raise HTTPException(status_code=502, detail=f"storage write failed: {exc}")
