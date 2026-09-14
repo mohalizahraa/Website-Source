@@ -5,62 +5,70 @@ on:
       - '.github/workflows/temp-snazzy-storyboards.yml'
 
 jobs:
-  recover-storyboards:
+  recover-visuals:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
-      - name: Fetch public Invidious video metadata and storyboard sheets
+      - name: Recover via public Piped stream API
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p recovery
           IDS=('rg2Jqbj82Vk' '-dbuBNSwoGU')
-          INSTANCES=(
-            'https://invidious.tiekoetter.com'
-            'https://inv.nadeko.net'
-            'https://yt.chocolatemoo53.com'
-            'https://invidious.nerdvpn.de'
+          APIS=(
+            'https://pipedapi.kavin.rocks'
+            'https://pipedapi.leptons.xyz'
+            'https://pipedapi.nosebs.ru'
+            'https://api-piped.mha.fi'
+            'https://piped-api.garudalinux.org'
           )
           for ID in "${IDS[@]}"; do
             mkdir -p "recovery/$ID"
             OK=''
-            for BASE in "${INSTANCES[@]}"; do
+            for BASE in "${APIS[@]}"; do
               echo "Trying $BASE for $ID" | tee -a "recovery/$ID/access.log"
-              if curl -fLsS --max-time 30 "$BASE/api/v1/videos/$ID" -o "recovery/$ID/video.json"; then
+              CODE=$(curl -LsS --max-time 45 -w '%{http_code}' "$BASE/streams/$ID" -o "recovery/$ID/piped.json" || true)
+              echo "HTTP $CODE" | tee -a "recovery/$ID/access.log"
+              if [ "$CODE" = '200' ] && python -c "import json; d=json.load(open('recovery/$ID/piped.json')); assert d.get('videoStreams')" 2>/dev/null; then
                 OK="$BASE"
                 break
               fi
             done
             if [ -z "$OK" ]; then
-              echo "No public instance returned metadata" >> "recovery/$ID/access.log"
+              echo "No Piped API returned usable video streams" >> "recovery/$ID/access.log"
               continue
             fi
+
             ID_ENV="$ID" python - <<'PY'
-          import json, os, urllib.request
+          import json, os
           vid=os.environ['ID_ENV']
-          base=f'recovery/{vid}'
-          with open(f'{base}/video.json','r',encoding='utf-8') as f:
-              data=json.load(f)
-          summary={k:data.get(k) for k in ('title','videoId','lengthSeconds','author','publishedText')}
-          summary['storyboards']=data.get('storyboards',[])
-          with open(f'{base}/summary.json','w',encoding='utf-8') as f:
-              json.dump(summary,f,indent=2,ensure_ascii=False)
-          for i,sb in enumerate(data.get('storyboards') or []):
-              url=sb.get('url') or sb.get('templateUrl')
-              if not url:
-                  continue
-              url=url.replace('$N','0').replace('$L',str(i))
-              try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
-                  with urllib.request.urlopen(req,timeout=30) as r:
-                      blob=r.read()
-                  ext='.jpg' if b'JFIF' in blob[:20] or blob[:2]==b'\xff\xd8' else '.bin'
-                  with open(f'{base}/storyboard-{i}{ext}','wb') as f:
-                      f.write(blob)
-              except Exception as e:
-                  with open(f'{base}/storyboard-errors.log','a',encoding='utf-8') as f:
-                      f.write(f'{i}: {url}: {e}\n')
+          p=f'recovery/{vid}/piped.json'
+          d=json.load(open(p,encoding='utf-8'))
+          streams=d.get('videoStreams') or []
+          # Prefer 360-480p; video-only is fine because we only need frames.
+          def rank(s):
+              h=s.get('height') or 0
+              target_penalty=0 if 360 <= h <= 480 else min(abs(h-360),abs(h-480))+1000
+              return (target_penalty, abs(h-480), 1 if not s.get('url') else 0)
+          streams=sorted(streams,key=rank)
+          chosen=streams[0]
+          summary={
+              'title':d.get('title'),'duration':d.get('duration'),'uploader':d.get('uploader'),
+              'uploadDate':d.get('uploadDate'),'thumbnailUrl':d.get('thumbnailUrl'),
+              'chosenStream':{k:chosen.get(k) for k in ('quality','height','width','fps','format','mimeType','videoOnly','url')}
+          }
+          json.dump(summary,open(f'recovery/{vid}/summary.json','w',encoding='utf-8'),indent=2,ensure_ascii=False)
+          open(f'recovery/{vid}/stream.url','w').write(chosen['url'])
           PY
+
+            URL=$(cat "recovery/$ID/stream.url")
+            mkdir -p "recovery/$ID/sheets"
+            # Sample one frame every 10 seconds, 25 frames per contact sheet.
+            ffmpeg -hide_banner -loglevel warning -y -i "$URL" \
+              -vf "fps=1/10,scale=640:-2,tile=5x5:padding=2:margin=2" \
+              -q:v 4 "recovery/$ID/sheets/sheet-%03d.jpg" \
+              >"recovery/$ID/ffmpeg.out" 2>"recovery/$ID/ffmpeg.err" || true
+            rm -f "recovery/$ID/stream.url"
           done
       - name: Inventory
         shell: bash
@@ -68,6 +76,6 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-storyboards
+          name: snazzy-visual-samples
           path: recovery
           retention-days: 1
