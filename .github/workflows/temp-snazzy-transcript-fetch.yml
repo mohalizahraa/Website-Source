@@ -1,0 +1,72 @@
+name: Temp Snazzy transcript fetch
+
+on:
+  push:
+    branches: [tmp-snazzy-transcript-fetch]
+
+permissions:
+  contents: read
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          set -euo pipefail
+          for id in rg2Jqbj82Vk -- -dbuBNSwoGU; do :; done
+          curl --retry 3 --retry-delay 2 -fsSL 'https://youtubegpt.ai/api/transcript?v=rg2Jqbj82Vk&format=json' -o rg2.json
+          curl --retry 3 --retry-delay 2 -fsSL 'https://youtubegpt.ai/api/transcript?v=-dbuBNSwoGU&format=json' -o dbu.json
+          echo '=== RG2 ==='
+          jq '{ok,video,track,availableTracks,segments:(.segments|length)}' rg2.json
+          echo '=== DBU ==='
+          jq '{ok,video,track,availableTracks,segments:(.segments|length)}' dbu.json
+
+  rg2_00_15:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=rg2Jqbj82Vk&format=json' -o t.json
+          jq -r '.segments[] | select(.start < 900000) | "[\(.start/1000)s] \(.text)"' t.json
+  rg2_15_30:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=rg2Jqbj82Vk&format=json' -o t.json
+          jq -r '.segments[] | select(.start >= 900000 and .start < 1800000) | "[\(.start/1000)s] \(.text)"' t.json
+  rg2_30_45:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=rg2Jqbj82Vk&format=json' -o t.json
+          jq -r '.segments[] | select(.start >= 1800000 and .start < 2700000) | "[\(.start/1000)s] \(.text)"' t.json
+  rg2_45_end:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=rg2Jqbj82Vk&format=json' -o t.json
+          jq -r '.segments[] | select(.start >= 2700000) | "[\(.start/1000)s] \(.text)"' t.json
+
+  dbu_00_15:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=-dbuBNSwoGU&format=json' -o t.json
+          jq -r '.segments[] | select(.start < 900000) | "[\(.start/1000)s] \(.text)"' t.json
+  dbu_15_30:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=-dbuBNSwoGU&format=json' -o t.json
+          jq -r '.segments[] | select(.start >= 900000 and .start < 1800000) | "[\(.start/1000)s] \(.text)"' t.json
+  dbu_30_45:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=-dbuBNSwoGU&format=json' -o t.json
+          jq -r '.segments[] | select(.start >= 1800000 and .start < 2700000) | "[\(.start/1000)s] \(.text)"' t.json
+  dbu_45_end:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsSL 'https://youtubegpt.ai/api/transcript?v=-dbuBNSwoGU&format=json' -o t.json
+          jq -r '.segments[] | select(.start >= 2700000) | "[\(.start/1000)s] \(.text)"' t.json
