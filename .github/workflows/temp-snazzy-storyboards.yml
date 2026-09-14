@@ -1,99 +1,129 @@
-name: temp-snazzy-archive-recovery
+name: temp-snazzy-archived-player-recovery
 on:
   push:
     paths:
       - '.github/workflows/temp-snazzy-storyboards.yml'
 
 jobs:
-  archive-recovery:
+  recover:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Query Wayback indexes for exact watch pages and storyboard assets
+      - name: Recover archived exact YouTube player pages and storyboard specs
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p recovery
-          python - <<'PY'
-          import json, os, urllib.parse, urllib.request, urllib.error
+          cat > /tmp/recover.py <<'PY'
+          import html as htmllib
+          import json, math, os, re, urllib.parse, urllib.request, urllib.error
 
-          IDS=['rg2Jqbj82Vk','-dbuBNSwoGU']
-          UA={'User-Agent':'Mozilla/5.0 research archival lookup'}
+          ITEMS={
+            'rg2Jqbj82Vk':('20260717000239','https://www.youtube.com/watch?si=lcBt8Ck2U0A9M4W6&v=rg2Jqbj82Vk'),
+            '-dbuBNSwoGU':('20260908155433','https://www.youtube.com/watch?v=-dbuBNSwoGU'),
+          }
+          UA={'User-Agent':'Mozilla/5.0'}
 
-          def fetch(url, timeout=45):
+          def fetch(url,timeout=60):
               req=urllib.request.Request(url,headers=UA)
               try:
                   with urllib.request.urlopen(req,timeout=timeout) as r:
-                      return r.status, r.read()
+                      return r.status,r.geturl(),r.read()
               except urllib.error.HTTPError as e:
-                  return e.code, e.read()
+                  return e.code,e.geturl(),e.read()
               except Exception as e:
-                  return 0, repr(e).encode()
+                  return 0,url,repr(e).encode()
 
-          for vid in IDS:
-              d=f'recovery/{vid}'
-              os.makedirs(f'{d}/assets',exist_ok=True)
-              targets={
-                  'watch':'https://www.youtube.com/watch?v='+vid,
-                  'short':'https://youtu.be/'+vid,
-                  'storyboard_prefix':'https://i.ytimg.com/sb/'+vid+'/'
-              }
-              results={}
-              for name,target in targets.items():
-                  if name=='storyboard_prefix':
-                      params={
-                          'url':target+'*','matchType':'prefix','output':'json',
-                          'fl':'timestamp,original,statuscode,mimetype,digest,length',
-                          'filter':'statuscode:200','limit':'200'
-                      }
-                      api='https://web.archive.org/cdx/search/cdx?'+urllib.parse.urlencode(params)
-                  else:
-                      params={
-                          'url':target,'output':'json',
-                          'fl':'timestamp,original,statuscode,mimetype,digest,length',
-                          'filter':'statuscode:200','limit':'50'
-                      }
-                      api='https://web.archive.org/cdx/search/cdx?'+urllib.parse.urlencode(params)
-                  status,body=fetch(api)
-                  open(f'{d}/{name}-cdx.bin','wb').write(body)
-                  results[name]={'http':status,'api':api,'bytes':len(body)}
+          def candidates_from_text(text):
+              vals=[]
+              # Direct JSON property near storyboard renderer.
+              pats=[
+                r'playerStoryboardSpecRenderer.{0,500}?"spec"\s*:\s*"([^"]+)"',
+                r'playerStoryboardSpecRenderer.{0,500}?\\"spec\\"\s*:\s*\\"([^\\"]+)\\"',
+                r'"spec"\s*:\s*"(https://i\.ytimg\.com/sb/[^"]+)"',
+              ]
+              for p in pats:
+                  for m in re.finditer(p,text,re.S):
+                      v=m.group(1)
+                      try:
+                          # Decode JSON string escapes where possible.
+                          v=json.loads('"'+v.replace('"','\\"')+'"')
+                      except Exception:
+                          v=v.replace('\\u0026','&').replace('\\/','/').replace('\\"','"')
+                      v=htmllib.unescape(v)
+                      if 'i.ytimg.com/sb/' in v and v not in vals:
+                          vals.append(v)
+              return vals
 
-              # Also query the simpler availability endpoint for the watch URL.
-              avail='https://archive.org/wayback/available?'+urllib.parse.urlencode({'url':targets['watch']})
-              status,body=fetch(avail)
-              open(f'{d}/available.json','wb').write(body)
-              results['available']={'http':status,'bytes':len(body)}
+          def storyboard_urls(spec):
+              parts=spec.split('|')
+              if len(parts)<2: return []
+              base=parts[0]
+              out=[]
+              for L,raw in enumerate(parts[1:]):
+                  a=raw.split('#')
+                  if len(a)<8: continue
+                  try:
+                      w,h,count,cols,rows,interval=map(int,a[:6])
+                  except Exception:
+                      continue
+                  name=a[6]; sigh=a[7]
+                  sheets=max(1,math.ceil(count/(cols*rows)))
+                  for m in range(sheets):
+                      n=name.replace('$M',str(m))
+                      url=base.replace('$L',str(L)).replace('$N',n)
+                      url += ('&' if '?' in url else '?')+'sigh='+sigh
+                      out.append({'level':L,'sheet':m,'w':w,'h':h,'count':count,'cols':cols,'rows':rows,'intervalMs':interval,'url':url})
+              return out
 
-              # If storyboard CDX returned rows, recover each distinct captured image via id_ replay.
-              sb_path=f'{d}/storyboard_prefix-cdx.bin'
-              try:
-                  rows=json.loads(open(sb_path,'rb').read())
-              except Exception:
-                  rows=[]
-              if isinstance(rows,list) and len(rows)>1:
-                  headers=rows[0]
-                  seen=set()
-                  for i,row in enumerate(rows[1:]):
-                      rec=dict(zip(headers,row))
-                      original=rec.get('original')
-                      ts=rec.get('timestamp')
-                      digest=rec.get('digest')
-                      if not original or not ts or digest in seen: continue
-                      seen.add(digest)
-                      replay=f'https://web.archive.org/web/{ts}id_/{original}'
-                      st,blob=fetch(replay)
-                      ext='.jpg' if blob[:2]==b'\xff\xd8' else '.bin'
-                      open(f'{d}/assets/{i:03d}{ext}','wb').write(blob)
-                      results.setdefault('asset_fetches',[]).append({'http':st,'bytes':len(blob),'original':original,'timestamp':ts,'file':f'{i:03d}{ext}'})
-              open(f'{d}/summary.json','w',encoding='utf-8').write(json.dumps(results,indent=2))
+          for vid,(ts,orig) in ITEMS.items():
+              d=f'recovery/{vid}'; os.makedirs(f'{d}/sheets',exist_ok=True)
+              replay=f'https://web.archive.org/web/{ts}id_/{orig}'
+              status,final,blob=fetch(replay)
+              open(f'{d}/archived-watch.html','wb').write(blob)
+              text=blob.decode('utf-8','replace')
+              specs=candidates_from_text(text)
+              # Also inspect a broadly unescaped projection; archived scripts sometimes double-escape player JSON.
+              projection=text.replace('\\u0026','&').replace('\\/','/').replace('&amp;','&')
+              for s in candidates_from_text(projection):
+                  if s not in specs: specs.append(s)
+              result={'archiveHttp':status,'archiveFinal':final,'archiveBytes':len(blob),'specCount':len(specs),'specs':specs,'attempts':[]}
+              for si,spec in enumerate(specs):
+                  urls=storyboard_urls(spec)
+                  result.setdefault('storyboardSets',[]).append({'specIndex':si,'sheetCount':len(urls),'urls':urls})
+                  for item in urls:
+                      # Try live i.ytimg signed asset first, then Wayback replay at page-capture time.
+                      for mode,url in [
+                          ('live',item['url']),
+                          ('archive',f"https://web.archive.org/web/{ts}id_/{item['url']}")
+                      ]:
+                          st,fin,img=fetch(url,timeout=30)
+                          ok=img[:2]==b'\xff\xd8' or img[:8]==b'\x89PNG\r\n\x1a\n'
+                          result['attempts'].append({'specIndex':si,'level':item['level'],'sheet':item['sheet'],'mode':mode,'http':st,'bytes':len(img),'image':ok,'final':fin})
+                          if ok:
+                              ext='jpg' if img[:2]==b'\xff\xd8' else 'png'
+                              path=f"{d}/sheets/S{si}-L{item['level']}-M{item['sheet']}-{mode}.{ext}"
+                              open(path,'wb').write(img)
+                              break
+              # Save useful markers even if no spec regex matched.
+              markers={}
+              for needle in ['playerStoryboardSpecRenderer','storyboards','i.ytimg.com/sb/','ytInitialPlayerResponse','streamingData']:
+                  pos=text.find(needle)
+                  markers[needle]=pos
+                  if pos>=0:
+                      open(f"{d}/marker-{re.sub('[^A-Za-z0-9]+','_',needle)}.txt",'w',encoding='utf-8').write(text[max(0,pos-3000):pos+12000])
+              result['markers']=markers
+              open(f'{d}/summary.json','w',encoding='utf-8').write(json.dumps(result,indent=2,ensure_ascii=False))
           PY
+          python /tmp/recover.py
       - name: Inventory
         shell: bash
         run: |
           find recovery -type f -printf '%p %s bytes\n' | sort | tee recovery/INVENTORY.txt
+          echo "Images:"; find recovery -type f \( -name '*.jpg' -o -name '*.png' \) | wc -l
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-wayback-recovery
+          name: snazzy-archived-player-recovery
           path: recovery
           retention-days: 1
