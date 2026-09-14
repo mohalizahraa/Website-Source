@@ -1,4 +1,4 @@
-name: temp-snazzy-thum-visual-test
+name: temp-snazzy-thum-parented-embed-test
 on:
   push:
     paths:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Capture exact YouTube embeds at test timestamps through Thum.io browser fleet
+      - name: Capture parented YouTube embeds through Thum.io browser fleet
         shell: bash
         run: |
           set -euo pipefail
@@ -17,15 +17,16 @@ jobs:
           python - <<'PY'
           import os, urllib.parse, urllib.request, json
           tests={
-            'rg2Jqbj82Vk':[0,300,600,900],
-            '-dbuBNSwoGU':[0,1200,2400,3600],
+            'rg2Jqbj82Vk':[0,300],
+            '-dbuBNSwoGU':[0,1200],
           }
+          wrapper='https://htmlpreview.github.io/?https://raw.githubusercontent.com/mohalizahraa/Website-Source/tmp-snazzy-railway-visuals/snazzy-embed.html'
           result={}
           for vid,times in tests.items():
               os.makedirs(f'shots/{vid}',exist_ok=True)
               result[vid]=[]
               for t in times:
-                  target=f'https://www.youtube.com/embed/{vid}?autoplay=1&mute=1&start={t}&controls=0'
+                  target=wrapper+'#id='+vid+'&t='+str(t)
                   api='https://image.thum.io/get/width/1200/crop/675/maxAge/0/?url='+urllib.parse.quote(target,safe='')
                   req=urllib.request.Request(api,headers={'User-Agent':'Mozilla/5.0'})
                   try:
@@ -33,10 +34,10 @@ jobs:
                           blob=r.read(); status=r.status; ctype=r.headers.get('content-type')
                   except Exception as e:
                       blob=repr(e).encode(); status=0; ctype='error'
-                  ext='png' if blob[:8]==b'\x89PNG\r\n\x1a\n' else ('jpg' if blob[:2]==b'\xff\xd8' else 'bin')
+                  ext='gif' if blob[:6] in (b'GIF87a',b'GIF89a') else ('png' if blob[:8]==b'\x89PNG\r\n\x1a\n' else ('jpg' if blob[:2]==b'\xff\xd8' else 'bin'))
                   path=f'shots/{vid}/{t:04d}.{ext}'
                   open(path,'wb').write(blob)
-                  result[vid].append({'t':t,'http':status,'contentType':ctype,'bytes':len(blob),'ext':ext})
+                  result[vid].append({'t':t,'http':status,'contentType':ctype,'bytes':len(blob),'ext':ext,'target':target})
           open('shots/summary.json','w').write(json.dumps(result,indent=2))
           PY
       - name: Inventory
@@ -44,6 +45,6 @@ jobs:
       - name: Upload test shots
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-thum-test
+          name: snazzy-thum-parented-test
           path: shots
           retention-days: 1
