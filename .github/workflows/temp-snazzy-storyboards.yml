@@ -1,4 +1,4 @@
-name: temp-snazzy-archived-player-recovery
+name: temp-snazzy-microlink-visual-recovery
 on:
   push:
     paths:
@@ -7,24 +7,27 @@ on:
 jobs:
   recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
-      - name: Recover archived exact YouTube player pages and storyboard specs
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Resolve exact YouTube videos through Microlink and sample frames
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p recovery
-          cat > /tmp/recover.py <<'PY'
-          import html as htmllib
-          import json, math, os, re, urllib.parse, urllib.request, urllib.error
+          python - <<'PY'
+          import json, os, subprocess, urllib.parse, urllib.request, urllib.error
 
           ITEMS={
-            'rg2Jqbj82Vk':('20260717000239','https://www.youtube.com/watch?si=lcBt8Ck2U0A9M4W6&v=rg2Jqbj82Vk'),
-            '-dbuBNSwoGU':('20260908155433','https://www.youtube.com/watch?v=-dbuBNSwoGU'),
+              'rg2Jqbj82Vk':3,
+              '-dbuBNSwoGU':5,
           }
-          UA={'User-Agent':'Mozilla/5.0'}
+          UA={'User-Agent':'Mozilla/5.0 research visual verification'}
 
-          def fetch(url,timeout=60):
+          def fetch(url, timeout=120):
               req=urllib.request.Request(url,headers=UA)
               try:
                   with urllib.request.urlopen(req,timeout=timeout) as r:
@@ -34,96 +37,47 @@ jobs:
               except Exception as e:
                   return 0,url,repr(e).encode()
 
-          def candidates_from_text(text):
-              vals=[]
-              # Direct JSON property near storyboard renderer.
-              pats=[
-                r'playerStoryboardSpecRenderer.{0,500}?"spec"\s*:\s*"([^"]+)"',
-                r'playerStoryboardSpecRenderer.{0,500}?\\"spec\\"\s*:\s*\\"([^\\"]+)\\"',
-                r'"spec"\s*:\s*"(https://i\.ytimg\.com/sb/[^"]+)"',
-              ]
-              for p in pats:
-                  for m in re.finditer(p,text,re.S):
-                      v=m.group(1)
-                      try:
-                          # Decode JSON string escapes where possible.
-                          v=json.loads('"'+v.replace('"','\\"')+'"')
-                      except Exception:
-                          v=v.replace('\\u0026','&').replace('\\/','/').replace('\\"','"')
-                      v=htmllib.unescape(v)
-                      if 'i.ytimg.com/sb/' in v and v not in vals:
-                          vals.append(v)
-              return vals
-
-          def storyboard_urls(spec):
-              parts=spec.split('|')
-              if len(parts)<2: return []
-              base=parts[0]
-              out=[]
-              for L,raw in enumerate(parts[1:]):
-                  a=raw.split('#')
-                  if len(a)<8: continue
-                  try:
-                      w,h,count,cols,rows,interval=map(int,a[:6])
-                  except Exception:
-                      continue
-                  name=a[6]; sigh=a[7]
-                  sheets=max(1,math.ceil(count/(cols*rows)))
-                  for m in range(sheets):
-                      n=name.replace('$M',str(m))
-                      url=base.replace('$L',str(L)).replace('$N',n)
-                      url += ('&' if '?' in url else '?')+'sigh='+sigh
-                      out.append({'level':L,'sheet':m,'w':w,'h':h,'count':count,'cols':cols,'rows':rows,'intervalMs':interval,'url':url})
-              return out
-
-          for vid,(ts,orig) in ITEMS.items():
+          for vid,interval in ITEMS.items():
               d=f'recovery/{vid}'; os.makedirs(f'{d}/sheets',exist_ok=True)
-              replay=f'https://web.archive.org/web/{ts}id_/{orig}'
-              status,final,blob=fetch(replay)
-              open(f'{d}/archived-watch.html','wb').write(blob)
-              text=blob.decode('utf-8','replace')
-              specs=candidates_from_text(text)
-              # Also inspect a broadly unescaped projection; archived scripts sometimes double-escape player JSON.
-              projection=text.replace('\\u0026','&').replace('\\/','/').replace('&amp;','&')
-              for s in candidates_from_text(projection):
-                  if s not in specs: specs.append(s)
-              result={'archiveHttp':status,'archiveFinal':final,'archiveBytes':len(blob),'specCount':len(specs),'specs':specs,'attempts':[]}
-              for si,spec in enumerate(specs):
-                  urls=storyboard_urls(spec)
-                  result.setdefault('storyboardSets',[]).append({'specIndex':si,'sheetCount':len(urls),'urls':urls})
-                  for item in urls:
-                      # Try live i.ytimg signed asset first, then Wayback replay at page-capture time.
-                      for mode,url in [
-                          ('live',item['url']),
-                          ('archive',f"https://web.archive.org/web/{ts}id_/{item['url']}")
-                      ]:
-                          st,fin,img=fetch(url,timeout=30)
-                          ok=img[:2]==b'\xff\xd8' or img[:8]==b'\x89PNG\r\n\x1a\n'
-                          result['attempts'].append({'specIndex':si,'level':item['level'],'sheet':item['sheet'],'mode':mode,'http':st,'bytes':len(img),'image':ok,'final':fin})
-                          if ok:
-                              ext='jpg' if img[:2]==b'\xff\xd8' else 'png'
-                              path=f"{d}/sheets/S{si}-L{item['level']}-M{item['sheet']}-{mode}.{ext}"
-                              open(path,'wb').write(img)
-                              break
-              # Save useful markers even if no spec regex matched.
-              markers={}
-              for needle in ['playerStoryboardSpecRenderer','storyboards','i.ytimg.com/sb/','ytInitialPlayerResponse','streamingData']:
-                  pos=text.find(needle)
-                  markers[needle]=pos
-                  if pos>=0:
-                      open(f"{d}/marker-{re.sub('[^A-Za-z0-9]+','_',needle)}.txt",'w',encoding='utf-8').write(text[max(0,pos-3000):pos+12000])
-              result['markers']=markers
-              open(f'{d}/summary.json','w',encoding='utf-8').write(json.dumps(result,indent=2,ensure_ascii=False))
+              target=f'https://www.youtube.com/watch?v={vid}'
+              params=urllib.parse.urlencode({'url':target,'video':'true','meta':'true','prerender':'true'})
+              api='https://api.microlink.io?'+params
+              status,final,body=fetch(api)
+              open(f'{d}/microlink.json','wb').write(body)
+              summary={'apiHttp':status,'apiFinal':final,'apiBytes':len(body),'target':target,'intervalSeconds':interval}
+              try:
+                  data=json.loads(body)
+              except Exception as e:
+                  summary['parseError']=repr(e); data={}
+              summary['apiStatus']=data.get('status') if isinstance(data,dict) else None
+              video=((data.get('data') or {}).get('video') or {}) if isinstance(data,dict) else {}
+              # Never persist the signed direct media URL into summary; just its public metadata.
+              summary['videoMeta']={k:video.get(k) for k in ('type','duration','size','height','width','duration_pretty','size_pretty')}
+              media_url=video.get('url')
+              summary['hasVideoUrl']=bool(media_url)
+
+              if media_url:
+                  # Sample actual source video every N seconds. Label each tile with source timestamp.
+                  out=f'{d}/sheets/sheet-%03d.jpg'
+                  vf=(f"fps=1/{interval},scale=480:-2,"
+                      "drawtext=text='%{pts\\:hms}':x=6:y=6:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.65,"
+                      "tile=5x5:padding=2:margin=2")
+                  cmd=['ffmpeg','-hide_banner','-loglevel','warning','-y','-i',media_url,'-vf',vf,'-q:v','4',out]
+                  p=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=1200)
+                  open(f'{d}/ffmpeg.log','w',encoding='utf-8').write(p.stdout)
+                  summary['ffmpegRc']=p.returncode
+                  summary['sheetCount']=len([x for x in os.listdir(f'{d}/sheets') if x.endswith('.jpg')])
+
+              open(f'{d}/summary.json','w',encoding='utf-8').write(json.dumps(summary,indent=2,ensure_ascii=False))
           PY
-          python /tmp/recover.py
       - name: Inventory
         shell: bash
         run: |
           find recovery -type f -printf '%p %s bytes\n' | sort | tee recovery/INVENTORY.txt
-          echo "Images:"; find recovery -type f \( -name '*.jpg' -o -name '*.png' \) | wc -l
-      - name: Upload
+          echo "Sheets:"; find recovery -type f -name 'sheet-*.jpg' | wc -l
+      - name: Upload visual samples
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-archived-player-recovery
+          name: snazzy-microlink-visual-samples
           path: recovery
           retention-days: 1
