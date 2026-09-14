@@ -35,33 +35,32 @@ jobs:
               echo "No public instance returned metadata" >> "recovery/$ID/access.log"
               continue
             fi
-            python - "$ID" <<'PY'
-import json, os, sys, urllib.request
-vid=sys.argv[1]
-base=f'recovery/{vid}'
-with open(f'{base}/video.json','r',encoding='utf-8') as f:
-    data=json.load(f)
-summary={k:data.get(k) for k in ('title','videoId','lengthSeconds','author','publishedText')}
-summary['storyboards']=data.get('storyboards',[])
-with open(f'{base}/summary.json','w',encoding='utf-8') as f:
-    json.dump(summary,f,indent=2,ensure_ascii=False)
-for i,sb in enumerate(data.get('storyboards') or []):
-    url=sb.get('url') or sb.get('templateUrl')
-    if not url:
-        continue
-    # Prefer the first concrete sheet URL supplied by the API.
-    url=url.replace('$N','0').replace('$L',str(i))
-    try:
-        req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
-        with urllib.request.urlopen(req,timeout=30) as r:
-            blob=r.read()
-        ext='.jpg' if b'JFIF' in blob[:20] or blob[:2]==b'\xff\xd8' else '.bin'
-        with open(f'{base}/storyboard-{i}{ext}','wb') as f:
-            f.write(blob)
-    except Exception as e:
-        with open(f'{base}/storyboard-errors.log','a',encoding='utf-8') as f:
-            f.write(f'{i}: {url}: {e}\n')
-PY
+            ID_ENV="$ID" python - <<'PY'
+          import json, os, urllib.request
+          vid=os.environ['ID_ENV']
+          base=f'recovery/{vid}'
+          with open(f'{base}/video.json','r',encoding='utf-8') as f:
+              data=json.load(f)
+          summary={k:data.get(k) for k in ('title','videoId','lengthSeconds','author','publishedText')}
+          summary['storyboards']=data.get('storyboards',[])
+          with open(f'{base}/summary.json','w',encoding='utf-8') as f:
+              json.dump(summary,f,indent=2,ensure_ascii=False)
+          for i,sb in enumerate(data.get('storyboards') or []):
+              url=sb.get('url') or sb.get('templateUrl')
+              if not url:
+                  continue
+              url=url.replace('$N','0').replace('$L',str(i))
+              try:
+                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+                  with urllib.request.urlopen(req,timeout=30) as r:
+                      blob=r.read()
+                  ext='.jpg' if b'JFIF' in blob[:20] or blob[:2]==b'\xff\xd8' else '.bin'
+                  with open(f'{base}/storyboard-{i}{ext}','wb') as f:
+                      f.write(blob)
+              except Exception as e:
+                  with open(f'{base}/storyboard-errors.log','a',encoding='utf-8') as f:
+                      f.write(f'{i}: {url}: {e}\n')
+          PY
           done
       - name: Inventory
         shell: bash
