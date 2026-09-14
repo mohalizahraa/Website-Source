@@ -7,130 +7,52 @@ on:
 jobs:
   recover-storyboards:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - name: Recover exact YouTube storyboards via public InnerTube player API
+      - name: Install current yt-dlp + public PO-token provider
         shell: bash
         run: |
           set -euo pipefail
+          python -m pip install -U 'yt-dlp[default]' bgutil-ytdlp-pot-provider
+          git clone --depth 1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git /tmp/bgutil
+          cd /tmp/bgutil/server
+          npm ci --silent
+          npx tsc
+          yt-dlp --version
+      - name: Fetch exact YouTube storyboard formats only
+        shell: bash
+        run: |
+          set +e
           mkdir -p recovery
-          cat > /tmp/recover.py <<'PY'
-          import json, math, os, urllib.request, urllib.error
+          for ID in rg2Jqbj82Vk -dbuBNSwoGU; do
+            OUT="recovery/$ID"
+            mkdir -p "$OUT"
+            URL="https://www.youtube.com/watch?v=$ID"
+            echo "=== $ID ===" > "$OUT/log.txt"
+            TOKEN_TTL=1 yt-dlp -v \
+              --remote-components ejs:github \
+              --js-runtimes node \
+              --extractor-args "youtube:player_client=mweb;formats=missing_pot" \
+              --extractor-args "youtubepot-bgutilscript:server_home=/tmp/bgutil/server" \
+              -F "$URL" >> "$OUT/log.txt" 2>&1
 
-          API_KEY='AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
-          PLAYER=f'https://www.youtube.com/youtubei/v1/player?key={API_KEY}'
-          VIDEOS=['rg2Jqbj82Vk','-dbuBNSwoGU']
-          CLIENTS=[
-              ('WEB','2.20260120.01.00','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/132 Safari/537.36'),
-              ('TVHTML5','5.20260114','Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version'),
-              ('ANDROID','20.10.38','com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip'),
-              ('ANDROID_VR','1.71.26','com.google.android.apps.youtube.vr.oculus/1.71.26 (Linux; Android 12)')
-          ]
-
-          def post_player(video_id, name, version, ua):
-              body={
-                  'context':{'client':{'clientName':name,'clientVersion':version,'hl':'en','gl':'US'}},
-                  'videoId':video_id,
-                  'contentCheckOk':True,
-                  'racyCheckOk':True,
-                  'playbackContext':{'contentPlaybackContext':{'html5Preference':'HTML5_PREF_WANTS'}}
-              }
-              raw=json.dumps(body).encode()
-              req=urllib.request.Request(PLAYER,data=raw,headers={
-                  'Content-Type':'application/json','User-Agent':ua,'Origin':'https://www.youtube.com'
-              })
-              with urllib.request.urlopen(req,timeout=30) as r:
-                  return json.loads(r.read())
-
-          def get_spec(data):
-              sb=data.get('storyboards') or {}
-              for key in ('playerStoryboardSpecRenderer','playerLiveStoryboardSpecRenderer'):
-                  obj=sb.get(key)
-                  if isinstance(obj,dict) and obj.get('spec'):
-                      return obj['spec']
-              return None
-
-          def storyboard_urls(spec):
-              parts=spec.split('|')
-              if len(parts)<2: return []
-              base=parts[0]
-              out=[]
-              for L,args_raw in enumerate(parts[1:]):
-                  a=args_raw.split('#')
-                  if len(a)<8: continue
-                  try:
-                      width,height,count,cols,rows,interval=map(int,a[:6])
-                  except Exception:
-                      continue
-                  name=a[6]
-                  sigh=a[7]
-                  sheets=max(1,math.ceil(count/(cols*rows)))
-                  for m in range(sheets):
-                      n=name.replace('$M',str(m))
-                      url=base.replace('$L',str(L)).replace('$N',n)
-                      url += ('&' if '?' in url else '?') + 'sigh=' + sigh
-                      out.append({'level':L,'sheet':m,'width':width,'height':height,'frameCount':count,'cols':cols,'rows':rows,'intervalMs':interval,'url':url})
-              return out
-
-          for vid in VIDEOS:
-              d=f'recovery/{vid}'
-              os.makedirs(f'{d}/sheets',exist_ok=True)
-              attempts=[]
-              chosen=None
-              spec=None
-              for name,ver,ua in CLIENTS:
-                  try:
-                      data=post_player(vid,name,ver,ua)
-                      status=(data.get('playabilityStatus') or {}).get('status')
-                      reason=(data.get('playabilityStatus') or {}).get('reason')
-                      s=get_spec(data)
-                      attempts.append({'client':name,'status':status,'reason':reason,'storyboard':bool(s),'title':(data.get('videoDetails') or {}).get('title')})
-                      with open(f'{d}/player-{name}.json','w',encoding='utf-8') as f:
-                          json.dump(data,f,ensure_ascii=False)
-                      if s and spec is None:
-                          chosen=(name,data)
-                          spec=s
-                  except Exception as e:
-                      attempts.append({'client':name,'error':repr(e)})
-              with open(f'{d}/attempts.json','w',encoding='utf-8') as f:
-                  json.dump(attempts,f,indent=2,ensure_ascii=False)
-              if not spec:
-                  continue
-              urls=storyboard_urls(spec)
-              with open(f'{d}/storyboard-urls.json','w',encoding='utf-8') as f:
-                  json.dump(urls,f,indent=2,ensure_ascii=False)
-              # Fetch every signed storyboard sheet, preserving its level/sheet identity.
-              for item in urls:
-                  req=urllib.request.Request(item['url'],headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.youtube.com/'})
-                  try:
-                      with urllib.request.urlopen(req,timeout=30) as r:
-                          blob=r.read()
-                      path=f"{d}/sheets/L{item['level']}-M{item['sheet']}.jpg"
-                      with open(path,'wb') as f: f.write(blob)
-                  except Exception as e:
-                      with open(f'{d}/download-errors.log','a',encoding='utf-8') as f:
-                          f.write(f"L{item['level']} M{item['sheet']}: {e!r}\n")
-              summary={
-                  'videoId':vid,
-                  'client':chosen[0],
-                  'title':(chosen[1].get('videoDetails') or {}).get('title'),
-                  'lengthSeconds':(chosen[1].get('videoDetails') or {}).get('lengthSeconds'),
-                  'storyboardSheetCount':len(urls),
-                  'levels':sorted({x['level'] for x in urls})
-              }
-              with open(f'{d}/summary.json','w',encoding='utf-8') as f:
-                  json.dump(summary,f,indent=2,ensure_ascii=False)
-          PY
-          python /tmp/recover.py
+            # Storyboard formats are image sheets generated by YouTube itself.
+            TOKEN_TTL=1 yt-dlp -v \
+              --remote-components ejs:github \
+              --js-runtimes node \
+              --extractor-args "youtube:player_client=mweb;formats=missing_pot" \
+              --extractor-args "youtubepot-bgutilscript:server_home=/tmp/bgutil/server" \
+              -f 'sb2/sb1/sb0' \
+              -o "$OUT/storyboard.%(ext)s" "$URL" >> "$OUT/log.txt" 2>&1
+            ls -lah "$OUT" >> "$OUT/log.txt" 2>&1
+          done
       - name: Inventory
         shell: bash
         run: |
           find recovery -type f -printf '%p %s bytes\n' | sort | tee recovery/INVENTORY.txt
-          echo 'JPEG count:'
-          find recovery -type f -name '*.jpg' | wc -l
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-inner-tube-storyboards
+          name: snazzy-pot-storyboards
           path: recovery
           retention-days: 1
