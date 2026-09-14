@@ -5,77 +5,132 @@ on:
       - '.github/workflows/temp-snazzy-storyboards.yml'
 
 jobs:
-  recover-visuals:
+  recover-storyboards:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
-      - name: Recover via public Piped stream API
+      - name: Recover exact YouTube storyboards via public InnerTube player API
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p recovery
-          IDS=('rg2Jqbj82Vk' '-dbuBNSwoGU')
-          APIS=(
-            'https://pipedapi.kavin.rocks'
-            'https://pipedapi.leptons.xyz'
-            'https://pipedapi.nosebs.ru'
-            'https://api-piped.mha.fi'
-            'https://piped-api.garudalinux.org'
-          )
-          for ID in "${IDS[@]}"; do
-            mkdir -p "recovery/$ID"
-            OK=''
-            for BASE in "${APIS[@]}"; do
-              echo "Trying $BASE for $ID" | tee -a "recovery/$ID/access.log"
-              CODE=$(curl -LsS --max-time 45 -w '%{http_code}' "$BASE/streams/$ID" -o "recovery/$ID/piped.json" || true)
-              echo "HTTP $CODE" | tee -a "recovery/$ID/access.log"
-              if [ "$CODE" = '200' ] && python -c "import json; d=json.load(open('recovery/$ID/piped.json')); assert d.get('videoStreams')" 2>/dev/null; then
-                OK="$BASE"
-                break
-              fi
-            done
-            if [ -z "$OK" ]; then
-              echo "No Piped API returned usable video streams" >> "recovery/$ID/access.log"
-              continue
-            fi
+          cat > /tmp/recover.py <<'PY'
+          import json, math, os, urllib.request, urllib.error
 
-            ID_ENV="$ID" python - <<'PY'
-          import json, os
-          vid=os.environ['ID_ENV']
-          p=f'recovery/{vid}/piped.json'
-          d=json.load(open(p,encoding='utf-8'))
-          streams=d.get('videoStreams') or []
-          # Prefer 360-480p; video-only is fine because we only need frames.
-          def rank(s):
-              h=s.get('height') or 0
-              target_penalty=0 if 360 <= h <= 480 else min(abs(h-360),abs(h-480))+1000
-              return (target_penalty, abs(h-480), 1 if not s.get('url') else 0)
-          streams=sorted(streams,key=rank)
-          chosen=streams[0]
-          summary={
-              'title':d.get('title'),'duration':d.get('duration'),'uploader':d.get('uploader'),
-              'uploadDate':d.get('uploadDate'),'thumbnailUrl':d.get('thumbnailUrl'),
-              'chosenStream':{k:chosen.get(k) for k in ('quality','height','width','fps','format','mimeType','videoOnly','url')}
-          }
-          json.dump(summary,open(f'recovery/{vid}/summary.json','w',encoding='utf-8'),indent=2,ensure_ascii=False)
-          open(f'recovery/{vid}/stream.url','w').write(chosen['url'])
+          API_KEY='AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+          PLAYER=f'https://www.youtube.com/youtubei/v1/player?key={API_KEY}'
+          VIDEOS=['rg2Jqbj82Vk','-dbuBNSwoGU']
+          CLIENTS=[
+              ('WEB','2.20260120.01.00','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/132 Safari/537.36'),
+              ('TVHTML5','5.20260114','Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version'),
+              ('ANDROID','20.10.38','com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip'),
+              ('ANDROID_VR','1.71.26','com.google.android.apps.youtube.vr.oculus/1.71.26 (Linux; Android 12)')
+          ]
+
+          def post_player(video_id, name, version, ua):
+              body={
+                  'context':{'client':{'clientName':name,'clientVersion':version,'hl':'en','gl':'US'}},
+                  'videoId':video_id,
+                  'contentCheckOk':True,
+                  'racyCheckOk':True,
+                  'playbackContext':{'contentPlaybackContext':{'html5Preference':'HTML5_PREF_WANTS'}}
+              }
+              raw=json.dumps(body).encode()
+              req=urllib.request.Request(PLAYER,data=raw,headers={
+                  'Content-Type':'application/json','User-Agent':ua,'Origin':'https://www.youtube.com'
+              })
+              with urllib.request.urlopen(req,timeout=30) as r:
+                  return json.loads(r.read())
+
+          def get_spec(data):
+              sb=data.get('storyboards') or {}
+              for key in ('playerStoryboardSpecRenderer','playerLiveStoryboardSpecRenderer'):
+                  obj=sb.get(key)
+                  if isinstance(obj,dict) and obj.get('spec'):
+                      return obj['spec']
+              return None
+
+          def storyboard_urls(spec):
+              parts=spec.split('|')
+              if len(parts)<2: return []
+              base=parts[0]
+              out=[]
+              for L,args_raw in enumerate(parts[1:]):
+                  a=args_raw.split('#')
+                  if len(a)<8: continue
+                  try:
+                      width,height,count,cols,rows,interval=map(int,a[:6])
+                  except Exception:
+                      continue
+                  name=a[6]
+                  sigh=a[7]
+                  sheets=max(1,math.ceil(count/(cols*rows)))
+                  for m in range(sheets):
+                      n=name.replace('$M',str(m))
+                      url=base.replace('$L',str(L)).replace('$N',n)
+                      url += ('&' if '?' in url else '?') + 'sigh=' + sigh
+                      out.append({'level':L,'sheet':m,'width':width,'height':height,'frameCount':count,'cols':cols,'rows':rows,'intervalMs':interval,'url':url})
+              return out
+
+          for vid in VIDEOS:
+              d=f'recovery/{vid}'
+              os.makedirs(f'{d}/sheets',exist_ok=True)
+              attempts=[]
+              chosen=None
+              spec=None
+              for name,ver,ua in CLIENTS:
+                  try:
+                      data=post_player(vid,name,ver,ua)
+                      status=(data.get('playabilityStatus') or {}).get('status')
+                      reason=(data.get('playabilityStatus') or {}).get('reason')
+                      s=get_spec(data)
+                      attempts.append({'client':name,'status':status,'reason':reason,'storyboard':bool(s),'title':(data.get('videoDetails') or {}).get('title')})
+                      with open(f'{d}/player-{name}.json','w',encoding='utf-8') as f:
+                          json.dump(data,f,ensure_ascii=False)
+                      if s and spec is None:
+                          chosen=(name,data)
+                          spec=s
+                  except Exception as e:
+                      attempts.append({'client':name,'error':repr(e)})
+              with open(f'{d}/attempts.json','w',encoding='utf-8') as f:
+                  json.dump(attempts,f,indent=2,ensure_ascii=False)
+              if not spec:
+                  continue
+              urls=storyboard_urls(spec)
+              with open(f'{d}/storyboard-urls.json','w',encoding='utf-8') as f:
+                  json.dump(urls,f,indent=2,ensure_ascii=False)
+              # Fetch every signed storyboard sheet, preserving its level/sheet identity.
+              for item in urls:
+                  req=urllib.request.Request(item['url'],headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.youtube.com/'})
+                  try:
+                      with urllib.request.urlopen(req,timeout=30) as r:
+                          blob=r.read()
+                      path=f"{d}/sheets/L{item['level']}-M{item['sheet']}.jpg"
+                      with open(path,'wb') as f: f.write(blob)
+                  except Exception as e:
+                      with open(f'{d}/download-errors.log','a',encoding='utf-8') as f:
+                          f.write(f"L{item['level']} M{item['sheet']}: {e!r}\n")
+              summary={
+                  'videoId':vid,
+                  'client':chosen[0],
+                  'title':(chosen[1].get('videoDetails') or {}).get('title'),
+                  'lengthSeconds':(chosen[1].get('videoDetails') or {}).get('lengthSeconds'),
+                  'storyboardSheetCount':len(urls),
+                  'levels':sorted({x['level'] for x in urls})
+              }
+              with open(f'{d}/summary.json','w',encoding='utf-8') as f:
+                  json.dump(summary,f,indent=2,ensure_ascii=False)
           PY
-
-            URL=$(cat "recovery/$ID/stream.url")
-            mkdir -p "recovery/$ID/sheets"
-            # Sample one frame every 10 seconds, 25 frames per contact sheet.
-            ffmpeg -hide_banner -loglevel warning -y -i "$URL" \
-              -vf "fps=1/10,scale=640:-2,tile=5x5:padding=2:margin=2" \
-              -q:v 4 "recovery/$ID/sheets/sheet-%03d.jpg" \
-              >"recovery/$ID/ffmpeg.out" 2>"recovery/$ID/ffmpeg.err" || true
-            rm -f "recovery/$ID/stream.url"
-          done
+          python /tmp/recover.py
       - name: Inventory
         shell: bash
-        run: find recovery -type f -printf '%p %s bytes\n' | sort | tee recovery/INVENTORY.txt
+        run: |
+          find recovery -type f -printf '%p %s bytes\n' | sort | tee recovery/INVENTORY.txt
+          echo 'JPEG count:'
+          find recovery -type f -name '*.jpg' | wc -l
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-visual-samples
+          name: snazzy-inner-tube-storyboards
           path: recovery
           retention-days: 1
