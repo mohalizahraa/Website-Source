@@ -1,83 +1,49 @@
-name: temp-snazzy-microlink-visual-recovery
+name: temp-snazzy-thum-visual-test
 on:
   push:
     paths:
       - '.github/workflows/temp-snazzy-storyboards.yml'
 
 jobs:
-  recover:
+  test-remote-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
-      - name: Install ffmpeg
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
-      - name: Resolve exact YouTube videos through Microlink and sample frames
+      - name: Capture exact YouTube embeds at test timestamps through Thum.io browser fleet
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p recovery
+          mkdir -p shots
           python - <<'PY'
-          import json, os, subprocess, urllib.parse, urllib.request, urllib.error
-
-          ITEMS={
-              'rg2Jqbj82Vk':3,
-              '-dbuBNSwoGU':5,
+          import os, urllib.parse, urllib.request, json
+          tests={
+            'rg2Jqbj82Vk':[0,300,600,900],
+            '-dbuBNSwoGU':[0,1200,2400,3600],
           }
-          UA={'User-Agent':'Mozilla/5.0 research visual verification'}
-
-          def fetch(url, timeout=120):
-              req=urllib.request.Request(url,headers=UA)
-              try:
-                  with urllib.request.urlopen(req,timeout=timeout) as r:
-                      return r.status,r.geturl(),r.read()
-              except urllib.error.HTTPError as e:
-                  return e.code,e.geturl(),e.read()
-              except Exception as e:
-                  return 0,url,repr(e).encode()
-
-          for vid,interval in ITEMS.items():
-              d=f'recovery/{vid}'; os.makedirs(f'{d}/sheets',exist_ok=True)
-              target=f'https://www.youtube.com/watch?v={vid}'
-              params=urllib.parse.urlencode({'url':target,'video':'true','meta':'true','prerender':'true'})
-              api='https://api.microlink.io?'+params
-              status,final,body=fetch(api)
-              open(f'{d}/microlink.json','wb').write(body)
-              summary={'apiHttp':status,'apiFinal':final,'apiBytes':len(body),'target':target,'intervalSeconds':interval}
-              try:
-                  data=json.loads(body)
-              except Exception as e:
-                  summary['parseError']=repr(e); data={}
-              summary['apiStatus']=data.get('status') if isinstance(data,dict) else None
-              video=((data.get('data') or {}).get('video') or {}) if isinstance(data,dict) else {}
-              # Never persist the signed direct media URL into summary; just its public metadata.
-              summary['videoMeta']={k:video.get(k) for k in ('type','duration','size','height','width','duration_pretty','size_pretty')}
-              media_url=video.get('url')
-              summary['hasVideoUrl']=bool(media_url)
-
-              if media_url:
-                  # Sample actual source video every N seconds. Label each tile with source timestamp.
-                  out=f'{d}/sheets/sheet-%03d.jpg'
-                  vf=(f"fps=1/{interval},scale=480:-2,"
-                      "drawtext=text='%{pts\\:hms}':x=6:y=6:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.65,"
-                      "tile=5x5:padding=2:margin=2")
-                  cmd=['ffmpeg','-hide_banner','-loglevel','warning','-y','-i',media_url,'-vf',vf,'-q:v','4',out]
-                  p=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=1200)
-                  open(f'{d}/ffmpeg.log','w',encoding='utf-8').write(p.stdout)
-                  summary['ffmpegRc']=p.returncode
-                  summary['sheetCount']=len([x for x in os.listdir(f'{d}/sheets') if x.endswith('.jpg')])
-
-              open(f'{d}/summary.json','w',encoding='utf-8').write(json.dumps(summary,indent=2,ensure_ascii=False))
+          result={}
+          for vid,times in tests.items():
+              os.makedirs(f'shots/{vid}',exist_ok=True)
+              result[vid]=[]
+              for t in times:
+                  target=f'https://www.youtube.com/embed/{vid}?autoplay=1&mute=1&start={t}&controls=0'
+                  api='https://image.thum.io/get/width/1200/crop/675/maxAge/0/?url='+urllib.parse.quote(target,safe='')
+                  req=urllib.request.Request(api,headers={'User-Agent':'Mozilla/5.0'})
+                  try:
+                      with urllib.request.urlopen(req,timeout=90) as r:
+                          blob=r.read(); status=r.status; ctype=r.headers.get('content-type')
+                  except Exception as e:
+                      blob=repr(e).encode(); status=0; ctype='error'
+                  ext='png' if blob[:8]==b'\x89PNG\r\n\x1a\n' else ('jpg' if blob[:2]==b'\xff\xd8' else 'bin')
+                  path=f'shots/{vid}/{t:04d}.{ext}'
+                  open(path,'wb').write(blob)
+                  result[vid].append({'t':t,'http':status,'contentType':ctype,'bytes':len(blob),'ext':ext})
+          open('shots/summary.json','w').write(json.dumps(result,indent=2))
           PY
       - name: Inventory
-        shell: bash
-        run: |
-          find recovery -type f -printf '%p %s bytes\n' | sort | tee recovery/INVENTORY.txt
-          echo "Sheets:"; find recovery -type f -name 'sheet-*.jpg' | wc -l
-      - name: Upload visual samples
+        run: find shots -type f -printf '%p %s bytes\n' | sort
+      - name: Upload test shots
         uses: actions/upload-artifact@v4
         with:
-          name: snazzy-microlink-visual-samples
-          path: recovery
+          name: snazzy-thum-test
+          path: shots
           retention-days: 1
