@@ -1,8 +1,8 @@
 name: Temp Snazzy transcript fetch
 
 on:
-  push:
-    branches: [tmp-snazzy-transcript-fetch]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -13,7 +13,6 @@ jobs:
     steps:
       - run: |
           set -euo pipefail
-          for id in rg2Jqbj82Vk -- -dbuBNSwoGU; do :; done
           curl --retry 3 --retry-delay 2 -fsSL 'https://youtubegpt.ai/api/transcript?v=rg2Jqbj82Vk&format=json' -o rg2.json
           curl --retry 3 --retry-delay 2 -fsSL 'https://youtubegpt.ai/api/transcript?v=-dbuBNSwoGU&format=json' -o dbu.json
           echo '=== RG2 ==='
