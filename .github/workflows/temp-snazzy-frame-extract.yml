@@ -1,0 +1,47 @@
+name: Temp Snazzy frame extract
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  frames:
+    if: github.head_ref == 'tmp-snazzy-transcript-fetch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Install yt-dlp
+        run: python -m pip install --upgrade yt-dlp
+      - name: Download low-res exact videos
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/snazzy tmp-snazzy-frames
+          yt-dlp --no-playlist -f 'worst[ext=mp4]/worst' -o '/tmp/snazzy/rg2.%(ext)s' 'https://www.youtube.com/watch?v=rg2Jqbj82Vk'
+          yt-dlp --no-playlist -f 'worst[ext=mp4]/worst' -o '/tmp/snazzy/dbu.%(ext)s' 'https://www.youtube.com/watch?v=-dbuBNSwoGU'
+          ls -lh /tmp/snazzy
+      - name: Extract representative frames
+        shell: bash
+        run: |
+          set -euo pipefail
+          RG2=$(find /tmp/snazzy -maxdepth 1 -type f -name 'rg2.*' | head -1)
+          DBU=$(find /tmp/snazzy -maxdepth 1 -type f -name 'dbu.*' | head -1)
+          for spec in '90 rg2_0090' '150 rg2_0150' '330 rg2_0330' '460 rg2_0460' '780 rg2_0780' '1000 rg2_1000'; do set -- $spec; ffmpeg -loglevel error -y -ss "$1" -i "$RG2" -frames:v 1 -vf 'scale=960:-2' "tmp-snazzy-frames/$2.jpg"; done
+          for spec in '450 dbu_0450' '1000 dbu_1000' '1600 dbu_1600' '2300 dbu_2300' '2950 dbu_2950' '3440 dbu_3440'; do set -- $spec; ffmpeg -loglevel error -y -ss "$1" -i "$DBU" -frames:v 1 -vf 'scale=960:-2' "tmp-snazzy-frames/$2.jpg"; done
+          ls -lh tmp-snazzy-frames
+      - name: Commit temporary frames to head branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tmp-snazzy-frames
+          git commit -m 'Temp: extracted Snazzy visual checkpoints' || exit 0
+          git push origin HEAD:${{ github.head_ref }}
