@@ -46,6 +46,21 @@ export async function onRequestPatch(context) {
     updates.push(`${key} = ?`);
     values.push(value);
   }
+  if (body.source_pdf_url !== undefined) {
+    const nextPdf = body.source_pdf_url === '' ? null : body.source_pdf_url;
+    if ((before.source_pdf_url || null) !== nextPdf) {
+      if (nextPdf) {
+        updates.push("pdf_status = 'unchecked'");
+        updates.push('pdf_checked_at = NULL');
+        updates.push("pdf_check_note = 'Awaiting validation'");
+      } else {
+        updates.push("pdf_status = 'missing'");
+        updates.push('pdf_checked_at = NULL');
+        updates.push("pdf_check_note = 'No direct PDF URL'");
+      }
+    }
+  }
+
   if (!updates.length) return json({ project: normalizeProject(before) });
 
   const now = new Date().toISOString();
