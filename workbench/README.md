@@ -116,3 +116,9 @@ A second official-site sweep recovered the seven-book **مفاهيم قرآني�
 - The Dashboard no longer shows a generic **Recently updated** list. It shows **My assigned projects** for the selected **Using as** identity, including projects assigned to `Both`, and exposes every matching book rather than truncating the list.
 - Projects offers a **My assignments** filter whose meaning follows the current **Using as** identity.
 - The visual system uses contemporary component treatment (intentional selects/inputs, larger radii, focus states, quieter surfaces, modern dialogs/cards) while preserving the parchment / editorial / archival identity. Browser-default or form-era chrome is not an acceptable final visual state.
+
+### Identity and filter interaction refinement
+
+- The global identity control is a Zahraa/Mohammed segmented switch rather than a visible native select; the underlying semantic state remains the same.
+- The Projects filter surface can be collapsed to reduce persistent form chrome.
+- Timeline bars are directly clickable and open their project editor.

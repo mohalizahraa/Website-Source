@@ -45,6 +45,14 @@ async function api(path, options = {}) {
   return data;
 }
 
+function syncActorSwitch() {
+  document.querySelectorAll('[data-actor-choice]').forEach(button=>{
+    const active=button.dataset.actorChoice===state.actor;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',active?'true':'false');
+  });
+}
+
 function toast(message) {
   els.toast.textContent = message; els.toast.classList.add('show');
   setTimeout(() => els.toast.classList.remove('show'), 1800);
@@ -714,6 +722,10 @@ function renderTimeline() {
     ? `<div class="timeline-unscheduled-head"><span>Without dates</span><strong>${unscheduled.length}</strong></div><div class="timeline-unscheduled-grid">${unscheduled.map(assignedProjectMarkup).join('')}</div>`
     : '';
   bindProjectClicks($('timeline-visual'));
+  $('timeline-visual').querySelectorAll('.timeline-bar').forEach(button=>button.addEventListener('click',event=>{
+    event.stopPropagation();
+    openProject(Number(button.dataset.projectId));
+  }));
   bindProjectClicks($('timeline-unscheduled'));
 }
 
@@ -1077,6 +1089,7 @@ async function auditPdfs() {
 async function init() {
   clearLegacyAccessKey();
   els.actor.value = state.actor;
+  syncActorSwitch();
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
   if ($('group-projects')) $('group-projects').value = state.projectGrouping;
   try {
@@ -1091,6 +1104,11 @@ async function init() {
 }
 
 document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view)));
+document.querySelectorAll('[data-actor-choice]').forEach(button=>button.addEventListener('click',()=>{
+  if (button.dataset.actorChoice===state.actor) return;
+  els.actor.value=button.dataset.actorChoice;
+  els.actor.dispatchEvent(new Event('change',{bubbles:true}));
+}));
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
 $('view-my-projects')?.addEventListener('click',()=>{
   $('filter-assignee').value='__mine__';
@@ -1101,6 +1119,7 @@ els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
 els.actor.addEventListener('change',()=>{
   state.actor=els.actor.value;
   localStorage.setItem('haydariActor',state.actor);
+  syncActorSwitch();
   renderDashboard();
   if ($('filter-assignee')?.value === '__mine__') renderProjects();
 });
@@ -1111,6 +1130,12 @@ $('new-project').addEventListener('click',()=>openProject(null));
 $('published').addEventListener('change',()=>{ if ($('published').checked) $('status').value='published'; });
 $('status').addEventListener('change',()=>{ if ($('status').value!=='published') $('published').checked=false; });
 $('clear-project-filters')?.addEventListener('click',clearProjectFilters);
+$('filter-toggle')?.addEventListener('click',()=>{
+  const content=$('filter-content');
+  const open=!content.classList.toggle('collapsed');
+  $('filter-toggle').setAttribute('aria-expanded',open?'true':'false');
+  $('filter-toggle-label').textContent=open?'Hide filters':'Filter & organize';
+});
 $('select-visible').addEventListener('change',()=>{
   const visible=filteredProjects();
   if ($('select-visible').checked) visible.forEach(p=>state.selectedIds.add(p.id));

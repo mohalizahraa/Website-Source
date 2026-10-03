@@ -80,6 +80,10 @@ assert(appSource.includes('reservedPdfWindow'), 'Work on Book post-link popup-sa
 assert(appSource.includes('function clearProjectFilters()'), 'Clear filters behavior is missing.');
 assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters control is missing.');
 assert(indexSource.includes('id="my-projects"') && indexSource.includes('id="my-projects-count"'), 'Personal assigned-project dashboard is missing.');
+assert(indexSource.includes('data-actor-choice="Zahraa"') && indexSource.includes('data-actor-choice="Mohammed"'), 'Segmented actor switch is missing.');
+assert(appSource.includes('function syncActorSwitch()'), 'Segmented actor switch synchronization is missing.');
+assert(indexSource.includes('id="filter-toggle"') && indexSource.includes('id="filter-content"'), 'Collapsible filter surface is missing.');
+assert(appSource.includes("querySelectorAll('.timeline-bar').forEach"), 'Timeline bars are not directly interactive.');
 assert(appSource.includes("p.assignee === state.actor || p.assignee === 'Both'"), 'Actor-scoped assignment logic is missing.');
 assert(indexSource.includes('value="__mine__">My assignments'), 'My assignments filter is missing.');
 assert(appSource.includes("if ($('filter-assignee')?.value === '__mine__') renderProjects();"), 'Actor changes do not refresh My assignments filtering.');

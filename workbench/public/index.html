@@ -26,8 +26,12 @@
 
     <div class="workspace-toolbar">
       <div class="identity">
-        <label for="actor">Using as</label>
-        <select id="actor"><option>Zahraa</option><option>Mohammed</option></select>
+        <span class="identity-label">Using as</span>
+        <div class="actor-switch" role="group" aria-label="Using as">
+          <button type="button" data-actor-choice="Zahraa" aria-pressed="false">Zahraa</button>
+          <button type="button" data-actor-choice="Mohammed" aria-pressed="false">Mohammed</button>
+        </div>
+        <select id="actor" class="visually-hidden" aria-hidden="true" tabindex="-1"><option>Zahraa</option><option>Mohammed</option></select>
       </div>
       <input class="search" id="search" type="search" placeholder="Search Arabic, English, transliteration, or author…" aria-label="Search projects" />
       <button id="new-project" class="primary">+ Project</button>
@@ -72,8 +76,8 @@
 
       <section id="projects-view" class="view">
         <div class="filter-group open">
-          <div class="filter-header static"><span>Filters</span></div>
-          <div class="filter-content active filters">
+          <button id="filter-toggle" class="filter-header" type="button" aria-expanded="true"><span id="filter-toggle-label">Hide filters</span><span class="filter-toggle-icon" aria-hidden="true">⌄</span></button>
+          <div id="filter-content" class="filter-content active filters">
             <select id="filter-topic"><option value="">All topics</option></select>
             <select id="filter-assignee"><option value="">All people</option><option value="__mine__">My assignments</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
             <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select>
