@@ -89,6 +89,17 @@ function imageCandidates(html, base, book) {
     add(match[1], 1, match[0]);
   }
 
+  // Broad legacy-page fallback: old WordPress/PageSpeed pages sometimes hide the
+  // actual image URL in inline CSS, lazy-load JSON, or script attributes rather
+  // than a conventional <img src>. Repeated site furniture is still removed by
+  // the cross-book source de-duplication pass below.
+  for (const match of html.matchAll(/(?:https?:\\/\\/[^"'<>\\s)]+|\\/ar\\/files\\/[^"'<>\\s)]+)\.(?:jpe?g|png|webp|gif)(?:[^"'<>\\s)]*)?/gi)) {
+    add(match[0], 0, match[0]);
+  }
+  for (const match of html.matchAll(/url\(\s*["']?([^"'()]+\.(?:jpe?g|png|webp|gif)(?:\?[^"'()]*)?)["']?\s*\)/gi)) {
+    add(match[1], 0, match[0]);
+  }
+
   return candidates.sort((a,b)=>b.score-a.score);
 }
 
