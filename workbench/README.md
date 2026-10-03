@@ -23,9 +23,14 @@ The initial project list is provisioned directly into D1 from the authorized sou
 
 ## Cloudflare Pages + D1
 
-Pages project root: `workbench/`  
-Static output: `public/`  
-Functions: `functions/`
+Recommended Git-integrated Pages settings:
+
+- Production branch: `workbench`
+- Root directory: `workbench`
+- Framework preset: none
+- Build command: blank
+- Build output directory: `public`
+- Functions directory: `functions/`
 
 Required runtime configuration:
 
