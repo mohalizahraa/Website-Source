@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T20:32:30.919Z",
+  "generated_at": "2026-10-03T20:38:44.951Z",
   "covers": {
     "book-4": {
       "source_url": "https://alhaydari.com/ar/files/2019/10/x020.jpg.pagespeed.ic.3BgK09VSbH.jpg"
@@ -488,6 +488,62 @@
       "source_url": "https://alhaydari.com/ar/files/2014/08/03.jpg",
       "provenance": "official-series-cover",
       "source_book": "book-94"
+    },
+    "book-5": {
+      "source_url": "https://alhaydari.com/fa/files/2019/06/06.jpg",
+      "provenance": "official-exact-cover",
+      "source_page": "https://alhaydari.com/fa/2019/06/8926/"
+    },
+    "book-99": {
+      "source_url": "https://alhaydari.com/ar/files/2014/06/0051.jpg",
+      "provenance": "official-exact-cover"
+    },
+    "book-100": {
+      "source_url": "https://alhaydari.com/ar/files/2014/06/52.jpg",
+      "provenance": "official-exact-cover"
+    },
+    "book-101": {
+      "source_url": "https://alhaydari.com/ar/files/2014/05/Untitled-1-1.jpg",
+      "provenance": "official-exact-cover"
+    },
+    "book-102": {
+      "source_url": "https://alhaydari.com/ar/files/2014/05/%D9%85%D9%86%D9%87%D8%A7%D8%AC-%D8%A7%D9%84%D8%B5%D8%A7%D9%84%D8%AD%D9%8A%D9%86.jpg",
+      "provenance": "official-exact-cover"
+    },
+    "book-6": {
+      "source_url": "https://alhaydari.com/fa/files/2019/06/06.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-5",
+      "source_page": "https://alhaydari.com/fa/2019/06/8926/"
+    },
+    "book-7": {
+      "source_url": "https://alhaydari.com/fa/files/2019/06/06.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-5",
+      "source_page": "https://alhaydari.com/fa/2019/06/8926/"
+    },
+    "book-8": {
+      "source_url": "https://alhaydari.com/fa/files/2019/06/06.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-5",
+      "source_page": "https://alhaydari.com/fa/2019/06/8926/"
+    },
+    "book-9": {
+      "source_url": "https://alhaydari.com/fa/files/2019/06/06.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-5",
+      "source_page": "https://alhaydari.com/fa/2019/06/8926/"
+    },
+    "book-10": {
+      "source_url": "https://alhaydari.com/fa/files/2019/06/06.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-5",
+      "source_page": "https://alhaydari.com/fa/2019/06/8926/"
+    },
+    "book-129": {
+      "source_url": "https://alhaydari.com/ar/files/2012/09/x01.jpg.pagespeed.ic.CHKlcjQcmu.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-128"
     }
   }
 }
