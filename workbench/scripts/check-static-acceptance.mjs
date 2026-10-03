@@ -71,5 +71,10 @@ assert(appSource.includes('function startWorkOnBook(id)'), 'Work on Book behavio
 assert(appSource.includes('data-work-on-book'), 'Work on Book action is missing from project rendering.');
 assert(appSource.includes("function sortProjects(projects, sort='updated')"), 'Projects sorting behavior is missing.');
 assert(indexSource.includes('id="sort-projects"'), 'Projects sort control is missing.');
+assert(appSource.includes("localStorage.setItem('haydariProjectSort'"), 'Projects sort persistence is missing.');
+assert(appSource.includes('openEnglishBookDialog(id,true)'), 'Work on Book auto-continue into English Book linking is missing.');
+assert(appSource.includes('reservedPdfWindow'), 'Work on Book post-link popup-safe continuation is missing.');
+assert(appSource.includes('function clearProjectFilters()'), 'Clear filters behavior is missing.');
+assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters control is missing.');
 
 console.log('Workbench static acceptance passed: 176 books, 10 topics, 176 covers, 172 available PDFs, 4 missing, 0 unchecked.');

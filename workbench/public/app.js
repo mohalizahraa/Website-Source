@@ -7,9 +7,11 @@ const STATUS = {
 };
 const STATUS_ORDER = Object.keys(STATUS);
 const ASSIGNEES = ['Zahraa','Mohammed','Both','Unassigned'];
+const SORT_VALUES = ['updated','deadline','title','status','assignee','topic'];
 const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', numeric:true });
 const savedActor = localStorage.getItem('haydariActor');
-const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
+const savedProjectSort = localStorage.getItem('haydariProjectSort');
+const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', pendingWorkOnLink: null };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -199,7 +201,7 @@ function filteredProjects() {
   const assignee = $('filter-assignee')?.value || '';
   const status = $('filter-status')?.value || '';
   const schedule = $('filter-schedule')?.value || '';
-  const sort = $('sort-projects')?.value || 'updated';
+  const sort = $('sort-projects')?.value || state.projectSort || 'updated';
   const blocked = $('filter-blocked')?.checked || false;
   const missingPdf = $('filter-missing-pdf')?.checked || false;
   const missingCover = $('filter-missing-cover')?.checked || false;
@@ -291,7 +293,7 @@ function startWorkOnBook(id) {
   const project=state.projects.find(p=>p.id===id);
   if (!project) return;
   if (!project.google_doc_url) {
-    openEnglishBookDialog(id);
+    openEnglishBookDialog(id,true);
     toast('Link the English Book first');
     return;
   }
@@ -329,6 +331,15 @@ function bindQuickActions(root=document) {
     event.stopPropagation();
     openEnglishBookDialog(Number(button.dataset.linkEnglish));
   }));
+}
+
+function clearProjectFilters() {
+  els.search.value='';
+  ['filter-topic','filter-assignee','filter-status','filter-schedule'].forEach(id=>{ if ($(id)) $(id).value=''; });
+  ['filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>{ if ($(id)) $(id).checked=false; });
+  renderProjects();
+  renderBoard();
+  toast('Filters cleared');
 }
 
 function paceModel() {
@@ -832,8 +843,9 @@ async function loadCoverMap() {
   } catch { state.coverMap = {}; }
 }
 
-function openEnglishBookDialog(id) {
+function openEnglishBookDialog(id, continueWork=false) {
   const project = state.projects.find(p=>p.id===id);
+  state.pendingWorkOnLink = continueWork ? id : null;
   $('english-project-id').value = id || '';
   $('english-book-url').value = project?.google_doc_url || '';
   $('english-book-dialog').showModal();
@@ -845,12 +857,26 @@ async function saveEnglishBook(event) {
   const id=Number($('english-project-id').value);
   const url=$('english-book-url').value.trim();
   if(!id || !url) return;
+  const continueWork = state.pendingWorkOnLink === id;
+  const project = state.projects.find(p=>p.id===id);
+  const reservedPdfWindow = continueWork && project?.pdf_available ? window.open('about:blank','_blank') : null;
+  if (reservedPdfWindow) reservedPdfWindow.opener=null;
   try {
     await api(`/api/projects/${id}`, {method:'PATCH',body:JSON.stringify({google_doc_url:url})});
     $('english-book-dialog').close();
+    state.pendingWorkOnLink=null;
     await loadData();
+    if (continueWork) {
+      if (reservedPdfWindow) reservedPdfWindow.location.replace(`/api/pdf/${id}`);
+      window.location.assign(url);
+      return;
+    }
+    if (reservedPdfWindow) reservedPdfWindow.close();
     toast('English Book linked');
-  } catch(error) { toast(error.message); }
+  } catch(error) {
+    if (reservedPdfWindow) reservedPdfWindow.close();
+    toast(error.message);
+  }
 }
 
 async function loadData() {
@@ -883,6 +909,7 @@ async function auditPdfs() {
 
 async function init() {
   state.key = readKey(); els.actor.value = state.actor;
+  if ($('sort-projects')) $('sort-projects').value = state.projectSort;
   if (!state.key) { els.gate.classList.remove('hidden'); return; }
   try {
     const health = await api('/api/health');
@@ -901,8 +928,10 @@ document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click'
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
 els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
 els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorage.setItem('haydariActor',state.actor);});
-['filter-topic','filter-assignee','filter-status','filter-schedule','sort-projects','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+['filter-topic','filter-assignee','filter-status','filter-schedule','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+$('sort-projects')?.addEventListener('change',()=>{state.projectSort=$('sort-projects').value;localStorage.setItem('haydariProjectSort',state.projectSort);renderProjects();});
 $('new-project').addEventListener('click',()=>openProject(null));
+$('clear-project-filters')?.addEventListener('click',clearProjectFilters);
 $('select-visible').addEventListener('change',()=>{
   const visible=filteredProjects();
   if ($('select-visible').checked) visible.forEach(p=>state.selectedIds.add(p.id));
@@ -914,8 +943,8 @@ $('apply-batch').addEventListener('click',applyBatch);
 $('cover-url').addEventListener('input',()=>renderCoverPreview(state.projects.find(p=>p.id===Number($('project-id').value))));
 $('upload-cover').addEventListener('click',uploadCoverPhoto);
 $('remove-uploaded-cover').addEventListener('click',removeUploadedCover);
-$('close-english-dialog').addEventListener('click',()=>$('english-book-dialog').close());
-$('cancel-english-dialog').addEventListener('click',()=>$('english-book-dialog').close());
+$('close-english-dialog').addEventListener('click',()=>{state.pendingWorkOnLink=null;$('english-book-dialog').close();});
+$('cancel-english-dialog').addEventListener('click',()=>{state.pendingWorkOnLink=null;$('english-book-dialog').close();});
 $('english-book-form').addEventListener('submit',saveEnglishBook);
 $('close-dialog').addEventListener('click',()=>els.dialog.close());
 $('cancel-dialog').addEventListener('click',()=>els.dialog.close());
