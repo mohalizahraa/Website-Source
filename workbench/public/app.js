@@ -300,7 +300,7 @@ function renderTimeline() {
   const today = new Date().toISOString().slice(0,10);
   const row = p => {
     const overdue = p.due_date && p.due_date < today && !['completed','published'].includes(p.status);
-    return `<article class="timeline-row" data-project-id="${p.id}"><div class="timeline-date ${overdue ? 'overdue' : ''}">${p.due_date ? dateText(p.due_date) : 'No deadline'}</div><div><div class="title-ar">${escapeHtml(p.title_ar)}</div><div class="timeline-meta"><span class="pill">${escapeHtml(p.assignee)}</span><span class="pill status-${p.status}">${STATUS[p.status]}</span>${overdue ? '<span class="pill blocked">Overdue</span>' : ''}</div></div></article>`;
+    return `<article class="timeline-row" data-project-id="${p.id}"><div class="timeline-date ${overdue ? 'overdue' : ''}">${p.due_date ? dateText(p.due_date) : 'No deadline'}</div><div><div class="title-ar">${escapeHtml(p.title_ar)}</div><div class="timeline-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span>${overdue ? '<span class="pill blocked">Overdue</span>' : ''}</div>${quickControlsMarkup(p,true)}</div></article>`;
   };
   $('timeline-list').innerHTML = scheduled.map(row).join('') + (unscheduled.length ? `<div class="timeline-divider">Unscheduled</div>${unscheduled.map(row).join('')}` : '') || '<p class="muted">No projects yet.</p>';
   bindProjectClicks($('timeline-list'));
