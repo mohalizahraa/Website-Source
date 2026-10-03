@@ -1,7 +1,7 @@
 import { actorFromRequest, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
 
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
-const validAssignees = new Set(['Zahraa','Brother','Both','Unassigned']);
+const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
 const validPriorities = new Set(['low','normal','high','urgent']);
 
 export async function onRequestGet(context) {

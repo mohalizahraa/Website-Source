@@ -6,7 +6,8 @@ const STATUS = {
   published: 'Published',
 };
 const STATUS_ORDER = Object.keys(STATUS);
-const state = { projects: [], activity: [], view: 'dashboard', key: '', actor: localStorage.getItem('haydariActor') || 'Zahraa' };
+const savedActor = localStorage.getItem('haydariActor');
+const state = { projects: [], activity: [], view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -99,7 +100,7 @@ function renderDashboard() {
     ['Active', active.length], ['In review', state.projects.filter(p=>p.status==='review').length], ['Blocked', blocked.length], ['With deadlines', due.length]
   ].map(([label,n])=>`<div class="summary-row"><span>${label}</span><strong>${n}</strong></div>`).join('');
 
-  const people = ['Zahraa','Brother','Both','Unassigned'];
+  const people = ['Zahraa','Mohammed','Both','Unassigned'];
   $('people-summary').innerHTML = people.map(person => {
     const list = state.projects.filter(p=>p.assignee===person);
     const done = list.filter(p=>['completed','published'].includes(p.status)).length;

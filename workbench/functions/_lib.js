@@ -10,7 +10,7 @@ export function json(data, status = 200) {
 
 export function actorFromRequest(request) {
   const actor = (request.headers.get('x-workbench-actor') || '').trim();
-  return ['Zahraa', 'Brother'].includes(actor) ? actor : 'Unknown';
+  return ['Zahraa', 'Mohammed', 'Brother'].includes(actor) ? actor : 'Unknown';
 }
 
 export function requireAccess(context) {

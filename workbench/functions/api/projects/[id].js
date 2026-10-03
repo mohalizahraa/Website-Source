@@ -5,7 +5,7 @@ const fields = new Set([
   'start_date','due_date','blocked','blocker_reason','notes'
 ]);
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
-const validAssignees = new Set(['Zahraa','Brother','Both','Unassigned']);
+const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
 const validPriorities = new Set(['low','normal','high','urgent']);
 
 function idFrom(context) {
