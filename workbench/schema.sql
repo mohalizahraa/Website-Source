@@ -53,3 +53,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_catalog_id ON projects(catalog_id
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_assignee ON projects(assignee);
 CREATE INDEX IF NOT EXISTS idx_activity_created_at ON activity(created_at DESC);
+
+
+CREATE TABLE IF NOT EXISTS project_covers (
+  project_id INTEGER PRIMARY KEY,
+  mime_type TEXT NOT NULL,
+  image_bytes BLOB NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
