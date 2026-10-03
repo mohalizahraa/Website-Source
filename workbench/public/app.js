@@ -50,6 +50,13 @@ function toast(message) {
 function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 function dateText(value) { return value ? new Date(`${value}T12:00:00Z`).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : 'No deadline'; }
 function escapeHtml(s='') { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function parseDateTime(value) {
+  if (!value) return null;
+  const raw=String(value);
+  const normalized=/^\d{4}-\d{2}-\d{2} \d{2}:/.test(raw) ? raw.replace(' ','T')+'Z' : raw;
+  const date=new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
 function isDone(p) { return ['completed','published'].includes(p.status); }
 function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || imported?.source_url || ''; }
 function assigneeOptions(current) { return ASSIGNEES.map(name => `<option value="${name}" ${current===name?'selected':''}>${name}</option>`).join(''); }
@@ -65,8 +72,8 @@ function googleDocLinkMarkup(p) {
 }
 function quickControlsMarkup(p, compact=false) {
   return `<div class="quick-controls ${compact ? 'compact-quick-controls' : ''}">
-    <label class="quick-field"><span>Assigned</span><select class="quick-assignee" data-project-id="${p.id}" aria-label="Assign ${escapeHtml(p.title_ar)}">${assigneeOptions(p.assignee)}</select></label>
-    <label class="quick-field"><span>Deadline</span><input class="quick-deadline" data-project-id="${p.id}" type="date" value="${escapeHtml(p.due_date || '')}" aria-label="Deadline for ${escapeHtml(p.title_ar)}"></label>
+    <label class="quick-field"><span>Assigned</span><select class="quick-assignee" data-project-id="${p.id}" draggable="false" aria-label="Assign ${escapeHtml(p.title_ar)}">${assigneeOptions(p.assignee)}</select></label>
+    <label class="quick-field"><span>Deadline</span><input class="quick-deadline" data-project-id="${p.id}" draggable="false" type="date" value="${escapeHtml(p.due_date || '')}" aria-label="Deadline for ${escapeHtml(p.title_ar)}"></label>
   </div>`;
 }
 
@@ -170,8 +177,8 @@ function paceModel() {
   const published = state.projects.filter(p => p.status === 'published').length;
   const events = state.projects
     .filter(p => p.completed_at)
-    .map(p => new Date(p.completed_at))
-    .filter(d => !Number.isNaN(d.getTime()))
+    .map(p => parseDateTime(p.completed_at))
+    .filter(Boolean)
     .sort((a,b)=>a-b);
   const now = new Date();
   const cutoff = new Date(now.getTime() - 30*86400000);
@@ -433,7 +440,8 @@ async function saveProject(event) {
 
 function renderCoverPreview(project=null) {
   const manual = $('cover-url')?.value.trim();
-  const src = manual || coverFor(project);
+  const imported=state.coverMap[project?.catalog_id];
+  const src = manual || imported?.path || imported?.source_url || '';
   $('cover-preview').innerHTML = src
     ? `<img src="${escapeHtml(src)}" alt="Book cover preview"><span class="muted">${manual ? 'Manual cover override' : 'Imported archive cover'}</span>`
     : '<span class="muted">No cover imported yet. Paste an image URL here or let the archive importer fill it automatically.</span>';
