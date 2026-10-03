@@ -1,4 +1,5 @@
 import { BOOK_CATALOG, CATALOG_VERSION } from './_catalog.js';
+import { PDF_AUDIT, PDF_AUDIT_VERSION } from './_pdf_audit.js';
 
 const CATALOG_COLUMNS = [
   ['catalog_id','TEXT'],['translit','TEXT'],['author','TEXT'],['author_ar','TEXT'],['category','TEXT'],
@@ -18,7 +19,6 @@ export async function ensureCatalog(db) {
     "UPDATE projects SET pdf_status='missing', pdf_check_note=COALESCE(pdf_check_note,'No direct PDF candidate in catalog') WHERE (source_pdf_url IS NULL OR source_pdf_url='') AND pdf_status='unchecked'"
   ).run();
   const current = await db.prepare("SELECT value FROM workbench_meta WHERE key = 'catalog_version'").first();
-  if (current?.value === CATALOG_VERSION) return;
 
   const statements = [];
   for (const book of BOOK_CATALOG) {
@@ -54,8 +54,34 @@ export async function ensureCatalog(db) {
       book.catalog_id, book.title_ar
     ));
   }
-  for (let i = 0; i < statements.length; i += 80) await db.batch(statements.slice(i, i + 80));
-  await db.prepare("INSERT INTO workbench_meta (key,value) VALUES ('catalog_version',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(CATALOG_VERSION).run();
+  if (current?.value !== CATALOG_VERSION) {
+    for (let i = 0; i < statements.length; i += 80) await db.batch(statements.slice(i, i + 80));
+    await db.prepare("INSERT INTO workbench_meta (key,value) VALUES ('catalog_version',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(CATALOG_VERSION).run();
+  }
+
+  const auditCurrent = await db.prepare("SELECT value FROM workbench_meta WHERE key = 'pdf_audit_version'").first();
+  if (auditCurrent?.value !== PDF_AUDIT_VERSION) {
+    const auditStatements = [];
+    for (const [catalogId, evidence] of Object.entries(PDF_AUDIT)) {
+      const status = evidence?.status === 'available' && evidence?.url ? 'available' : 'missing';
+      auditStatements.push(db.prepare(
+        `UPDATE projects
+            SET source_pdf_url = ?,
+                pdf_status = ?,
+                pdf_checked_at = ?,
+                pdf_check_note = ?
+          WHERE catalog_id = ?`
+      ).bind(
+        status === 'available' ? evidence.url : null,
+        status,
+        evidence?.checked_at || null,
+        evidence?.note || null,
+        catalogId
+      ));
+    }
+    for (let i = 0; i < auditStatements.length; i += 80) await db.batch(auditStatements.slice(i, i + 80));
+    await db.prepare("INSERT INTO workbench_meta (key,value) VALUES ('pdf_audit_version',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(PDF_AUDIT_VERSION).run();
+  }
 }
 
 export function json(data, status = 200) {
