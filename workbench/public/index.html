@@ -15,6 +15,7 @@
         <button class="nav-item active" data-view="dashboard">Dashboard</button>
         <button class="nav-item" data-view="projects">Projects</button>
         <button class="nav-item" data-view="board">Board</button>
+        <button class="nav-item" data-view="timeline">Timeline</button>
         <button class="nav-item" data-view="activity">Activity</button>
       </nav>
       <div class="identity-card">
@@ -68,6 +69,7 @@
         </section>
 
         <section id="board-view" class="view"><div id="board" class="board"></div></section>
+        <section id="timeline-view" class="view"><div class="panel"><div class="panel-head"><h2>Schedule</h2><span class="muted">Sorted by deadline</span></div><div id="timeline-list" class="timeline-list"></div></div></section>
         <section id="activity-view" class="view"><div class="panel"><div id="activity-list" class="activity-list"></div></div></section>
       </div>
     </main>
@@ -83,6 +85,7 @@
         <label>Assignee<select id="assignee"><option>Zahraa</option><option>Brother</option><option>Both</option><option>Unassigned</option></select></label>
         <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select></label>
         <label>Priority<select id="priority"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
+        <label>Start date<input id="start-date" type="date" /></label>
         <label>Deadline<input id="due-date" type="date" /></label>
         <label class="full">Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/..." /></label>
         <label class="full">Arabic source page<input id="source-url" type="url" /></label>
@@ -90,6 +93,7 @@
         <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
         <label class="full">Blocker reason<input id="blocker-reason" /></label>
         <label class="full">Notes<textarea id="notes" rows="4"></textarea></label>
+        <div id="completion-meta" class="full completion-meta"></div>
       </div>
       <div class="dialog-actions"><button type="button" id="cancel-dialog" class="secondary">Cancel</button><button type="submit" class="primary">Save project</button></div>
     </form>
