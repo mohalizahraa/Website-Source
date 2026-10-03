@@ -29,13 +29,16 @@ export async function onRequestPost(context) {
   const completedBy = completedAt ? actor : null;
   const publishedAt = status === 'published' ? now : null;
   const publishedBy = publishedAt ? actor : null;
+  const pdfUrl = body.source_pdf_url || null;
+  const pdfStatus = pdfUrl ? 'unchecked' : 'missing';
+  const pdfNote = pdfUrl ? 'Awaiting validation' : 'No direct PDF URL';
   const result = await context.env.DB.prepare(
-    `INSERT INTO projects (title_ar, title_en, assignee, status, priority, source_url, source_pdf_url, google_doc_url, start_date, due_date, blocked, blocker_reason, notes, completed_at, completed_by, published_at, published_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO projects (title_ar, title_en, assignee, status, priority, source_url, source_pdf_url, pdf_status, pdf_check_note, google_doc_url, start_date, due_date, blocked, blocker_reason, notes, completed_at, completed_by, published_at, published_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      RETURNING *`
   ).bind(
     body.title_ar.trim(), body.title_en?.trim() || null, assignee, status, priority,
-    body.source_url || null, body.source_pdf_url || null, body.google_doc_url || null,
+    body.source_url || null, pdfUrl, pdfStatus, pdfNote, body.google_doc_url || null,
     body.start_date || null, body.due_date || null, body.blocked ? 1 : 0,
     body.blocker_reason || null, body.notes || null, completedAt, completedBy, publishedAt, publishedBy,
   ).first();
