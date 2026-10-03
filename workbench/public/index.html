@@ -4,80 +4,102 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="robots" content="noindex,nofollow,noarchive" />
-  <title>Haydari Workbench</title>
+  <title>Haydari Translation Workbench</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">ح</span><div><strong>Haydari</strong><small>Translation Workbench</small></div></div>
-      <nav aria-label="Workspace views">
-        <button class="nav-item active" data-view="dashboard">Dashboard</button>
-        <button class="nav-item" data-view="projects">Projects</button>
-        <button class="nav-item" data-view="board">Board</button>
-        <button class="nav-item" data-view="timeline">Timeline</button>
-        <button class="nav-item" data-view="activity">Activity</button>
-      </nav>
-      <div class="identity-card">
+  <div class="wrap">
+    <header class="archive-header">
+      <h1>Haydari Translation Workbench<span class="ar">مشروع ترجمة كتب السيد كمال الحيدري</span></h1>
+      <div class="sub">Shared translation projects, deadlines, completion, and publication</div>
+    </header>
+
+    <nav class="view-tabs" aria-label="Workspace views">
+      <button class="nav-item active" data-view="dashboard">Dashboard</button>
+      <button class="nav-item" data-view="projects">Projects</button>
+      <button class="nav-item" data-view="board">Board</button>
+      <button class="nav-item" data-view="timeline">Timeline</button>
+      <button class="nav-item" data-view="activity">Activity</button>
+    </nav>
+
+    <div class="workspace-toolbar">
+      <div class="identity">
         <label for="actor">Using as</label>
         <select id="actor"><option>Zahraa</option><option>Mohammed</option></select>
-        <small>Identity is for activity history only. Both collaborators can edit the shared workspace.</small>
       </div>
-    </aside>
+      <input class="search" id="search" type="search" placeholder="Search Arabic, English, transliteration, or author…" aria-label="Search projects" />
+      <button id="new-project" class="primary">+ Project</button>
+    </div>
 
-    <main>
-      <header class="topbar">
-        <div><p class="eyebrow">Shared workspace</p><h1 id="view-title">Dashboard</h1></div>
-        <div class="top-actions"><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" /><button id="new-project" class="primary">+ Project</button></div>
-      </header>
+    <div class="section-heading">
+      <span class="rubric">Shared workspace</span>
+      <h2 id="view-title">Dashboard</h2>
+    </div>
 
-      <div id="access-gate" class="gate hidden">
-        <h2>Open the private work link</h2>
-        <p>This Workbench only loads project data when the shared secret link is present.</p>
-        <p class="muted">The secret belongs after <code>#key=</code> in the URL and is remembered on this device.</p>
-      </div>
+    <div id="access-gate" class="gate hidden">
+      <h2>Open the private work link</h2>
+      <p>This Workbench only loads project data when the shared secret link is present.</p>
+      <p class="muted">The secret belongs after <code>#key=</code> in the URL and is remembered on this device.</p>
+    </div>
 
-      <div id="app" class="hidden">
-        <section id="dashboard-view" class="view active-view">
-          <div class="progress-grid">
-            <article class="metric-card">
-              <div class="metric-head"><span>Translation progress</span><strong id="translation-ratio">0 / 0</strong></div>
-              <div class="bar"><span id="translation-bar"></span></div>
-              <p><strong id="translation-percent">0%</strong> ready for publishing or already published</p>
-            </article>
-            <article class="metric-card">
-              <div class="metric-head"><span>Publication progress</span><strong id="publication-ratio">0 / 0</strong></div>
-              <div class="bar"><span id="publication-bar"></span></div>
-              <p><strong id="publication-percent">0%</strong> actually published</p>
-            </article>
-          </div>
+    <div id="app" class="hidden">
+      <section id="dashboard-view" class="view active-view">
+        <div class="progress-section">
+          <article class="progress-container">
+            <div class="progress-head"><span class="progress-label">Books' Translation Progress</span><strong id="translation-ratio">0 / 0</strong></div>
+            <div class="progress-bar"><div class="progress-fill" id="translation-bar"></div></div>
+            <div class="progress-text"><strong id="translation-percent">0%</strong> completed or published</div>
+          </article>
+          <article class="progress-container">
+            <div class="progress-head"><span class="progress-label">Books' Publication Progress</span><strong id="publication-ratio">0 / 0</strong></div>
+            <div class="progress-bar"><div class="progress-fill" id="publication-bar"></div></div>
+            <div class="progress-text"><strong id="publication-percent">0%</strong> published</div>
+          </article>
+        </div>
 
-          <div class="dashboard-grid">
-            <section class="panel"><div class="panel-head"><h2>Right now</h2></div><div id="now-list" class="stack"></div></section>
-            <section class="panel"><div class="panel-head"><h2>By person</h2></div><div id="people-summary" class="stack"></div></section>
-          </div>
-          <section class="panel"><div class="panel-head"><h2>Recently updated</h2></div><div id="recent-projects" class="project-list"></div></section>
-        </section>
+        <div class="dashboard-grid">
+          <section class="panel"><div class="panel-head"><h3>Right now</h3></div><div id="now-list" class="stack"></div></section>
+          <section class="panel"><div class="panel-head"><h3>By person</h3></div><div id="people-summary" class="stack"></div></section>
+        </div>
+        <section class="panel"><div class="panel-head"><h3>Recently updated</h3></div><div id="recent-projects" class="project-list"></div></section>
+      </section>
 
-        <section id="projects-view" class="view">
-          <div class="filters">
+      <section id="projects-view" class="view">
+        <div class="filter-group open">
+          <div class="filter-header static"><span>Filters</span></div>
+          <div class="filter-content active filters">
             <select id="filter-assignee"><option value="">All people</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
             <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
             <label class="check"><input id="filter-blocked" type="checkbox" /> Blocked only</label>
+            <label class="check"><input id="filter-missing-pdf" type="checkbox" /> Missing PDF only</label>
           </div>
-          <div id="projects-list" class="project-list"></div>
-        </section>
+        </div>
+        <div class="count" id="project-count"></div>
+        <div id="projects-list" class="project-list"></div>
+      </section>
 
-        <section id="board-view" class="view"><div id="board" class="board"></div></section>
-        <section id="timeline-view" class="view"><div class="panel"><div class="panel-head"><h2>Schedule</h2><span class="muted">Sorted by deadline</span></div><div id="timeline-list" class="timeline-list"></div></div></section>
-        <section id="activity-view" class="view"><div class="panel"><div id="activity-list" class="activity-list"></div></div></section>
-      </div>
-    </main>
+      <section id="board-view" class="view"><div id="board" class="board"></div></section>
+
+      <section id="timeline-view" class="view">
+        <div class="panel">
+          <div class="panel-head"><h3>Schedule</h3><span class="muted">Sorted by deadline</span></div>
+          <div id="timeline-list" class="timeline-list"></div>
+        </div>
+      </section>
+
+      <section id="activity-view" class="view">
+        <div class="panel"><div id="activity-list" class="activity-list"></div></div>
+      </section>
+    </div>
   </div>
 
   <dialog id="project-dialog">
     <form id="project-form" method="dialog">
-      <div class="dialog-head"><div><p class="eyebrow">Project</p><h2 id="dialog-title">Edit project</h2></div><button type="button" id="close-dialog" class="ghost" aria-label="Close">×</button></div>
+      <div class="dialog-head">
+        <div><div class="modal-section-title">Project</div><h2 id="dialog-title">Edit project</h2></div>
+        <button type="button" id="close-dialog" class="ghost" aria-label="Close">×</button>
+      </div>
       <input type="hidden" id="project-id" />
       <div class="form-grid">
         <label class="full">Arabic title<input id="title-ar" dir="rtl" required /></label>
@@ -88,8 +110,9 @@
         <label>Start date<input id="start-date" type="date" /></label>
         <label>Deadline<input id="due-date" type="date" /></label>
         <label class="full">Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/..." /></label>
-        <label class="full">Arabic source page<input id="source-url" type="url" /></label>
-        <label class="full">Arabic PDF<input id="source-pdf-url" type="url" /></label>
+        <label class="full">Arabic PDF — direct file<input id="source-pdf-url" type="url" placeholder="Direct .pdf URL" /></label>
+        <label class="full">Catalog source page<input id="source-url" type="url" /></label>
+        <div id="pdf-state" class="full pdf-state"></div>
         <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
         <label class="full">Blocker reason<input id="blocker-reason" /></label>
         <label class="full">Notes<textarea id="notes" rows="4"></textarea></label>
@@ -98,6 +121,12 @@
       <div class="dialog-actions"><button type="button" id="cancel-dialog" class="secondary">Cancel</button><button type="submit" class="primary">Save project</button></div>
     </form>
   </dialog>
+
+  <svg style="display:none">
+    <symbol id="rosette" viewBox="0 0 40 40">
+      <g fill="none" stroke="#B8925A" stroke-width="1.4"><path d="M20 4 L23 15 L34 12 L26 20 L34 28 L23 25 L20 36 L17 25 L6 28 L14 20 L6 12 L17 15 Z"/><circle cx="20" cy="20" r="3" fill="#B8925A"/></g>
+    </symbol>
+  </svg>
 
   <div id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="/app.js"></script>
