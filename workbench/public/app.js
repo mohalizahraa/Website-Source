@@ -94,7 +94,6 @@ function projectMarkup(p, compact=false) {
       <div class="entry-actions">
         ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : (p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : '<span class="pill">PDF checking…</span>')}
         ${p.google_doc_url ? `<a class="mini-link secondary-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">Google Doc</a>` : ''}
-        ${p.source_url ? `<a class="mini-link secondary-link" href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener">Catalog page</a>` : ''}
       </div>
     </div>
     <div class="project-side">
@@ -242,7 +241,6 @@ function openProject(id) {
   $('start-date').value = p?.start_date || '';
   $('due-date').value = p?.due_date || '';
   $('google-doc-url').value = p?.google_doc_url || '';
-  $('source-url').value = p?.source_url || '';
   $('source-pdf-url').value = p?.source_pdf_url || '';
   $('pdf-state').innerHTML = p ? (
     p.pdf_available
@@ -267,7 +265,7 @@ async function saveProject(event) {
   const payload = {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
     status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
-    google_doc_url: $('google-doc-url').value.trim(), source_url: $('source-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
+    google_doc_url: $('google-doc-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
   };
   try {
