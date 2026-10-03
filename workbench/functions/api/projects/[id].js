@@ -1,4 +1,4 @@
-import { actorFromRequest, ensureCatalog, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, requireAccess, validIsoDate } from '../../_lib.js';
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url','cover_url',
@@ -37,6 +37,20 @@ export async function onRequestPatch(context) {
   if (body.status !== undefined && !validStatuses.has(body.status)) return json({ error: 'Invalid status.' }, 400);
   if (body.assignee !== undefined && !validAssignees.has(body.assignee)) return json({ error: 'Invalid assignee.' }, 400);
   if (body.priority !== undefined && !validPriorities.has(body.priority)) return json({ error: 'Invalid priority.' }, 400);
+
+  if (body.google_doc_url !== undefined) {
+    const normalized = normalizeGoogleDocUrl(body.google_doc_url);
+    if (normalized === false) return json({ error: 'English Book must be a Google Docs document link.' }, 400);
+    body.google_doc_url = normalized || '';
+  }
+  if (body.cover_url !== undefined) {
+    const normalized = normalizeHttpUrl(body.cover_url);
+    if (normalized === false) return json({ error: 'Cover image must use an http(s) URL.' }, 400);
+    body.cover_url = normalized || '';
+  }
+  if ((body.start_date !== undefined && !validIsoDate(body.start_date)) || (body.due_date !== undefined && !validIsoDate(body.due_date))) {
+    return json({ error: 'Dates must use YYYY-MM-DD.' }, 400);
+  }
 
   const updates = [];
   const values = [];
