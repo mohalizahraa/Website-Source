@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS projects (
   blocker_reason TEXT,
   notes TEXT,
   completed_at TEXT,
+  completed_by TEXT,
   published_at TEXT,
+  published_by TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
