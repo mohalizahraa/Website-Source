@@ -75,7 +75,8 @@ export async function onRequestPost(context) {
       WHERE source_pdf_url IS NOT NULL
         AND source_pdf_url <> ''
         AND pdf_status = 'unchecked'
-      ORDER BY id
+        AND (pdf_checked_at IS NULL OR julianday(pdf_checked_at) < julianday('now','-1 day'))
+      ORDER BY CASE WHEN pdf_checked_at IS NULL THEN 0 ELSE 1 END, id
       LIMIT ?`
   ).bind(limit).all();
 
