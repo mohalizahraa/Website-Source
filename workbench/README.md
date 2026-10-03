@@ -30,7 +30,7 @@ The public book catalogue metadata is committed as `functions/_catalog.js` and i
 
 Private work state — assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key — remains runtime data in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
 
-Cover recovery currently contains **66 official cover mappings** from the original Haydari book pages. Books without an imported image keep the archive fallback and can receive a per-book cover override in the Workbench.
+Cover recovery currently contains **138 official cover mappings** from the original Haydari book pages. Books without an imported image keep the archive fallback and can receive a per-book cover override in the Workbench.
 
 Current catalogue denominator: **176 books**. The fresh full byte-level audit completed on the founder's self-hosted Mac/ARM64 runner on 2026-10-03 and verified **172 working direct PDFs**, **4 missing**, and **0 unchecked**. Evidence is preserved in `public/pdf-audit.json` and in GitHub Actions run `37112926137` / job `111174193227`. The Workbench runtime audit owner is `functions/_pdf_audit.js`.
 
