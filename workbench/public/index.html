@@ -74,11 +74,24 @@
         <div class="filter-group open">
           <div class="filter-header static"><span>Filters</span></div>
           <div class="filter-content active filters">
+            <select id="filter-topic"><option value="">All topics</option></select>
             <select id="filter-assignee"><option value="">All people</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
             <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
+            <select id="filter-schedule"><option value="">Any schedule</option><option value="overdue">Overdue</option><option value="due_month">Due this month</option><option value="no_deadline">No deadline</option></select>
             <label class="check"><input id="filter-blocked" type="checkbox" /> Blocked only</label>
             <label class="check"><input id="filter-missing-pdf" type="checkbox" /> Missing PDF only</label>
+            <label class="check"><input id="filter-missing-cover" type="checkbox" /> Missing cover only</label>
+            <label class="check"><input id="filter-no-english" type="checkbox" /> No English Book</label>
           </div>
+        </div>
+        <div id="batch-toolbar" class="batch-toolbar hidden">
+          <label class="check batch-select-all"><input id="select-visible" type="checkbox" /> Select visible</label>
+          <strong id="batch-count">0 selected</strong>
+          <select id="batch-assignee"><option value="">Assign…</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
+          <select id="batch-status"><option value="">Set status…</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
+          <input id="batch-deadline" type="date" aria-label="Batch deadline" />
+          <button id="apply-batch" type="button" class="secondary">Apply</button>
+          <button id="clear-batch" type="button" class="text-button">Clear selection</button>
         </div>
         <div class="count" id="project-count"></div>
         <div id="projects-list" class="project-list"></div>
@@ -98,7 +111,9 @@
           <article class="stat-card"><span class="stat-label">Translated</span><strong id="stat-translated">0</strong><small id="stat-translated-sub">of 0 books</small></article>
           <article class="stat-card"><span class="stat-label">Published</span><strong id="stat-published">0</strong><small id="stat-published-sub">of 0 books</small></article>
           <article class="stat-card"><span class="stat-label">Recent pace</span><strong id="stat-pace">—</strong><small>books per 30 days</small></article>
-          <article class="stat-card"><span class="stat-label">At this rate</span><strong id="stat-forecast">—</strong><small id="stat-forecast-sub">Need more completion history</small></article>
+          <article class="stat-card"><span class="stat-label">Book-count forecast</span><strong id="stat-forecast">—</strong><small id="stat-forecast-sub">Need more completion history</small></article>
+          <article class="stat-card"><span class="stat-label">Workload pace</span><strong id="stat-workload-pace">—</strong><small>estimated pages per 30 days</small></article>
+          <article class="stat-card"><span class="stat-label">Workload forecast</span><strong id="stat-workload-forecast">—</strong><small id="stat-workload-forecast-sub">Uses page-equivalent workload</small></article>
         </div>
         <section class="panel chart-panel">
           <div class="panel-head"><h3>Translation progress over time</h3><span class="muted">Completed + Published</span></div>
