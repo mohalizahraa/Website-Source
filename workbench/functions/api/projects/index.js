@@ -21,16 +21,22 @@ export async function onRequestPost(context) {
   const assignee = validAssignees.has(body.assignee) ? body.assignee : 'Unassigned';
   const status = validStatuses.has(body.status) ? body.status : 'not_started';
   const priority = validPriorities.has(body.priority) ? body.priority : 'normal';
+  const actor = actorFromRequest(context.request);
+  const now = new Date().toISOString();
+  const completedAt = ['completed','published'].includes(status) ? now : null;
+  const completedBy = completedAt ? actor : null;
+  const publishedAt = status === 'published' ? now : null;
+  const publishedBy = publishedAt ? actor : null;
   const result = await context.env.DB.prepare(
-    `INSERT INTO projects (title_ar, title_en, assignee, status, priority, source_url, source_pdf_url, google_doc_url, start_date, due_date, blocked, blocker_reason, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO projects (title_ar, title_en, assignee, status, priority, source_url, source_pdf_url, google_doc_url, start_date, due_date, blocked, blocker_reason, notes, completed_at, completed_by, published_at, published_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      RETURNING *`
   ).bind(
     body.title_ar.trim(), body.title_en?.trim() || null, assignee, status, priority,
     body.source_url || null, body.source_pdf_url || null, body.google_doc_url || null,
     body.start_date || null, body.due_date || null, body.blocked ? 1 : 0,
-    body.blocker_reason || null, body.notes || null,
+    body.blocker_reason || null, body.notes || null, completedAt, completedBy, publishedAt, publishedBy,
   ).first();
-  await recordActivity(context.env.DB, result.id, actorFromRequest(context.request), 'created project', null, result);
+  await recordActivity(context.env.DB, result.id, actor, 'created project', null, result);
   return json({ project: normalizeProject(result) }, 201);
 }
