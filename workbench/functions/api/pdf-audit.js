@@ -1,4 +1,4 @@
-import { ensureCatalog, json, requireAccess } from '../_lib.js';
+import { ensureCatalog, json } from '../_lib.js';
 
 async function inspectPdf(url) {
   if (!/^https:\/\//i.test(url || '')) {
@@ -61,9 +61,6 @@ async function inspectPdf(url) {
 }
 
 export async function onRequestPost(context) {
-  const denied = requireAccess(context);
-  if (denied) return denied;
-
   await ensureCatalog(context.env.DB);
 
   const body = await context.request.json().catch(() => ({}));
