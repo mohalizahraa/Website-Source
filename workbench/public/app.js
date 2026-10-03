@@ -8,7 +8,7 @@ const STATUS = {
 const STATUS_ORDER = Object.keys(STATUS);
 const ASSIGNEES = ['Zahraa','Mohammed','Both','Unassigned'];
 const savedActor = localStorage.getItem('haydariActor');
-const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
+const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -25,6 +25,13 @@ function readKey() {
     return incoming;
   }
   return localStorage.getItem('haydariWorkbenchKey') || '';
+}
+
+async function authenticatedFetch(path, options = {}) {
+  const headers = new Headers(options.headers || {});
+  headers.set('x-workbench-key', state.key);
+  headers.set('x-workbench-actor', state.actor);
+  return fetch(path, { ...options, headers });
 }
 
 async function api(path, options = {}) {
@@ -61,8 +68,12 @@ function isDone(p) { return ['completed','published'].includes(p.status); }
 function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || imported?.source_url || ''; }
 function assigneeOptions(current) { return ASSIGNEES.map(name => `<option value="${name}" ${current===name?'selected':''}>${name}</option>`).join(''); }
 function coverMarkup(p, compact=false) {
-  const src = coverFor(p);
-  if (src) return `<img class="book-cover ${compact ? 'compact-cover' : ''}" src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><svg class="rosette cover-fallback" hidden aria-hidden="true"><use href="#rosette"></use></svg>`;
+  const cached = state.coverObjectUrls.get(p.id) || '';
+  const fallback = coverFor(p);
+  const src = cached || fallback;
+  const privateAttr = p.has_uploaded_cover ? ` data-uploaded-cover="${p.id}"` : '';
+  if (src) return `<img class="book-cover ${compact ? 'compact-cover' : ''}"${privateAttr} src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><svg class="rosette cover-fallback" hidden aria-hidden="true"><use href="#rosette"></use></svg>`;
+  if (p.has_uploaded_cover) return `<img class="book-cover ${compact ? 'compact-cover' : ''}" data-uploaded-cover="${p.id}" hidden alt=""><svg class="rosette cover-fallback" aria-hidden="true"><use href="#rosette"></use></svg>`;
   return `<svg class="rosette cover-fallback" aria-hidden="true"><use href="#rosette"></use></svg>`;
 }
 function googleDocLinkMarkup(p) {
@@ -75,6 +86,43 @@ function quickControlsMarkup(p, compact=false) {
     <label class="quick-field"><span>Assigned</span><select class="quick-assignee" data-project-id="${p.id}" draggable="false" aria-label="Assign ${escapeHtml(p.title_ar)}">${assigneeOptions(p.assignee)}</select></label>
     <label class="quick-field"><span>Deadline</span><input class="quick-deadline" data-project-id="${p.id}" draggable="false" type="date" value="${escapeHtml(p.due_date || '')}" aria-label="Deadline for ${escapeHtml(p.title_ar)}"></label>
   </div>`;
+}
+
+function setCoverObjectUrl(id, blob) {
+  const old = state.coverObjectUrls.get(id);
+  if (old) URL.revokeObjectURL(old);
+  const url = URL.createObjectURL(blob);
+  state.coverObjectUrls.set(id, url);
+  document.querySelectorAll(`[data-uploaded-cover="${id}"]`).forEach(img => {
+    img.src = url;
+    img.hidden = false;
+    if (img.nextElementSibling?.classList.contains('cover-fallback')) img.nextElementSibling.hidden = true;
+  });
+  return url;
+}
+
+async function ensureUploadedCover(id) {
+  if (state.coverObjectUrls.has(id)) return state.coverObjectUrls.get(id);
+  if (state.coverLoads.has(id)) return state.coverLoads.get(id);
+  const load = (async () => {
+    try {
+      const response = await authenticatedFetch(`/api/cover/${id}`, { headers: { accept: 'image/*' } });
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      return setCoverObjectUrl(id, blob);
+    } catch {
+      return null;
+    } finally {
+      state.coverLoads.delete(id);
+    }
+  })();
+  state.coverLoads.set(id, load);
+  return load;
+}
+
+function hydrateUploadedCovers(root=document) {
+  const ids = [...new Set([...root.querySelectorAll('[data-uploaded-cover]')].map(img => Number(img.dataset.uploadedCover)).filter(Boolean))];
+  ids.forEach(id => ensureUploadedCover(id));
 }
 
 function filteredProjects() {
@@ -384,7 +432,7 @@ function renderActivity() {
   $('activity-list').innerHTML = state.activity.map(a => `<div class="activity-item"><time>${new Date(a.created_at.replace(' ','T')+'Z').toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${new Date(a.created_at.replace(' ','T')+'Z').toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`).join('') || '<p class="muted">No activity yet.</p>';
 }
 
-function render() { renderDashboard(); renderProjects(); renderBoard(); renderTimeline(); renderStats(); renderActivity(); }
+function render() { renderDashboard(); renderProjects(); renderBoard(); renderTimeline(); renderStats(); renderActivity(); hydrateUploadedCovers(document); }
 
 function setView(view) {
   state.view = view;
@@ -407,7 +455,12 @@ function openProject(id) {
   $('due-date').value = p?.due_date || '';
   $('google-doc-url').value = p?.google_doc_url || '';
   $('cover-url').value = p?.cover_url || '';
+  $('cover-file').value = '';
+  $('upload-cover').disabled = !p?.id;
+  $('remove-uploaded-cover').disabled = !p?.has_uploaded_cover;
+  $('cover-upload-note').textContent = p?.id ? '' : 'Save this project before importing a photo.';
   renderCoverPreview(p);
+  if (p?.has_uploaded_cover) ensureUploadedCover(p.id).then(() => { if (Number($('project-id').value) === p.id) renderCoverPreview(p); });
   $('source-pdf-url').value = p?.source_pdf_url || '';
   $('pdf-state').innerHTML = p ? (
     p.pdf_available
@@ -443,12 +496,123 @@ async function saveProject(event) {
 }
 
 function renderCoverPreview(project=null) {
+  const uploaded = project?.id ? state.coverObjectUrls.get(project.id) : '';
   const manual = $('cover-url')?.value.trim();
   const imported=state.coverMap[project?.catalog_id];
-  const src = manual || imported?.path || imported?.source_url || '';
+  const fallback = manual || imported?.path || imported?.source_url || '';
+  const src = uploaded || fallback;
+  const label = uploaded
+    ? 'Uploaded cover photo'
+    : project?.has_uploaded_cover
+      ? 'Uploaded cover photo loading…'
+      : manual
+        ? 'Manual cover override'
+        : fallback
+          ? 'Imported official cover'
+          : 'No cover yet';
   $('cover-preview').innerHTML = src
-    ? `<img src="${escapeHtml(src)}" alt="Book cover preview"><span class="muted">${manual ? 'Manual cover override' : 'Imported archive cover'}</span>`
-    : '<span class="muted">No cover imported yet. Paste an image URL here or let the archive importer fill it automatically.</span>';
+    ? `<img src="${escapeHtml(src)}" alt="Book cover preview"><span class="muted">${label}</span>`
+    : `<span class="muted">${label}. Import a photo, paste an image URL, or use the automatic archive importer.</span>`;
+  if ($('remove-uploaded-cover')) $('remove-uploaded-cover').disabled = !project?.has_uploaded_cover;
+}
+
+function loadImageElement(file) {
+  return new Promise((resolve,reject) => {
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Could not read that image.')); };
+    img.src=url;
+  });
+}
+
+function canvasBlob(canvas, quality) {
+  return new Promise((resolve,reject) => canvas.toBlob(
+    blob => blob ? resolve(blob) : reject(new Error('Could not compress the cover image.')),
+    'image/jpeg',
+    quality
+  ));
+}
+
+async function optimizeCoverFile(file) {
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('Choose a JPEG, PNG, or WebP image.');
+  const img=await loadImageElement(file);
+  const attempts=[
+    {w:900,h:1400,q:.84},
+    {w:760,h:1180,q:.76},
+    {w:640,h:1000,q:.68},
+  ];
+  for (const attempt of attempts) {
+    const scale=Math.min(1,attempt.w/img.naturalWidth,attempt.h/img.naturalHeight);
+    const width=Math.max(1,Math.round(img.naturalWidth*scale));
+    const height=Math.max(1,Math.round(img.naturalHeight*scale));
+    const canvas=document.createElement('canvas');
+    canvas.width=width; canvas.height=height;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#FFF8EA';
+    ctx.fillRect(0,0,width,height);
+    ctx.drawImage(img,0,0,width,height);
+    const blob=await canvasBlob(canvas,attempt.q);
+    if (blob.size <= 1_350_000) return blob;
+  }
+  throw new Error('That image is still too large after compression. Try a smaller photo.');
+}
+
+async function uploadCoverPhoto() {
+  const id=Number($('project-id').value);
+  const file=$('cover-file').files?.[0];
+  if (!id) return toast('Save the project before importing a cover.');
+  if (!file) return toast('Choose a cover photo first.');
+  const button=$('upload-cover');
+  button.disabled=true;
+  $('cover-upload-note').textContent='Optimizing cover…';
+  try {
+    const blob=await optimizeCoverFile(file);
+    $('cover-upload-note').textContent='Uploading cover…';
+    const response=await authenticatedFetch(`/api/cover/${id}`, {
+      method:'PUT',
+      headers:{'content-type':blob.type},
+      body:blob,
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.error || `Upload failed (${response.status})`);
+    setCoverObjectUrl(id,blob);
+    $('cover-file').value='';
+    await loadData();
+    const project=state.projects.find(p=>p.id===id);
+    renderCoverPreview(project);
+    $('cover-upload-note').textContent=`Imported · ${Math.round(blob.size/1024)} KB`;
+    toast('Cover photo imported');
+  } catch(error) {
+    $('cover-upload-note').textContent=error.message;
+    toast(error.message);
+  } finally {
+    button.disabled=false;
+  }
+}
+
+async function removeUploadedCover() {
+  const id=Number($('project-id').value);
+  if(!id) return;
+  const button=$('remove-uploaded-cover');
+  button.disabled=true;
+  try {
+    const response=await authenticatedFetch(`/api/cover/${id}`, {method:'DELETE'});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.error || `Remove failed (${response.status})`);
+    const old=state.coverObjectUrls.get(id);
+    if(old) URL.revokeObjectURL(old);
+    state.coverObjectUrls.delete(id);
+    await loadData();
+    const project=state.projects.find(p=>p.id===id);
+    renderCoverPreview(project);
+    $('cover-upload-note').textContent='Uploaded photo removed; fallback cover restored.';
+    toast('Uploaded cover removed');
+  } catch(error) {
+    toast(error.message);
+  } finally {
+    button.disabled=false;
+  }
 }
 
 async function loadCoverMap() {
@@ -531,6 +695,8 @@ els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorag
 ['filter-assignee','filter-status','filter-blocked','filter-missing-pdf'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('new-project').addEventListener('click',()=>openProject(null));
 $('cover-url').addEventListener('input',()=>renderCoverPreview(state.projects.find(p=>p.id===Number($('project-id').value))));
+$('upload-cover').addEventListener('click',uploadCoverPhoto);
+$('remove-uploaded-cover').addEventListener('click',removeUploadedCover);
 $('close-english-dialog').addEventListener('click',()=>$('english-book-dialog').close());
 $('cancel-english-dialog').addEventListener('click',()=>$('english-book-dialog').close());
 $('english-book-form').addEventListener('submit',saveEnglishBook);
