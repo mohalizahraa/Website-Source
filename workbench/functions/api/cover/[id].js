@@ -36,7 +36,7 @@ export async function onRequestGet(context) {
       'content-length': String(bytes.byteLength),
       'cache-control': 'private, no-store',
       'x-content-type-options': 'nosniff',
-      'last-modified': row.updated_at ? new Date(row.updated_at.replace(' ','T') + 'Z').toUTCString() : new Date().toUTCString(),
+      'last-modified': row.updated_at ? new Date(row.updated_at.includes('T') ? row.updated_at : row.updated_at.replace(' ','T') + 'Z').toUTCString() : new Date().toUTCString(),
     },
   });
 }
