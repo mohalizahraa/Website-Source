@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Haydari Workbench</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">ح</span><div><strong>Haydari</strong><small>Translation Workbench</small></div></div>
+      <nav aria-label="Workspace views">
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="projects">Projects</button>
+        <button class="nav-item" data-view="board">Board</button>
+        <button class="nav-item" data-view="activity">Activity</button>
+      </nav>
+      <div class="identity-card">
+        <label for="actor">Using as</label>
+        <select id="actor"><option>Zahraa</option><option>Brother</option></select>
+        <small>Identity is for activity history only. Both collaborators can edit the shared workspace.</small>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div><p class="eyebrow">Shared workspace</p><h1 id="view-title">Dashboard</h1></div>
+        <div class="top-actions"><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" /><button id="new-project" class="primary">+ Project</button></div>
+      </header>
+
+      <div id="access-gate" class="gate hidden">
+        <h2>Open the private work link</h2>
+        <p>This Workbench only loads project data when the shared secret link is present.</p>
+        <p class="muted">The secret belongs after <code>#key=</code> in the URL and is remembered on this device.</p>
+      </div>
+
+      <div id="app" class="hidden">
+        <section id="dashboard-view" class="view active-view">
+          <div class="progress-grid">
+            <article class="metric-card">
+              <div class="metric-head"><span>Translation progress</span><strong id="translation-ratio">0 / 0</strong></div>
+              <div class="bar"><span id="translation-bar"></span></div>
+              <p><strong id="translation-percent">0%</strong> ready for publishing or already published</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-head"><span>Publication progress</span><strong id="publication-ratio">0 / 0</strong></div>
+              <div class="bar"><span id="publication-bar"></span></div>
+              <p><strong id="publication-percent">0%</strong> actually published</p>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel"><div class="panel-head"><h2>Right now</h2></div><div id="now-list" class="stack"></div></section>
+            <section class="panel"><div class="panel-head"><h2>By person</h2></div><div id="people-summary" class="stack"></div></section>
+          </div>
+          <section class="panel"><div class="panel-head"><h2>Recently updated</h2></div><div id="recent-projects" class="project-list"></div></section>
+        </section>
+
+        <section id="projects-view" class="view">
+          <div class="filters">
+            <select id="filter-assignee"><option value="">All people</option><option>Zahraa</option><option>Brother</option><option>Both</option><option>Unassigned</option></select>
+            <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
+            <label class="check"><input id="filter-blocked" type="checkbox" /> Blocked only</label>
+          </div>
+          <div id="projects-list" class="project-list"></div>
+        </section>
+
+        <section id="board-view" class="view"><div id="board" class="board"></div></section>
+        <section id="activity-view" class="view"><div class="panel"><div id="activity-list" class="activity-list"></div></div></section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="project-dialog">
+    <form id="project-form" method="dialog">
+      <div class="dialog-head"><div><p class="eyebrow">Project</p><h2 id="dialog-title">Edit project</h2></div><button type="button" id="close-dialog" class="ghost" aria-label="Close">×</button></div>
+      <input type="hidden" id="project-id" />
+      <div class="form-grid">
+        <label class="full">Arabic title<input id="title-ar" dir="rtl" required /></label>
+        <label class="full">English working title<input id="title-en" /></label>
+        <label>Assignee<select id="assignee"><option>Zahraa</option><option>Brother</option><option>Both</option><option>Unassigned</option></select></label>
+        <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select></label>
+        <label>Priority<select id="priority"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
+        <label>Deadline<input id="due-date" type="date" /></label>
+        <label class="full">Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/..." /></label>
+        <label class="full">Arabic source page<input id="source-url" type="url" /></label>
+        <label class="full">Arabic PDF<input id="source-pdf-url" type="url" /></label>
+        <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
+        <label class="full">Blocker reason<input id="blocker-reason" /></label>
+        <label class="full">Notes<textarea id="notes" rows="4"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button type="button" id="cancel-dialog" class="secondary">Cancel</button><button type="submit" class="primary">Save project</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

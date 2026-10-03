@@ -1,0 +1,4 @@
+.dev.vars*
+.env*
+seed*.sql
+private-data/

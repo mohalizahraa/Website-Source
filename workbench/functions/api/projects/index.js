@@ -1,0 +1,36 @@
+import { actorFromRequest, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
+
+const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
+const validAssignees = new Set(['Zahraa','Brother','Both','Unassigned']);
+const validPriorities = new Set(['low','normal','high','urgent']);
+
+export async function onRequestGet(context) {
+  const denied = requireAccess(context);
+  if (denied) return denied;
+  const { results } = await context.env.DB.prepare(
+    "SELECT * FROM projects ORDER BY CASE status WHEN 'in_progress' THEN 0 WHEN 'review' THEN 1 WHEN 'not_started' THEN 2 WHEN 'completed' THEN 3 ELSE 4 END, COALESCE(due_date, '9999-12-31'), id"
+  ).all();
+  return json({ projects: (results || []).map(normalizeProject) });
+}
+
+export async function onRequestPost(context) {
+  const denied = requireAccess(context);
+  if (denied) return denied;
+  const body = await context.request.json().catch(() => null);
+  if (!body?.title_ar?.trim()) return json({ error: 'Arabic title is required.' }, 400);
+  const assignee = validAssignees.has(body.assignee) ? body.assignee : 'Unassigned';
+  const status = validStatuses.has(body.status) ? body.status : 'not_started';
+  const priority = validPriorities.has(body.priority) ? body.priority : 'normal';
+  const result = await context.env.DB.prepare(
+    `INSERT INTO projects (title_ar, title_en, assignee, status, priority, source_url, source_pdf_url, google_doc_url, start_date, due_date, blocked, blocker_reason, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     RETURNING *`
+  ).bind(
+    body.title_ar.trim(), body.title_en?.trim() || null, assignee, status, priority,
+    body.source_url || null, body.source_pdf_url || null, body.google_doc_url || null,
+    body.start_date || null, body.due_date || null, body.blocked ? 1 : 0,
+    body.blocker_reason || null, body.notes || null,
+  ).first();
+  await recordActivity(context.env.DB, result.id, actorFromRequest(context.request), 'created project', null, result);
+  return json({ project: normalizeProject(result) }, 201);
+}
