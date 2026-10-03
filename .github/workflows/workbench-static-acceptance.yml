@@ -1,0 +1,28 @@
+name: Workbench static acceptance
+
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - "workbench/**"
+      - ".github/workflows/workbench-static-acceptance.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbench-static-acceptance
+  cancel-in-progress: true
+
+jobs:
+  static-acceptance:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check Workbench syntax and public invariants
+        run: npm --prefix workbench run check:acceptance

@@ -1,0 +1,70 @@
+import fs from 'node:fs/promises';
+
+const root = new URL('../', import.meta.url);
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+const [catalogSource, coverMap, pdfAudit, appSource] = await Promise.all([
+  fs.readFile(new URL('functions/_catalog.js', root), 'utf8'),
+  fs.readFile(new URL('public/cover-map.json', root), 'utf8').then(JSON.parse),
+  fs.readFile(new URL('public/pdf-audit.json', root), 'utf8').then(JSON.parse),
+  fs.readFile(new URL('public/app.js', root), 'utf8'),
+]);
+
+const marker = 'export const BOOK_CATALOG = ';
+const markerIndex = catalogSource.indexOf(marker);
+assert(markerIndex >= 0, 'BOOK_CATALOG export was not found.');
+const arrayStart = catalogSource.indexOf('[', markerIndex);
+const arrayEnd = catalogSource.lastIndexOf('];');
+assert(arrayStart >= 0 && arrayEnd > arrayStart, 'BOOK_CATALOG array could not be isolated.');
+const catalog = JSON.parse(catalogSource.slice(arrayStart, arrayEnd + 1));
+
+const expectedTopics = new Set([
+  'Qurʾānic Exegesis and Sciences',
+  'Theology and Doctrine',
+  'Mysticism',
+  'Ethics and Education',
+  'Jurisprudence',
+  'Principles of Jurisprudence',
+  'Epistemology',
+  'Philosophy',
+  'Logic',
+  'Thought, Culture, and Biography',
+]);
+
+assert(catalog.length === 176, `Expected 176 catalogue books, found ${catalog.length}.`);
+const catalogIds = new Set(catalog.map(book => book.catalog_id));
+assert(catalogIds.size === 176, `Expected 176 unique catalogue IDs, found ${catalogIds.size}.`);
+
+const topics = new Set(catalog.map(book => book.topic_en).filter(Boolean));
+assert(topics.size === expectedTopics.size, `Expected 10 topics, found ${topics.size}.`);
+for (const topic of expectedTopics) assert(topics.has(topic), `Missing canonical topic: ${topic}`);
+
+const covers = coverMap.covers || {};
+assert(Object.keys(covers).length === 176, `Expected 176 cover mappings, found ${Object.keys(covers).length}.`);
+for (const id of catalogIds) assert(covers[id], `Missing cover mapping for ${id}.`);
+
+const auditedBooks = pdfAudit.books || {};
+const auditRows = Object.entries(auditedBooks).filter(([id]) => id.startsWith('book-'));
+assert(auditRows.length === 176, `Expected 176 PDF audit rows, found ${auditRows.length}.`);
+
+const counts = auditRows.reduce((acc, [id, evidence]) => {
+  assert(catalogIds.has(id), `PDF audit references unknown catalogue ID ${id}.`);
+  acc[evidence.status] = (acc[evidence.status] || 0) + 1;
+  return acc;
+}, {});
+assert((counts.available || 0) === 172, `Expected 172 available PDFs, found ${counts.available || 0}.`);
+assert((counts.missing || 0) === 4, `Expected 4 missing PDFs, found ${counts.missing || 0}.`);
+assert((counts.unchecked || 0) === 0, `Expected 0 unchecked PDFs, found ${counts.unchecked || 0}.`);
+
+const expectedMissing = new Set(['book-4', 'book-23', 'book-32', 'book-43']);
+const actualMissing = new Set(auditRows.filter(([, evidence]) => evidence.status === 'missing').map(([id]) => id));
+assert(actualMissing.size === expectedMissing.size, 'Unexpected number of missing PDF records.');
+for (const id of expectedMissing) assert(actualMissing.has(id), `Expected missing PDF record ${id} was not missing.`);
+
+assert(appSource.includes('function localDateKey(date = new Date())'), 'Recipient-local date helper is missing.');
+assert(!appSource.includes("const today = new Date().toISOString().slice(0,10);"), 'UTC deadline boundary regression detected.');
+
+console.log('Workbench static acceptance passed: 176 books, 10 topics, 176 covers, 172 available PDFs, 4 missing, 0 unchecked.');
