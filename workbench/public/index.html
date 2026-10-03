@@ -20,6 +20,7 @@
       <button class="nav-item" data-view="projects">Projects</button>
       <button class="nav-item" data-view="board">Board</button>
       <button class="nav-item" data-view="timeline">Timeline</button>
+      <button class="nav-item" data-view="stats">Stats</button>
       <button class="nav-item" data-view="activity">Activity</button>
     </nav>
 
@@ -62,6 +63,10 @@
           <section class="panel"><div class="panel-head"><h3>Right now</h3></div><div id="now-list" class="stack"></div></section>
           <section class="panel"><div class="panel-head"><h3>By person</h3></div><div id="people-summary" class="stack"></div></section>
         </div>
+        <section class="panel pace-panel">
+          <div class="panel-head"><h3>Pace & projection</h3><button class="text-button" type="button" data-jump-view="stats">See full stats</button></div>
+          <div id="pace-summary" class="pace-summary"></div>
+        </section>
         <section class="panel"><div class="panel-head"><h3>Recently updated</h3></div><div id="recent-projects" class="project-list"></div></section>
       </section>
 
@@ -88,6 +93,23 @@
         </div>
       </section>
 
+      <section id="stats-view" class="view">
+        <div class="stats-grid">
+          <article class="stat-card"><span class="stat-label">Translated</span><strong id="stat-translated">0</strong><small id="stat-translated-sub">of 0 books</small></article>
+          <article class="stat-card"><span class="stat-label">Published</span><strong id="stat-published">0</strong><small id="stat-published-sub">of 0 books</small></article>
+          <article class="stat-card"><span class="stat-label">Recent pace</span><strong id="stat-pace">—</strong><small>books per 30 days</small></article>
+          <article class="stat-card"><span class="stat-label">At this rate</span><strong id="stat-forecast">—</strong><small id="stat-forecast-sub">Need more completion history</small></article>
+        </div>
+        <section class="panel chart-panel">
+          <div class="panel-head"><h3>Translation progress over time</h3><span class="muted">Completed + Published</span></div>
+          <div id="progress-chart" class="progress-chart" aria-label="Translation completion graph"></div>
+        </section>
+        <div class="dashboard-grid">
+          <section class="panel"><div class="panel-head"><h3>By person</h3></div><div id="stats-by-person" class="stack"></div></section>
+          <section class="panel"><div class="panel-head"><h3>Deadlines</h3></div><div id="stats-deadlines" class="stack"></div></section>
+        </div>
+      </section>
+
       <section id="activity-view" class="view">
         <div class="panel"><div id="activity-list" class="activity-list"></div></div>
       </section>
@@ -109,7 +131,9 @@
         <label>Priority<select id="priority"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
         <label>Start date<input id="start-date" type="date" /></label>
         <label>Deadline<input id="due-date" type="date" /></label>
-        <label class="full">Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/..." /></label>
+        <label class="full">English Book — Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/document/..." /></label>
+        <label class="full">Book cover image URL <span class="field-note">optional override</span><input id="cover-url" type="url" placeholder="https://.../cover.jpg" /></label>
+        <div id="cover-preview" class="full cover-preview"></div>
         <label class="full">Arabic PDF — direct file<input id="source-pdf-url" type="url" placeholder="Direct .pdf URL" /></label>
         <div id="pdf-state" class="full pdf-state"></div>
         <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
@@ -118,6 +142,24 @@
         <div id="completion-meta" class="full completion-meta"></div>
       </div>
       <div class="dialog-actions"><button type="button" id="cancel-dialog" class="secondary">Cancel</button><button type="submit" class="primary">Save project</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="english-book-dialog" class="small-dialog">
+    <form id="english-book-form" method="dialog">
+      <div class="dialog-head">
+        <div><div class="modal-section-title">English Book</div><h2>Link Google Doc</h2></div>
+        <button type="button" id="close-english-dialog" class="ghost" aria-label="Close">×</button>
+      </div>
+      <input type="hidden" id="english-project-id" />
+      <p class="muted">Create the translation Doc, then paste its link here. The English Book button will open it from then on.</p>
+      <label class="dialog-field">Google Doc URL<input id="english-book-url" type="url" required placeholder="https://docs.google.com/document/..." /></label>
+      <div class="dialog-actions split-actions">
+        <a class="secondary create-doc-link" href="https://docs.new" target="_blank" rel="noopener">Create new Google Doc ↗</a>
+        <span class="action-spacer"></span>
+        <button type="button" id="cancel-english-dialog" class="secondary">Cancel</button>
+        <button type="submit" class="primary">Link English Book</button>
+      </div>
     </form>
   </dialog>
 
