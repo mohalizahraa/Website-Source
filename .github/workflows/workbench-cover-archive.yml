@@ -1,0 +1,44 @@
+name: Workbench cover archive
+
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - "workbench/functions/_catalog.js"
+      - "workbench/scripts/fetch-covers.mjs"
+      - ".github/workflows/workbench-cover-archive.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workbench-cover-archive
+  cancel-in-progress: true
+
+jobs:
+  covers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workbench
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Copy official book covers into Workbench assets
+        run: node workbench/scripts/fetch-covers.mjs
+      - name: Commit cached covers
+        run: |
+          if git diff --quiet -- workbench/public/covers workbench/public/cover-map.json; then
+            echo "No cover changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workbench/public/covers workbench/public/cover-map.json
+          git commit -m "Workbench: cache official book covers"
+          git fetch origin workbench
+          git rebase origin/workbench
+          git push origin HEAD:workbench
