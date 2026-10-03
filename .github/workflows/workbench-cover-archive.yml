@@ -6,7 +6,6 @@ on:
     paths:
       - "workbench/functions/_catalog.js"
       - "workbench/scripts/fetch-covers.mjs"
-      - ".github/workflows/workbench-cover-archive.yml"
   workflow_dispatch:
 
 permissions:
@@ -18,7 +17,7 @@ concurrency:
 
 jobs:
   covers:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
