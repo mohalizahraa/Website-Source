@@ -15,6 +15,9 @@ const [catalogSource, coverMap, pdfAudit, seriesMap, appSource, indexSource] = a
   fs.readFile(new URL('public/index.html', root), 'utf8'),
 ]);
 const libSource = await fs.readFile(new URL('functions/_lib.js', root), 'utf8');
+const coverProxySource = await fs.readFile(new URL('functions/api/official-cover/[id].js', root), 'utf8');
+const coverSourcesSource = await fs.readFile(new URL('functions/_cover_sources.js', root), 'utf8');
+const stylesSource = await fs.readFile(new URL('public/styles.css', root), 'utf8');
 
 
 const marker = 'export const BOOK_CATALOG = ';
@@ -82,6 +85,13 @@ assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters contro
 assert(indexSource.includes('id="my-projects"') && indexSource.includes('id="my-projects-count"'), 'Personal assigned-project dashboard is missing.');
 assert(indexSource.includes('data-actor-choice="Zahraa"') && indexSource.includes('data-actor-choice="Mohammed"'), 'Segmented actor switch is missing.');
 assert(appSource.includes('function syncActorSwitch()'), 'Segmented actor switch synchronization is missing.');
+assert(appSource.includes('/api/official-cover/'), 'Official covers are not routed through the same-origin proxy.');
+assert(coverProxySource.includes('sourceCandidates') && coverProxySource.includes('pagespeed'), 'Official cover proxy PageSpeed fallback is missing.');
+assert(coverSourcesSource.includes('book-1') && coverSourcesSource.includes('book-176'), 'Generated official cover source projection is incomplete.');
+assert(stylesSource.includes('--type-action:11px') && stylesSource.includes('.english-book-button{font-family:"Inter"'), 'Shared action geometry contract is missing.');
+assert(!stylesSource.includes('.english-book-button{font:inherit}'), 'English Book font inheritance regression remains.');
+assert(indexSource.includes('id="timeline-jump-today"'), 'Timeline Today control is missing.');
+assert(appSource.includes('timeline-due-marker'), 'Timeline due marker is missing.');
 assert(indexSource.includes('id="filter-toggle"') && indexSource.includes('id="filter-content"'), 'Collapsible filter surface is missing.');
 assert(appSource.includes("querySelectorAll('.timeline-bar').forEach"), 'Timeline bars are not directly interactive.');
 assert(appSource.includes("p.assignee === state.actor || p.assignee === 'Both'"), 'Actor-scoped assignment logic is missing.');

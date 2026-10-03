@@ -143,3 +143,68 @@ dialog form{padding:30px 32px 28px}.dialog-head{padding-bottom:16px;border-botto
 input[type=file]::file-selector-button{border:1px solid var(--surface-line);border-radius:8px;background:var(--paper);color:var(--ink);padding:7px 9px;margin-right:9px;font:600 10px "Inter",sans-serif;cursor:pointer}
 input[type=file]::file-selector-button:hover{background:rgba(184,146,90,.1)}
 @media(max-width:720px){.identity{justify-content:space-between}.actor-switch{flex:1}.actor-switch button{flex:1;min-height:38px}.filter-content.collapsed{display:none}}
+
+
+/* Whole-product geometry / congruence pass */
+:root{
+  --type-action:11px;
+  --type-control:11px;
+  --type-meta:10px;
+  --type-section:20px;
+  --action-height:32px;
+  --control-height:38px;
+  --control-radius:10px;
+  --space-control-x:10px;
+}
+.action-link,.details-btn,.mini-link,.english-book-button,.english-book-link{
+  min-height:var(--action-height);
+  padding:6px var(--space-control-x);
+  border-radius:var(--control-radius);
+  font-family:"Inter",sans-serif;
+  font-size:var(--type-action);
+  line-height:1.1;
+  font-weight:500;
+  letter-spacing:0;
+}
+.mini-link.work-on-book{font-size:var(--type-action);line-height:1.1;font-weight:650}
+.english-book-button{font-family:"Inter",sans-serif;font-size:var(--type-action);line-height:1.1;font-weight:500}
+.assigned-actions .mini-link{min-height:var(--action-height);padding:6px var(--space-control-x);font-size:var(--type-action)}
+.primary,.secondary{
+  min-height:40px;
+  padding:8px 14px;
+  border-radius:var(--control-radius);
+  font-family:"Inter",sans-serif;
+  font-size:var(--type-action);
+  line-height:1.15;
+  font-weight:600;
+}
+.text-button{font-family:"Inter",sans-serif;font-size:var(--type-action);line-height:1.2;font-weight:550}
+.panel h3,.timeline-heading h3{font-size:var(--type-section);line-height:1.15;font-weight:600}
+.pill{min-height:24px;padding:3px 8px;font-size:var(--type-meta);line-height:1.1}
+.quick-field select,.quick-field input,.filters select,.batch-toolbar select,.batch-toolbar input[type=date]{
+  min-height:var(--control-height);
+  border-radius:var(--control-radius);
+  font-size:var(--type-control);
+  line-height:1.2;
+}
+.activity-item time,.activity-item small,.timeline-label-meta,.timeline-month,.timeline-today.axis span,.timeline-bar{
+  font-size:var(--type-meta);
+  line-height:1.25;
+}
+.activity-item>div{font-size:12px;line-height:1.45}
+.timeline-heading-tools{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.timeline-today-button{min-height:32px;padding:5px 10px;background:rgba(255,248,234,.74)}
+.timeline-bar{height:25px;top:17px;font-family:"Inter",sans-serif;font-weight:600}
+.timeline-bar.status-not_started{background:#D8D1BD;color:var(--ink)}
+.timeline-bar.status-in_progress{background:linear-gradient(90deg,#C6A56A,#D2B980);color:var(--ink)}
+.timeline-bar.status-review{background:linear-gradient(90deg,#B88132,#CAA05D);color:#2E2618}
+.timeline-bar.status-completed{background:linear-gradient(90deg,#829987,#9DAF9F);color:#17251C}
+.timeline-bar.status-published{background:linear-gradient(90deg,#8F4844,#A45B55);color:var(--paper)}
+.timeline-bar.milestone{background:var(--oxblood);color:var(--paper)}
+.timeline-bar.overdue{background:var(--red);color:var(--paper)}
+.timeline-due-marker{position:absolute;right:-3px;top:50%;width:7px;height:7px;background:currentColor;border:1px solid rgba(255,255,255,.7);transform:translateY(-50%) rotate(45deg);border-radius:1px}
+.timeline-track{background-size:63px 100%}
+@media(max-width:720px){
+  .timeline-heading-tools{align-items:flex-start;justify-content:flex-start}
+  .action-link,.details-btn,.mini-link,.english-book-button,.english-book-link{min-height:40px;font-size:12px}
+}

@@ -70,7 +70,7 @@ function parseDateTime(value) {
 }
 function isTranslated(p) { return ['review','completed','published'].includes(p.status); }
 function isPublishReady(p) { return p.status === 'published'; }
-function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || imported?.source_url || ''; }
+function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || (imported?.source_url ? `/api/official-cover/${encodeURIComponent(p.catalog_id)}` : ''); }
 function hasCover(p) { return Boolean(p?.has_uploaded_cover || coverFor(p)); }
 function monthKey(value) { return String(value || '').slice(0,7); }
 function localDateKey(date = new Date()) {
@@ -709,11 +709,11 @@ function renderTimeline() {
         </div>
         <div class="timeline-track" style="width:${trackWidth}px">
           <div class="timeline-today" style="left:${todayLeft}px"></div>
-          <button class="timeline-bar ${milestone?'milestone':''} ${overdue?'overdue':''}" type="button" data-project-id="${p.id}" style="left:${left}px;width:${width}px" title="${escapeHtml(barTitle)}"><span>${escapeHtml(p.title_en || p.title_ar)}</span></button>
+          <button class="timeline-bar status-${p.status} ${milestone?'milestone':''} ${overdue?'overdue':''}" type="button" data-project-id="${p.id}" style="left:${left}px;width:${width}px" title="${escapeHtml(barTitle)}"><span>${escapeHtml(p.title_en || p.title_ar)}</span>${!milestone && p.due_date ? '<i class="timeline-due-marker" aria-hidden="true"></i>' : ''}</button>
         </div>
       </div>`;
     }).join('');
-    $('timeline-visual').innerHTML=`<div class="timeline-scroll"><div class="timeline-canvas" style="--timeline-track-width:${trackWidth}px">
+    $('timeline-visual').innerHTML=`<div class="timeline-scroll" data-today-left="${todayLeft}"><div class="timeline-canvas" style="--timeline-track-width:${trackWidth}px">
       <div class="timeline-axis"><div class="timeline-axis-label">Projects</div><div class="timeline-months" style="width:${trackWidth}px">${monthMarkup}<div class="timeline-today axis" style="left:${todayLeft}px"><span>Today</span></div></div></div>
       ${rows}
     </div></div>`;
@@ -890,7 +890,7 @@ function renderCoverPreview(project=null) {
   const uploaded = project?.id ? state.coverObjectUrls.get(project.id) : '';
   const manual = $('cover-url')?.value.trim();
   const imported=state.coverMap[project?.catalog_id];
-  const fallback = manual || imported?.path || imported?.source_url || '';
+  const fallback = manual || imported?.path || (imported?.source_url && project?.catalog_id ? `/api/official-cover/${encodeURIComponent(project.catalog_id)}` : '');
   const src = uploaded || fallback;
   const label = uploaded
     ? 'Uploaded cover photo'
@@ -1130,6 +1130,12 @@ $('new-project').addEventListener('click',()=>openProject(null));
 $('published').addEventListener('change',()=>{ if ($('published').checked) $('status').value='published'; });
 $('status').addEventListener('change',()=>{ if ($('status').value!=='published') $('published').checked=false; });
 $('clear-project-filters')?.addEventListener('click',clearProjectFilters);
+$('timeline-jump-today')?.addEventListener('click',()=>{
+  const scroll=$('timeline-visual')?.querySelector('.timeline-scroll');
+  if (!scroll) return;
+  const todayLeft=Number(scroll.dataset.todayLeft || 0);
+  scroll.scrollTo({left:Math.max(0,todayLeft-scroll.clientWidth/2+230),behavior:'smooth'});
+});
 $('filter-toggle')?.addEventListener('click',()=>{
   const content=$('filter-content');
   const open=!content.classList.toggle('collapsed');
