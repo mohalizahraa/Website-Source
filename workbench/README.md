@@ -90,3 +90,18 @@ A URL that merely ends in `.pdf` is not considered available. Candidate URLs are
 ## Production-stage status migration — 2026-10-03
 
 Existing data migrates semantically once: old Review → Needs Review; old Completed → Publish Ready; old Published remains Publish Ready with its publication timestamp. Newly translated books enter Needs Formatting. Published is independent from workflow status.
+
+
+## Official series / standalone organization
+
+The Workbench has an optional **Group: Series / standalone** Projects mode. Normal flat Projects remains the default.
+
+Series metadata is public catalogue metadata in `public/series-map.json`, derived from Sayyid Kamal al-Haydari's official website and official archive bibliography. It distinguishes:
+- numbered or named series members;
+- umbrella / complete-set catalogue records;
+- collections whose component books are also separately catalogued;
+- true standalones (any catalogue record not mapped to an official series/collection).
+
+In grouped mode, each official series/collection is rendered as a parchment-and-gold visual shelf with its Arabic and English series name and members ordered by official part/volume position. Standalones remain together in a quieter dedicated section. Filtering still applies before grouping; the chosen grouping mode is remembered locally on that device.
+
+Do not infer series membership merely from similar titles or from `volumes > 1`; add relationships only when supported by the official site/archive.

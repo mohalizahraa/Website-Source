@@ -31,3 +31,28 @@ body{padding:24px 12px 60px}.archive-header h1{font-size:31px}.progress-section,
 .form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.timeline-row{grid-template-columns:1fr;gap:5px}.activity-item{grid-template-columns:1fr;gap:3px}
 .dialog-actions{align-items:stretch;flex-wrap:wrap}.dialog-actions button,.dialog-actions a{min-height:44px}.split-actions{align-items:stretch}.create-doc-link,.split-actions button{width:100%}.action-spacer{display:none}.cover-upload-actions .secondary{min-height:44px}
 }
+
+/* Optional official-series grouping */
+.series-groups{display:grid;gap:22px}
+.series-cluster{border:1px solid rgba(184,146,90,.58);border-radius:6px;background:linear-gradient(180deg,rgba(255,248,234,.74),rgba(243,236,218,.38));box-shadow:0 8px 26px rgba(31,46,40,.045);overflow:hidden}
+.series-cluster-head{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;align-items:center;padding:15px 18px 14px;border-bottom:1px solid rgba(184,146,90,.42);background:linear-gradient(90deg,rgba(184,146,90,.13),rgba(255,248,234,.18));position:relative}
+.series-cluster-head:after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+.series-rosette{width:32px;height:32px}
+.series-heading{min-width:0}
+.series-kicker{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--oxblood);font-weight:600;margin-bottom:2px}
+.series-title-ar{font-family:"Amiri",serif;font-size:22px;line-height:1.35;font-weight:400;margin:0;color:var(--ink);text-align:left}
+.series-title-en{font-family:"EB Garamond",serif;font-size:15px;font-weight:600;color:var(--sage);margin-top:1px}
+.series-cluster-body{padding:0 18px}
+.series-cluster-body>.project-row:last-child{border-bottom:0}
+.standalone-cluster{border-color:rgba(107,127,110,.38);background:rgba(255,248,234,.42)}
+.standalone-cluster .series-cluster-head{background:rgba(107,127,110,.055);border-bottom-color:rgba(107,127,110,.25)}
+.standalone-cluster .series-cluster-head:after{background:var(--sage)}
+.standalone-cluster .series-rosette{opacity:.72}
+@media (max-width:720px){
+  .series-groups{gap:16px}
+  .series-cluster-head{grid-template-columns:32px minmax(0,1fr);padding:13px 12px 12px;gap:9px}
+  .series-rosette{width:26px;height:26px}
+  .series-title-ar{font-size:20px}
+  .series-title-en{font-size:14px}
+  .series-cluster-body{padding:0 11px}
+}

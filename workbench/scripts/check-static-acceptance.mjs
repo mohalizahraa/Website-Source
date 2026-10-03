@@ -6,10 +6,11 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const [catalogSource, coverMap, pdfAudit, appSource, indexSource] = await Promise.all([
+const [catalogSource, coverMap, pdfAudit, seriesMap, appSource, indexSource] = await Promise.all([
   fs.readFile(new URL('functions/_catalog.js', root), 'utf8'),
   fs.readFile(new URL('public/cover-map.json', root), 'utf8').then(JSON.parse),
   fs.readFile(new URL('public/pdf-audit.json', root), 'utf8').then(JSON.parse),
+  fs.readFile(new URL('public/series-map.json', root), 'utf8').then(JSON.parse),
   fs.readFile(new URL('public/app.js', root), 'utf8'),
   fs.readFile(new URL('public/index.html', root), 'utf8'),
 ]);
@@ -78,6 +79,14 @@ assert(appSource.includes('openEnglishBookDialog(id,true)'), 'Work on Book auto-
 assert(appSource.includes('reservedPdfWindow'), 'Work on Book post-link popup-safe continuation is missing.');
 assert(appSource.includes('function clearProjectFilters()'), 'Clear filters behavior is missing.');
 assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters control is missing.');
+assert(indexSource.includes('id="group-projects"'), 'Series grouping control is missing.');
+assert(appSource.includes('function seriesGroupedMarkup(list)'), 'Series grouping renderer is missing.');
+assert(appSource.includes("localStorage.setItem('haydariProjectGrouping'"), 'Series grouping preference is not remembered.');
+assert(seriesMap.version === '2026-10-03-official-series-v1', 'Unexpected series-map version.');
+assert(seriesMap.books['book-3']?.group === 'educational-ethics' && seriesMap.books['book-3']?.position === 5, 'Educational Ethics mapping is incomplete.');
+assert(seriesMap.books['book-43']?.role === 'umbrella' && seriesMap.groups['usul-lessons-commentary']?.total === 20, 'Uṣūl umbrella mapping is incomplete.');
+assert(seriesMap.books['book-152']?.role === 'umbrella' && seriesMap.groups['creed-ethics-collection']?.type === 'collection', 'Creed/Ethics collection mapping is incomplete.');
+for (const id of Object.keys(seriesMap.books || {})) assert(catalogIds.has(id), `Series map references unknown catalogue ID ${id}.`);
 assert(appSource.includes("review: 'Needs Formatting'") && appSource.includes("completed: 'Needs Review'") && appSource.includes("published: 'Publish Ready'"), 'Production-stage labels are missing.');
 assert(indexSource.includes('id="published"'), 'Separate Published control is missing.');
 assert(libSource.includes("'production-stages-v2'"), 'Status-model migration is missing.');

@@ -11,7 +11,8 @@ const SORT_VALUES = ['updated','deadline','title','status','assignee','topic'];
 const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', numeric:true });
 const savedActor = localStorage.getItem('haydariActor');
 const savedProjectSort = localStorage.getItem('haydariProjectSort');
-const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', pendingWorkOnLink: null };
+const savedProjectGrouping = localStorage.getItem('haydariProjectGrouping');
+const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', pendingWorkOnLink: null };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -220,6 +221,24 @@ function filteredProjects() {
   return sortProjects(filtered, sort);
 }
 
+function seriesInfo(p) {
+  const item=state.seriesMap?.books?.[p?.catalog_id];
+  if (!item) return null;
+  const group=state.seriesMap?.groups?.[item.group];
+  return group ? {item,group,key:item.group} : null;
+}
+function seriesPartText(info) {
+  if (!info) return '';
+  if (info.item.role === 'umbrella') return info.group.total ? `Complete set · ${info.group.total} parts` : 'Complete collection';
+  if (info.item.position) return `Part ${info.item.position}${info.group.total ? ` of ${info.group.total}` : ''}`;
+  return 'Series member';
+}
+function seriesTypeLabel(group) {
+  if (group.type === 'collection') return 'Collection';
+  if (group.type === 'multi_volume') return 'Multi-volume work';
+  return 'Series';
+}
+
 function projectMarkup(p, compact=false, selectable=false) {
   if (compact) {
     return `<article class="project-card" data-project-id="${p.id}" draggable="true">
@@ -241,7 +260,9 @@ function projectMarkup(p, compact=false, selectable=false) {
     </article>`;
   }
 
-  const facts = [p.pages ? `${p.pages} pages` : '', p.volumes && p.volumes > 1 ? `${p.volumes} volumes` : ''].filter(Boolean).join(' · ');
+  const info=seriesInfo(p);
+  const seriesFact=seriesPartText(info);
+  const facts = [seriesFact, p.pages ? `${p.pages} pages` : '', !info && p.volumes && p.volumes > 1 ? `${p.volumes} volumes` : ''].filter(Boolean).join(' · ');
   return `<article class="project-row ${selectable && state.selectedIds.has(p.id) ? 'selected' : ''}" data-project-id="${p.id}">
     <div class="cover-cell">${selectable ? `<label class="select-book" title="Select book"><input class="select-book-input" type="checkbox" data-select-project="${p.id}" ${state.selectedIds.has(p.id)?'checked':''} aria-label="Select ${escapeHtml(p.title_ar)}"><span aria-hidden="true"></span></label>` : ''}${coverMarkup(p)}</div>
     <div class="project-main">
@@ -438,6 +459,56 @@ function renderBatchToolbar() {
   $('select-visible').indeterminate=!allVisible && visible.some(p=>state.selectedIds.has(p.id));
 }
 
+function seriesGroupedMarkup(list) {
+  const grouped=new Map();
+  const standalone=[];
+  for (const project of list) {
+    const info=seriesInfo(project);
+    if (!info) { standalone.push(project); continue; }
+    if (!grouped.has(info.key)) grouped.set(info.key,[]);
+    grouped.get(info.key).push(project);
+  }
+  const groupEntries=[...grouped.entries()].sort(([a],[b]) => {
+    const ga=state.seriesMap.groups[a], gb=state.seriesMap.groups[b];
+    return TITLE_COLLATOR.compare(ga?.name_en || ga?.name_ar || a, gb?.name_en || gb?.name_ar || b);
+  });
+  const seriesBlocks=groupEntries.map(([key,projects]) => {
+    const group=state.seriesMap.groups[key];
+    projects.sort((a,b)=>{
+      const ia=seriesInfo(a)?.item || {}, ib=seriesInfo(b)?.item || {};
+      if (ia.role === 'umbrella' && ib.role !== 'umbrella') return -1;
+      if (ib.role === 'umbrella' && ia.role !== 'umbrella') return 1;
+      return (ia.position ?? 999)-(ib.position ?? 999) || TITLE_COLLATOR.compare(a.title_ar||'',b.title_ar||'');
+    });
+    const memberCount=projects.filter(p=>seriesInfo(p)?.item?.role!=='umbrella').length;
+    const totalText=group.total ? `${group.total} part${group.total===1?'':'s'}` : 'Official series';
+    const visibleText=memberCount && group.total && memberCount !== group.total ? `${memberCount} visible · ${totalText}` : totalText;
+    return `<section class="series-cluster">
+      <header class="series-cluster-head">
+        <svg class="series-rosette" aria-hidden="true"><use href="#rosette"></use></svg>
+        <div class="series-heading">
+          <div class="series-kicker">${seriesTypeLabel(group)} · ${escapeHtml(visibleText)}</div>
+          <h3 class="series-title-ar" dir="rtl">${escapeHtml(group.name_ar)}</h3>
+          <div class="series-title-en">${escapeHtml(group.name_en)}</div>
+        </div>
+      </header>
+      <div class="series-cluster-body">${projects.map(p=>projectMarkup(p,false,true)).join('')}</div>
+    </section>`;
+  }).join('');
+  const standaloneBlock=standalone.length ? `<section class="series-cluster standalone-cluster">
+    <header class="series-cluster-head">
+      <svg class="series-rosette" aria-hidden="true"><use href="#rosette"></use></svg>
+      <div class="series-heading">
+        <div class="series-kicker">Standalone · ${standalone.length} book${standalone.length===1?'':'s'}</div>
+        <h3 class="series-title-ar" dir="rtl">كتب مستقلة</h3>
+        <div class="series-title-en">Standalone Books</div>
+      </div>
+    </header>
+    <div class="series-cluster-body">${standalone.map(p=>projectMarkup(p,false,true)).join('')}</div>
+  </section>` : '';
+  return `<div class="series-groups">${seriesBlocks}${standaloneBlock}</div>`;
+}
+
 function renderProjects() {
   syncTopicFilter();
   const list = filteredProjects();
@@ -445,7 +516,7 @@ function renderProjects() {
   const pdfText = audit ? ` · PDFs: ${audit.available} verified · ${audit.missing} missing · ${audit.unchecked} checking` : '';
   const coverCount=state.projects.filter(hasCover).length;
   $('project-count').textContent = `${list.length} of ${state.projects.length} books · Covers: ${coverCount}/${state.projects.length}${pdfText}`;
-  $('projects-list').innerHTML = list.map(p=>projectMarkup(p,false,true)).join('') || '<p class="muted">No projects match these filters.</p>';
+  $('projects-list').innerHTML = (state.projectGrouping === 'series' ? seriesGroupedMarkup(list) : list.map(p=>projectMarkup(p,false,true)).join('')) || '<p class="muted">No projects match these filters.</p>';
   bindProjectClicks($('projects-list'));
   hydrateUploadedCovers($('projects-list'));
   renderBatchToolbar();
@@ -830,6 +901,14 @@ async function removeUploadedCover() {
   }
 }
 
+async function loadSeriesMap() {
+  try {
+    const response=await fetch('/series-map.json',{cache:'no-store'});
+    const data=response.ok ? await response.json() : {};
+    state.seriesMap={groups:data.groups || {},books:data.books || {}};
+  } catch { state.seriesMap={groups:{},books:{}}; }
+}
+
 async function loadCoverMap() {
   try {
     const response = await fetch('/cover-map.json', {cache:'no-store'});
@@ -906,10 +985,11 @@ async function init() {
   clearLegacyAccessKey();
   els.actor.value = state.actor;
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
+  if ($('group-projects')) $('group-projects').value = state.projectGrouping;
   try {
     const health = await api('/api/health');
     state.pdfAudit = health.pdfs || null;
-    await loadCoverMap();
+    await Promise.all([loadCoverMap(),loadSeriesMap()]);
     await loadData();
     if (state.pdfAudit?.unchecked) auditPdfs().catch(error => toast(`PDF verification paused: ${error.message}`));
   } catch (e) {
@@ -923,6 +1003,7 @@ els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
 els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorage.setItem('haydariActor',state.actor);});
 ['filter-topic','filter-assignee','filter-status','filter-schedule','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('sort-projects')?.addEventListener('change',()=>{state.projectSort=$('sort-projects').value;localStorage.setItem('haydariProjectSort',state.projectSort);renderProjects();});
+$('group-projects')?.addEventListener('change',()=>{state.projectGrouping=$('group-projects').value;localStorage.setItem('haydariProjectGrouping',state.projectGrouping);renderProjects();});
 $('new-project').addEventListener('click',()=>openProject(null));
 $('published').addEventListener('change',()=>{ if ($('published').checked) $('status').value='published'; });
 $('status').addEventListener('change',()=>{ if ($('status').value!=='published') $('published').checked=false; });

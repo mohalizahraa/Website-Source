@@ -1,0 +1,714 @@
+{
+  "version": "2026-10-03-official-series-v1",
+  "provenance": "Series/collection relationships are derived from Sayyid Kamal al-Haydari's official website and official archive bibliography. Unmapped catalogue records are treated as standalone.",
+  "groups": {
+    "educational-ethics": {
+      "type": "series",
+      "name_ar": "الأخلاق التعليمية",
+      "name_en": "Educational Ethics",
+      "total": 5,
+      "source_url": "https://alhaydari.com/ar/2022/02/69298/",
+      "note": "Official site identifies the fifth installment and earlier installments by number."
+    },
+    "quran-centered-islam": {
+      "type": "series",
+      "name_ar": "إسلام محورية القرآن",
+      "name_en": "Qurʾān-Centered Islam",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/2017/11/61557/",
+      "note": "Three catalogued installments are explicitly described as successive حلقات on the official site."
+    },
+    "imamate-encyclopedia": {
+      "type": "multi_volume",
+      "name_ar": "موسوعة الإمامة في الفكر الشيعي",
+      "name_en": "Encyclopedia of Imamate in Shīʿī Thought",
+      "total": 12,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/"
+    },
+    "resurrection-asfar": {
+      "type": "series",
+      "name_ar": "كتاب المعاد، شرح الأسفار الأربعة",
+      "name_en": "The Book of the Resurrection — Commentary on the Four Journeys",
+      "total": 6,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/"
+    },
+    "nihayat-hikma-commentary": {
+      "type": "series",
+      "name_ar": "شرح نهاية الحكمة",
+      "name_en": "Commentary on The End of Wisdom",
+      "total": 12,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/philosophical/"
+    },
+    "muatah-jurisprudence": {
+      "type": "series",
+      "name_ar": "بحوث في فقه المعاطاة",
+      "name_en": "Studies in the Jurisprudence of Muʿāṭāh",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/jurisprudence/"
+    },
+    "epistemic-readings": {
+      "type": "series",
+      "name_ar": "قراءات في المنظومة المعرفية للسيد كمال الحيدري",
+      "name_en": "Readings in the Epistemic System of Sayyid Kamal al-Ḥaydarī",
+      "total": 5,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/curriculum/"
+    },
+    "usul-lessons-commentary": {
+      "type": "series",
+      "name_ar": "شرح حلقات الأصول",
+      "name_en": "Commentary on The Lessons in Uṣūl",
+      "total": 20,
+      "source_url": "https://alhaydari.com/ar/2016/11/58742/",
+      "note": "Official umbrella page enumerates all twenty constituent works in order."
+    },
+    "divine-justice": {
+      "type": "series",
+      "name_ar": "موسوعة العدل الإلهي",
+      "name_en": "Encyclopedia of Divine Justice",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/2016/09/58262/"
+    },
+    "divine-knowledge": {
+      "type": "series",
+      "name_ar": "العلم الإلهي؛ شرح الأسفار الأربعة",
+      "name_en": "Divine Knowledge — Commentary on the Four Journeys",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/philosophical/"
+    },
+    "eleventh-chapter": {
+      "type": "series",
+      "name_ar": "شرح الباب الحادي عشر",
+      "name_en": "Commentary on The Eleventh Chapter",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/"
+    },
+    "logic-commentary": {
+      "type": "series",
+      "name_ar": "شرح كتاب المنطق",
+      "name_en": "Commentary on the Book of Logic",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/logic/"
+    },
+    "tawhid-analytical": {
+      "type": "series",
+      "name_ar": "التوحيد ـ بحوث تحليلية في مراتبه ومعطياته",
+      "name_en": "Tawḥīd — Analytical Studies in Its Levels and Implications",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/"
+    },
+    "bidayat-hikma": {
+      "type": "series",
+      "name_ar": "شرح بداية الحكمة",
+      "name_en": "Commentary on The Beginning of Wisdom",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/philosophical/"
+    },
+    "tamhid-qawaid": {
+      "type": "series",
+      "name_ar": "شرح تمهيد القواعد في علم العرفان النظري",
+      "name_en": "Commentary on The Preparation of the Principles in Theoretical Mysticism",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/mystical/"
+    },
+    "primacy-existence": {
+      "type": "series",
+      "name_ar": "نظرية أصالة الوجود",
+      "name_en": "The Theory of the Primacy of Existence",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/philosophical/"
+    },
+    "resurrection-quranic": {
+      "type": "series",
+      "name_ar": "المعاد ـ رؤية قرآنية",
+      "name_en": "The Resurrection — A Qurʾānic Vision",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/"
+    },
+    "philosophy-general-theology": {
+      "type": "series",
+      "name_ar": "الفلسفة ـ الإلهيات بالمعنى الأعم",
+      "name_en": "Philosophy — Theology in the General Sense",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/about/"
+    },
+    "knowledge-of-god": {
+      "type": "series",
+      "name_ar": "معرفة الله",
+      "name_en": "Knowledge of God",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/"
+    },
+    "jurisprudential-fatwas": {
+      "type": "series",
+      "name_ar": "الفتاوى الفقهية",
+      "name_en": "Jurisprudential Fatwas",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/jurisprudence/"
+    },
+    "quran-understanding-logic": {
+      "type": "series",
+      "name_ar": "منطق فهم القرآن",
+      "name_en": "The Logic of Understanding the Qurʾān",
+      "total": 3,
+      "source_url": "https://alhaydari.com/ar/about/"
+    },
+    "transcendent-wisdom-lessons": {
+      "type": "series",
+      "name_ar": "دروس في الحكمة المتعالية",
+      "name_en": "Lessons in Transcendent Wisdom",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/about/"
+    },
+    "studies-in-creed": {
+      "type": "series",
+      "name_ar": "بحوث في العقيدة",
+      "name_en": "Studies in Creed",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/ideological/page/3/"
+    },
+    "haydari-biography-method": {
+      "type": "series",
+      "name_ar": "كمال الحيدري ـ قراءة في السيرة والمنهج",
+      "name_en": "Kamal al-Ḥaydarī — A Reading of His Biography and Method",
+      "total": 2,
+      "source_url": "https://alhaydari.com/ar/category/ebooks/curriculum/"
+    },
+    "creed-ethics-collection": {
+      "type": "collection",
+      "name_ar": "في ظلال العقيدة والأخلاق",
+      "name_en": "In the Shades of Creed and Ethics",
+      "total": 4,
+      "source_url": "https://alhaydari.com/ar/about/",
+      "note": "Official works list identifies this as a collection containing four separately catalogued treatises."
+    },
+    "doctrinal-philosophical-studies": {
+      "type": "series",
+      "name_ar": "مباحث عقائدية وفلسفية",
+      "name_en": "Doctrinal and Philosophical Studies",
+      "total": null,
+      "source_url": "https://alhaydari.com/ar/2011/09/3204/",
+      "note": "The official description identifies al-Rāsikhūn fī al-ʿIlm as the fourth study in this series."
+    },
+    "fiqh-fatwa-booklets": {
+      "type": "series",
+      "name_ar": "فتاوى فقهية",
+      "name_en": "Jurisprudential Fatwa Booklets",
+      "total": 4,
+      "source_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%81%D9%8A-%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D9%88%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D9%88%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
+      "note": "Official bibliography labels Khums as booklet 2, Women's Rulings as 3, and Selected Hajj/ʿUmrah Rites as 4; booklet 1 is not a separate record in the 176-book catalogue."
+    }
+  },
+  "books": {
+    "book-72": {
+      "group": "educational-ethics",
+      "role": "member",
+      "position": 1
+    },
+    "book-71": {
+      "group": "educational-ethics",
+      "role": "member",
+      "position": 2
+    },
+    "book-41": {
+      "group": "educational-ethics",
+      "role": "member",
+      "position": 3
+    },
+    "book-101": {
+      "group": "educational-ethics",
+      "role": "member",
+      "position": 4
+    },
+    "book-3": {
+      "group": "educational-ethics",
+      "role": "member",
+      "position": 5
+    },
+    "book-83": {
+      "group": "quran-centered-islam",
+      "role": "member",
+      "position": 1
+    },
+    "book-70": {
+      "group": "quran-centered-islam",
+      "role": "member",
+      "position": 2
+    },
+    "book-34": {
+      "group": "quran-centered-islam",
+      "role": "member",
+      "position": 3
+    },
+    "book-4": {
+      "group": "imamate-encyclopedia",
+      "role": "umbrella"
+    },
+    "book-10": {
+      "group": "resurrection-asfar",
+      "role": "member",
+      "position": 1
+    },
+    "book-9": {
+      "group": "resurrection-asfar",
+      "role": "member",
+      "position": 2
+    },
+    "book-8": {
+      "group": "resurrection-asfar",
+      "role": "member",
+      "position": 3
+    },
+    "book-7": {
+      "group": "resurrection-asfar",
+      "role": "member",
+      "position": 4
+    },
+    "book-6": {
+      "group": "resurrection-asfar",
+      "role": "member",
+      "position": 5
+    },
+    "book-5": {
+      "group": "resurrection-asfar",
+      "role": "member",
+      "position": 6
+    },
+    "book-23": {
+      "group": "nihayat-hikma-commentary",
+      "role": "umbrella"
+    },
+    "book-22": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 1
+    },
+    "book-21": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 2
+    },
+    "book-20": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 3
+    },
+    "book-19": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 4
+    },
+    "book-18": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 5
+    },
+    "book-17": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 6
+    },
+    "book-16": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 7
+    },
+    "book-15": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 8
+    },
+    "book-14": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 9
+    },
+    "book-13": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 10
+    },
+    "book-12": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 11
+    },
+    "book-11": {
+      "group": "nihayat-hikma-commentary",
+      "role": "member",
+      "position": 12
+    },
+    "book-27": {
+      "group": "muatah-jurisprudence",
+      "role": "member",
+      "position": 1
+    },
+    "book-26": {
+      "group": "muatah-jurisprudence",
+      "role": "member",
+      "position": 2
+    },
+    "book-25": {
+      "group": "muatah-jurisprudence",
+      "role": "member",
+      "position": 3
+    },
+    "book-33": {
+      "group": "epistemic-readings",
+      "role": "member",
+      "position": 1
+    },
+    "book-32": {
+      "group": "epistemic-readings",
+      "role": "member",
+      "position": 2
+    },
+    "book-31": {
+      "group": "epistemic-readings",
+      "role": "member",
+      "position": 3
+    },
+    "book-30": {
+      "group": "epistemic-readings",
+      "role": "member",
+      "position": 4
+    },
+    "book-29": {
+      "group": "epistemic-readings",
+      "role": "member",
+      "position": 5
+    },
+    "book-43": {
+      "group": "usul-lessons-commentary",
+      "role": "umbrella"
+    },
+    "book-44": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 1
+    },
+    "book-45": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 2
+    },
+    "book-46": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 3
+    },
+    "book-47": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 4
+    },
+    "book-48": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 5
+    },
+    "book-49": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 6
+    },
+    "book-50": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 7
+    },
+    "book-51": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 8
+    },
+    "book-52": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 9
+    },
+    "book-53": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 10
+    },
+    "book-54": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 11
+    },
+    "book-55": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 12
+    },
+    "book-56": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 13
+    },
+    "book-57": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 14
+    },
+    "book-58": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 15
+    },
+    "book-59": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 16
+    },
+    "book-60": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 17
+    },
+    "book-61": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 18
+    },
+    "book-62": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 19
+    },
+    "book-63": {
+      "group": "usul-lessons-commentary",
+      "role": "member",
+      "position": 20
+    },
+    "book-66": {
+      "group": "divine-justice",
+      "role": "member",
+      "position": 1
+    },
+    "book-65": {
+      "group": "divine-justice",
+      "role": "member",
+      "position": 2
+    },
+    "book-64": {
+      "group": "divine-justice",
+      "role": "member",
+      "position": 3
+    },
+    "book-69": {
+      "group": "divine-knowledge",
+      "role": "member",
+      "position": 1
+    },
+    "book-68": {
+      "group": "divine-knowledge",
+      "role": "member",
+      "position": 2
+    },
+    "book-76": {
+      "group": "eleventh-chapter",
+      "role": "member",
+      "position": 1
+    },
+    "book-75": {
+      "group": "eleventh-chapter",
+      "role": "member",
+      "position": 2
+    },
+    "book-79": {
+      "group": "logic-commentary",
+      "role": "member",
+      "position": 1
+    },
+    "book-78": {
+      "group": "logic-commentary",
+      "role": "member",
+      "position": 2
+    },
+    "book-77": {
+      "group": "logic-commentary",
+      "role": "member",
+      "position": 3
+    },
+    "book-82": {
+      "group": "tawhid-analytical",
+      "role": "member",
+      "position": 1
+    },
+    "book-81": {
+      "group": "tawhid-analytical",
+      "role": "member",
+      "position": 2
+    },
+    "book-84": {
+      "group": "bidayat-hikma",
+      "role": "member",
+      "position": 1
+    },
+    "book-85": {
+      "group": "bidayat-hikma",
+      "role": "member",
+      "position": 2
+    },
+    "book-87": {
+      "group": "tamhid-qawaid",
+      "role": "member",
+      "position": 1
+    },
+    "book-86": {
+      "group": "tamhid-qawaid",
+      "role": "member",
+      "position": 2
+    },
+    "book-90": {
+      "group": "primacy-existence",
+      "role": "member",
+      "position": 1
+    },
+    "book-89": {
+      "group": "primacy-existence",
+      "role": "member",
+      "position": 2
+    },
+    "book-93": {
+      "group": "resurrection-quranic",
+      "role": "member",
+      "position": 1
+    },
+    "book-92": {
+      "group": "resurrection-quranic",
+      "role": "member",
+      "position": 2
+    },
+    "book-96": {
+      "group": "philosophy-general-theology",
+      "role": "member",
+      "position": 1
+    },
+    "book-95": {
+      "group": "philosophy-general-theology",
+      "role": "member",
+      "position": 2
+    },
+    "book-94": {
+      "group": "philosophy-general-theology",
+      "role": "member",
+      "position": 3
+    },
+    "book-110": {
+      "group": "knowledge-of-god",
+      "role": "member",
+      "position": 1
+    },
+    "book-109": {
+      "group": "knowledge-of-god",
+      "role": "member",
+      "position": 2
+    },
+    "book-128": {
+      "group": "jurisprudential-fatwas",
+      "role": "member",
+      "position": 1
+    },
+    "book-129": {
+      "group": "jurisprudential-fatwas",
+      "role": "member",
+      "position": 2
+    },
+    "book-127": {
+      "group": "jurisprudential-fatwas",
+      "role": "member",
+      "position": 3
+    },
+    "book-142": {
+      "group": "quran-understanding-logic",
+      "role": "member",
+      "position": 1
+    },
+    "book-141": {
+      "group": "quran-understanding-logic",
+      "role": "member",
+      "position": 2
+    },
+    "book-140": {
+      "group": "quran-understanding-logic",
+      "role": "member",
+      "position": 3
+    },
+    "book-145": {
+      "group": "transcendent-wisdom-lessons",
+      "role": "member",
+      "position": 1
+    },
+    "book-146": {
+      "group": "transcendent-wisdom-lessons",
+      "role": "member",
+      "position": 2
+    },
+    "book-171": {
+      "group": "studies-in-creed",
+      "role": "member",
+      "position": 1
+    },
+    "book-174": {
+      "group": "studies-in-creed",
+      "role": "member",
+      "position": 2
+    },
+    "book-176": {
+      "group": "haydari-biography-method",
+      "role": "member",
+      "position": 1
+    },
+    "book-175": {
+      "group": "haydari-biography-method",
+      "role": "member",
+      "position": 2
+    },
+    "book-152": {
+      "group": "creed-ethics-collection",
+      "role": "umbrella"
+    },
+    "book-153": {
+      "group": "creed-ethics-collection",
+      "role": "member",
+      "position": 1
+    },
+    "book-123": {
+      "group": "creed-ethics-collection",
+      "role": "member",
+      "position": 2
+    },
+    "book-115": {
+      "group": "creed-ethics-collection",
+      "role": "member",
+      "position": 3
+    },
+    "book-156": {
+      "group": "creed-ethics-collection",
+      "role": "member",
+      "position": 4
+    },
+    "book-168": {
+      "group": "doctrinal-philosophical-studies",
+      "role": "member",
+      "position": 4
+    },
+    "book-143": {
+      "group": "fiqh-fatwa-booklets",
+      "role": "member",
+      "position": 2
+    },
+    "book-144": {
+      "group": "fiqh-fatwa-booklets",
+      "role": "member",
+      "position": 3
+    },
+    "book-139": {
+      "group": "fiqh-fatwa-booklets",
+      "role": "member",
+      "position": 4
+    }
+  }
+}
