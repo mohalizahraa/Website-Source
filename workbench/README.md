@@ -47,3 +47,15 @@ The shared capability URL is `https://<workbench-host>/#key=<long-random-secret>
 ## Verification
 
 `npm run check` syntax-checks the browser application and Pages Functions. Apply `schema.sql` to D1 before the first production launch, then seed the authorized project data directly into D1 without committing it to Git.
+
+
+## PDF availability contract
+
+A URL that merely ends in `.pdf` is not considered available. Candidate URLs are validated server-side in small batches and persisted in D1 as `unchecked`, `available`, or `missing`.
+
+- The UI exposes an **Arabic PDF** button only for `available` files.
+- Verified files open through the Workbench's inline PDF proxy, avoiding flaky direct navigation to the legacy archive host.
+- HTTP 404/410 or a successful response that is not actually a PDF becomes `missing`.
+- Transient/rate-limit/server failures remain `unchecked` for later retry rather than being falsely labeled missing.
+- Editing a PDF URL resets it to `unchecked`.
+- The Projects view supports **Missing PDF only** filtering.
