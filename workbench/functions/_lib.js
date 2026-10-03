@@ -101,7 +101,7 @@ export function normalizeProject(row) {
     blocked: Boolean(row.blocked),
     pdf_status: pdfStatus,
     pdf_available: pdfStatus === 'available' && Boolean(row.source_pdf_url),
-    pdf_missing: pdfStatus === 'missing' || !row.source_pdf_url,
+    pdf_missing: pdfStatus !== 'available' || !row.source_pdf_url,
     pdf_unchecked: pdfStatus === 'unchecked' && Boolean(row.source_pdf_url),
   };
 }
