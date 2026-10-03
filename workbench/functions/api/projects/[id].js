@@ -1,4 +1,4 @@
-import { actorFromRequest, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url',
@@ -16,6 +16,7 @@ function idFrom(context) {
 export async function onRequestGet(context) {
   const denied = requireAccess(context);
   if (denied) return denied;
+  await ensureCatalog(context.env.DB);
   const id = idFrom(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
   const row = await context.env.DB.prepare('SELECT * FROM projects WHERE id = ?').bind(id).first();
@@ -25,6 +26,7 @@ export async function onRequestGet(context) {
 export async function onRequestPatch(context) {
   const denied = requireAccess(context);
   if (denied) return denied;
+  await ensureCatalog(context.env.DB);
   const id = idFrom(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
   const before = await context.env.DB.prepare('SELECT * FROM projects WHERE id = ?').bind(id).first();
