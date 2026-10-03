@@ -136,12 +136,13 @@ export async function recordActivity(db, projectId, actor, action, before, after
 
 export function normalizeProject(row) {
   const pdfStatus = row.pdf_status || (!row.source_pdf_url ? 'missing' : 'unchecked');
+  const hasPdfUrl = Boolean(row.source_pdf_url);
   return {
     ...row,
     blocked: Boolean(row.blocked),
     pdf_status: pdfStatus,
-    pdf_available: pdfStatus === 'available' && Boolean(row.source_pdf_url),
-    pdf_missing: pdfStatus !== 'available' || !row.source_pdf_url,
-    pdf_unchecked: pdfStatus === 'unchecked' && Boolean(row.source_pdf_url),
+    pdf_available: pdfStatus === 'available' && hasPdfUrl,
+    pdf_missing: pdfStatus === 'missing' || (!hasPdfUrl && pdfStatus !== 'unchecked'),
+    pdf_unchecked: pdfStatus === 'unchecked',
   };
 }
