@@ -24,7 +24,7 @@ The public book catalogue metadata is committed as `functions/_catalog.js` and i
 
 Private work state — assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key — remains runtime data in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
 
-Current catalogue denominator: **176 books**. **172** have direct PDF URLs. **4** have only ZIP/RAR archive packages and are therefore classified as **PDF missing** in the Workbench.
+Current catalogue denominator: **176 books**. The latest full HTTP/PDF audit verified **62 working direct PDFs** and classified **114 as missing/unusable**. A filename ending in `.pdf` is not enough; availability is based on an actual retrievable PDF response.
 
 ## Cloudflare Pages + D1
 
@@ -54,7 +54,7 @@ The shared capability URL is `https://<workbench-host>/#key=<long-random-secret>
 A URL that merely ends in `.pdf` is not considered available. Candidate URLs are validated server-side in small batches and persisted in D1 as `unchecked`, `available`, or `missing`.
 
 - The UI exposes an **Arabic PDF** button only for `available` files.
-- Verified files open through the Workbench's inline PDF proxy, avoiding flaky direct navigation to the legacy archive host.
+- Verified files open through the Workbench's inline PDF proxy, avoiding flaky direct navigation to the legacy archive host. The proxy forwards byte-range requests so Safari/iPhone can render and seek large PDFs inline.
 - HTTP 404/410 or a successful response that is not actually a PDF becomes `missing`.
 - Transient/rate-limit/server failures remain `unchecked` for later retry rather than being falsely labeled missing.
 - Editing a PDF URL resets it to `unchecked`.
