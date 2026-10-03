@@ -1,0 +1,43 @@
+name: Workbench PDF audit
+
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - "workbench/functions/_catalog.js"
+      - "workbench/functions/_pdf_candidates.js"
+      - "workbench/scripts/audit-pdfs.mjs"
+      - ".github/workflows/workbench-pdf-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workbench-pdf-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workbench
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Audit direct PDF candidates
+        run: node workbench/scripts/audit-pdfs.mjs
+      - name: Commit audit evidence
+        run: |
+          if git diff --quiet -- workbench/functions/_pdf_audit.js workbench/public/pdf-audit.json; then
+            echo "No audit changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workbench/functions/_pdf_audit.js workbench/public/pdf-audit.json
+          git commit -m "Workbench: refresh verified PDF availability"
+          git push origin HEAD:workbench
