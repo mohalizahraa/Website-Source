@@ -5,8 +5,24 @@ import { PDF_CANDIDATE_OVERRIDES } from '../functions/_pdf_candidates.js';
 const CONCURRENCY = 8;
 const TIMEOUT_MS = 20000;
 
-function candidateFor(book) {
-  return PDF_CANDIDATE_OVERRIDES[book.catalog_id]?.url || book.pdf_url || null;
+async function candidateFor(book) {
+  const override = PDF_CANDIDATE_OVERRIDES[book.catalog_id];
+  if (override?.url) return override.url;
+  if (override?.source_page) {
+    try {
+      const page = await fetch(override.source_page, {
+        redirect: 'follow',
+        headers: { 'user-agent': 'Mozilla/5.0 Haydari-Workbench-PDF-Discovery/1.0' },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (page.ok) {
+        const html = await page.text();
+        const matches = [...html.matchAll(/https:\/\/download\.almohsinlibrary\.com\/[^"'<>\\s]+?\.pdf(?:\?[^"'<>\\s]*)?/gi)];
+        if (matches.length) return matches[0][0].replaceAll('&amp;', '&');
+      }
+    } catch {}
+  }
+  return book.pdf_url || null;
 }
 
 async function verifyPdf(url) {
@@ -64,7 +80,7 @@ async function worker() {
     const i = cursor++;
     if (i >= BOOK_CATALOG.length) return;
     const book = BOOK_CATALOG[i];
-    const candidate = candidateFor(book);
+    const candidate = await candidateFor(book);
     const verified = await verifyPdf(candidate);
     results[book.catalog_id] = {
       title_ar: book.title_ar,
