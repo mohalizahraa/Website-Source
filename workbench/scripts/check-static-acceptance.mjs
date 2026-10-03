@@ -6,11 +6,12 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const [catalogSource, coverMap, pdfAudit, appSource] = await Promise.all([
+const [catalogSource, coverMap, pdfAudit, appSource, indexSource] = await Promise.all([
   fs.readFile(new URL('functions/_catalog.js', root), 'utf8'),
   fs.readFile(new URL('public/cover-map.json', root), 'utf8').then(JSON.parse),
   fs.readFile(new URL('public/pdf-audit.json', root), 'utf8').then(JSON.parse),
   fs.readFile(new URL('public/app.js', root), 'utf8'),
+  fs.readFile(new URL('public/index.html', root), 'utf8'),
 ]);
 
 const marker = 'export const BOOK_CATALOG = ';
@@ -66,5 +67,9 @@ for (const id of expectedMissing) assert(actualMissing.has(id), `Expected missin
 
 assert(appSource.includes('function localDateKey(date = new Date())'), 'Recipient-local date helper is missing.');
 assert(!appSource.includes("const today = new Date().toISOString().slice(0,10);"), 'UTC deadline boundary regression detected.');
+assert(appSource.includes('function startWorkOnBook(id)'), 'Work on Book behavior is missing.');
+assert(appSource.includes('data-work-on-book'), 'Work on Book action is missing from project rendering.');
+assert(appSource.includes("function sortProjects(projects, sort='updated')"), 'Projects sorting behavior is missing.');
+assert(indexSource.includes('id="sort-projects"'), 'Projects sort control is missing.');
 
 console.log('Workbench static acceptance passed: 176 books, 10 topics, 176 covers, 172 available PDFs, 4 missing, 0 unchecked.');

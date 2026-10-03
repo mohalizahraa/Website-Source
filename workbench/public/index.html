@@ -78,6 +78,14 @@
             <select id="filter-assignee"><option value="">All people</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
             <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
             <select id="filter-schedule"><option value="">Any schedule</option><option value="overdue">Overdue</option><option value="due_month">Due this month</option><option value="no_deadline">No deadline</option></select>
+            <select id="sort-projects" aria-label="Sort projects">
+              <option value="updated">Sort: Recently updated</option>
+              <option value="deadline">Sort: Deadline (soonest)</option>
+              <option value="title">Sort: Title</option>
+              <option value="status">Sort: Status</option>
+              <option value="assignee">Sort: Assignee</option>
+              <option value="topic">Sort: Topic</option>
+            </select>
             <label class="check"><input id="filter-blocked" type="checkbox" /> Blocked only</label>
             <label class="check"><input id="filter-missing-pdf" type="checkbox" /> Missing PDF only</label>
             <label class="check"><input id="filter-missing-cover" type="checkbox" /> Missing cover only</label>

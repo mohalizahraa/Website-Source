@@ -7,6 +7,7 @@ const STATUS = {
 };
 const STATUS_ORDER = Object.keys(STATUS);
 const ASSIGNEES = ['Zahraa','Mohammed','Both','Unassigned'];
+const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', numeric:true });
 const savedActor = localStorage.getItem('haydariActor');
 const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
 
@@ -110,6 +111,9 @@ function googleDocLinkMarkup(p) {
     ? `<a class="mini-link secondary-link english-book-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">English Book</a>`
     : `<button class="mini-link secondary-link english-book-button" type="button" data-link-english="${p.id}">English Book · link</button>`;
 }
+function workOnBookMarkup(p) {
+  return `<button class="mini-link work-on-book" type="button" data-work-on-book="${p.id}">Work on Book</button>`;
+}
 function quickControlsMarkup(p, compact=false) {
   return `<div class="quick-controls ${compact ? 'compact-quick-controls' : ''}">
     <label class="quick-field"><span>Assigned</span><select class="quick-assignee" data-project-id="${p.id}" draggable="false" aria-label="Assign ${escapeHtml(p.title_ar)}">${assigneeOptions(p.assignee)}</select></label>
@@ -168,19 +172,41 @@ function syncTopicFilter() {
   if ([...select.options].some(o=>o.value===previous)) select.value=previous;
 }
 
+function sortProjects(projects, sort='updated') {
+  const list=[...projects];
+  const titleCompare=(a,b)=>TITLE_COLLATOR.compare(a.title_ar || a.title_en || '', b.title_ar || b.title_en || '') || Number(a.id)-Number(b.id);
+  const updatedTime=p=>parseDateTime(p.updated_at)?.getTime() || 0;
+  const assigneeRank=p=>Math.max(0,ASSIGNEES.indexOf(p.assignee));
+  const statusRank=p=>Math.max(0,STATUS_ORDER.indexOf(p.status));
+  list.sort((a,b)=>{
+    if (sort === 'deadline') {
+      const aDue=a.due_date || '9999-12-31';
+      const bDue=b.due_date || '9999-12-31';
+      return aDue.localeCompare(bDue) || titleCompare(a,b);
+    }
+    if (sort === 'title') return titleCompare(a,b);
+    if (sort === 'status') return statusRank(a)-statusRank(b) || titleCompare(a,b);
+    if (sort === 'assignee') return assigneeRank(a)-assigneeRank(b) || titleCompare(a,b);
+    if (sort === 'topic') return String(a.topic_en || '').localeCompare(String(b.topic_en || '')) || titleCompare(a,b);
+    return updatedTime(b)-updatedTime(a) || titleCompare(a,b);
+  });
+  return list;
+}
+
 function filteredProjects() {
   const q = els.search.value.trim().toLowerCase();
   const topic = $('filter-topic')?.value || '';
   const assignee = $('filter-assignee')?.value || '';
   const status = $('filter-status')?.value || '';
   const schedule = $('filter-schedule')?.value || '';
+  const sort = $('sort-projects')?.value || 'updated';
   const blocked = $('filter-blocked')?.checked || false;
   const missingPdf = $('filter-missing-pdf')?.checked || false;
   const missingCover = $('filter-missing-cover')?.checked || false;
   const noEnglish = $('filter-no-english')?.checked || false;
   const today = localDateKey();
   const thisMonth = today.slice(0,7);
-  return state.projects.filter(p => {
+  const filtered = state.projects.filter(p => {
     const text = `${p.title_ar} ${p.title_en || ''} ${p.translit || ''} ${p.author || ''} ${p.author_ar || ''} ${p.category || ''} ${p.topic_en || ''} ${p.topic_ar || ''}`.toLowerCase();
     const scheduleMatch = !schedule
       || (schedule === 'overdue' && p.due_date && p.due_date < today && !isDone(p))
@@ -196,6 +222,7 @@ function filteredProjects() {
       && (!missingCover || !hasCover(p))
       && (!noEnglish || !p.google_doc_url);
   });
+  return sortProjects(filtered, sort);
 }
 
 function projectMarkup(p, compact=false, selectable=false) {
@@ -211,6 +238,7 @@ function projectMarkup(p, compact=false, selectable=false) {
         ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
       </div>
       <div class="entry-actions compact-actions">
+        ${workOnBookMarkup(p)}
         ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}
         ${googleDocLinkMarkup(p)}
       </div>
@@ -231,6 +259,7 @@ function projectMarkup(p, compact=false, selectable=false) {
       ${p.translit ? `<div class="title-translit">${escapeHtml(p.translit)}</div>` : ''}
       ${p.author || p.author_ar ? `<div class="author-row">${p.author ? `<span>${escapeHtml(p.author)}</span>` : ''}${p.author_ar ? `<span class="author-ar">${escapeHtml(p.author_ar)}</span>` : ''}</div>` : ''}
       <div class="entry-actions">
+        ${workOnBookMarkup(p)}
         ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : (p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : '<span class="pill">PDF checking…</span>')}
         ${googleDocLinkMarkup(p)}
       </div>
@@ -258,7 +287,26 @@ function bindProjectClicks(root=document) {
   bindQuickActions(root);
 }
 
+function startWorkOnBook(id) {
+  const project=state.projects.find(p=>p.id===id);
+  if (!project) return;
+  if (!project.google_doc_url) {
+    openEnglishBookDialog(id);
+    toast('Link the English Book first');
+    return;
+  }
+  if (project.pdf_available) {
+    const pdfWindow=window.open(`/api/pdf/${project.id}`,'_blank');
+    if (pdfWindow) pdfWindow.opener=null;
+  }
+  window.location.assign(project.google_doc_url);
+}
+
 function bindQuickActions(root=document) {
+  root.querySelectorAll('[data-work-on-book]').forEach(button => button.addEventListener('click', event => {
+    event.stopPropagation();
+    startWorkOnBook(Number(button.dataset.workOnBook));
+  }));
   root.querySelectorAll('.quick-assignee').forEach(select => select.addEventListener('change', async event => {
     event.stopPropagation();
     const id = Number(select.dataset.projectId);
@@ -853,7 +901,7 @@ document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click'
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
 els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
 els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorage.setItem('haydariActor',state.actor);});
-['filter-topic','filter-assignee','filter-status','filter-schedule','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+['filter-topic','filter-assignee','filter-status','filter-schedule','sort-projects','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('new-project').addEventListener('click',()=>openProject(null));
 $('select-visible').addEventListener('change',()=>{
   const visible=filteredProjects();
