@@ -136,14 +136,6 @@ export function actorFromRequest(request) {
   return ['Zahraa', 'Mohammed', 'Brother'].includes(actor) ? actor : 'Unknown';
 }
 
-export function requireAccess(context) {
-  const expected = context.env.WORKBENCH_ACCESS_TOKEN;
-  if (!expected) return json({ error: 'Workbench access secret is not configured.' }, 503);
-  const supplied = context.request.headers.get('x-workbench-key') || '';
-  if (supplied !== expected) return json({ error: 'Not authorized.' }, 401);
-  return null;
-}
-
 export async function recordActivity(db, projectId, actor, action, before, after) {
   await db.prepare(
     `INSERT INTO activity (project_id, actor, action, before_json, after_json)
