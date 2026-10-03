@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T20:38:44.951Z",
+  "generated_at": "2026-10-03T20:44:04.586Z",
   "covers": {
     "book-4": {
       "source_url": "https://alhaydari.com/ar/files/2019/10/x020.jpg.pagespeed.ic.3BgK09VSbH.jpg"
@@ -544,6 +544,11 @@
       "source_url": "https://alhaydari.com/ar/files/2012/09/x01.jpg.pagespeed.ic.CHKlcjQcmu.jpg",
       "provenance": "official-series-cover",
       "source_book": "book-128"
+    },
+    "book-70": {
+      "source_url": "https://alhaydari.com/ar/files/2015/11/mizan.jpg",
+      "provenance": "official-announcement-cover",
+      "source_page": "https://alhaydari.com/ar/2015/11/56854/"
     }
   }
 }
