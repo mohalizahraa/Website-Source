@@ -1,4 +1,4 @@
-import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, requireAccess, validIsoDate } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate } from '../../_lib.js';
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url','cover_url',
@@ -14,8 +14,6 @@ function idFrom(context) {
 }
 
 export async function onRequestGet(context) {
-  const denied = requireAccess(context);
-  if (denied) return denied;
   await ensureCatalog(context.env.DB);
   const id = idFrom(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
@@ -24,8 +22,6 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPatch(context) {
-  const denied = requireAccess(context);
-  if (denied) return denied;
   await ensureCatalog(context.env.DB);
   const id = idFrom(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
