@@ -24,7 +24,15 @@ The public book catalogue metadata is committed as `functions/_catalog.js` and i
 
 Private work state — assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key — remains runtime data in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
 
-Current catalogue denominator: **176 books**. The latest full HTTP/PDF audit verified **62 working direct PDFs** and classified **114 as missing/unusable**. A filename ending in `.pdf` is not enough; availability is based on an actual retrievable PDF response.
+Current catalogue denominator: **176 books**. The last completed baseline HTTP/PDF audit verified **62 working direct PDFs** and classified **114 as missing/unusable**. That baseline now predates the active stale-link recovery: **110 of those 114 records have evidence-backed replacement direct-PDF candidates queued for a fresh byte-level audit**. Until that audit completes, do not promote the candidate count into the verified-available denominator.
+
+Four records currently have no direct-PDF candidate after the recovery pass:
+- `book-4` — *موسوعة الإمامة في الفكر الشيعي*: the official archive exposes a RAR package for the 12-volume collection rather than one direct PDF.
+- `book-23` — *موسوعة شرح نهاية الحكمة*: the official archive exposes a ZIP package for the 12-volume umbrella record; the individual volumes are represented separately.
+- `book-43` — *موسوعة شرح حلقات الأصول*: the official archive exposes a ZIP package for the umbrella record; constituent works are represented separately.
+- `book-32` — *قراءات في المنظومة المعرفية للسيد كمال الحيدري – ج 2*: the official direct-PDF target currently returns 404 and no verified alternate direct PDF has been recovered.
+
+A filename ending in `.pdf` is not enough; availability is based on an actual retrievable PDF response. Transient fetch/server ambiguity is `unchecked`, not `missing`.
 
 ## Cloudflare Pages + D1
 
