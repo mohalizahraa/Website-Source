@@ -8,7 +8,7 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - No account/login/password UI.
 - The deployed Workbench URL opens the shared workspace directly; there is no private-link/capability-key gate.
 - Either collaborator may edit or reassign any project. Assignee is organizational metadata, not an ACL.
-- Device identity is selected as `Zahraa` or `Mohammed` and is used only for activity attribution.
+- Device identity is selected as `Zahraa` or `Mohammed`. It is used for activity attribution **and** to personalize the Dashboard's **My assigned projects** surface; `Both` assignments appear for either collaborator.
 - Workflow statuses: **Not Started → Translating → Needs Formatting → Needs Review → Publish Ready**. **Published** is tracked separately.
 - The Workbench preserves the archive's parchment / paper / oxblood / gold / sage visual language and Amiri + EB Garamond typography.
 - The primary Arabic-source action must open the direct PDF file. A catalogue detail/download page is never labeled as the Arabic PDF.
@@ -21,11 +21,11 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - `blocked` is a separate flag, not a status.
 
 - Assignment can be changed inline on a book: Zahraa / Mohammed / Both / Unassigned.
-- Deadlines can be set or cleared inline and are reflected in Timeline.
+- Start dates and deadlines can be set or cleared and are reflected automatically in a real horizontal Timeline: ranges span start→deadline, single-date projects render as milestones, overdue work is visually distinct, and undated active work remains in a separate section.
 - Every book always exposes an **English Book** action. If no translation Doc is linked yet, the action opens the linking flow; once linked, the same action opens that Google Doc.
 - Every book exposes a primary **Work on Book** action. If the English Book is not linked yet it opens the existing linking flow and automatically continues into the working materials after the link is saved; once linked, it opens the English Book and, when a verified Arabic PDF exists, opens that PDF alongside it.
 - Book covers use an automatic official-cover map plus a per-project cover override.
-- Stats use real project completion timestamps for translated/published counts, pace, finish projection, progress-by-person, deadline summaries, and a cumulative progress graph.
+- Stats use live project state and real completion/publication timestamps for translated/published counts, pace, finish projection, progress-by-person, deadline summaries, and a cumulative progress graph. Every successful project/status mutation reloads shared state and re-renders Stats automatically; moving a book to **Publish Ready** updates translation counts without falsely marking it Published.
 - Projects can be filtered by the Sayyid site's own ten subject categories: Qurʾānic Exegesis and Sciences, Theology and Doctrine, Mysticism, Ethics and Education, Jurisprudence, Principles of Jurisprudence, Epistemology, Philosophy, Logic, and Thought/Culture/Biography.
 - Projects also support overdue/due-this-month/no-deadline, missing-cover, and missing-English-Book filters plus multi-select batch assignment/status/deadline edits.
 - Projects can be sorted by recently updated, deadline, title, lifecycle status, assignee, or topic without changing the underlying project state. The chosen sort is remembered locally on that device.
@@ -110,3 +110,9 @@ Do not infer series membership merely from similar titles or from `volumes > 1`;
 ### Official-site series correction — 2026-10-03
 
 A second official-site sweep recovered the seven-book **مفاهيم قرآنية، عقائدية، أخلاقية** series. The official archive numbers the current catalogue members 1–7, from **الاسم الأعظم حقيقته ومظاهره** through **أولويات منهجية في فهم المعارف الدينية**. These records must not appear as standalones.
+
+## Personalized workspace + modern UI floor — 2026-10-03
+
+- The Dashboard no longer shows a generic **Recently updated** list. It shows **My assigned projects** for the selected **Using as** identity, including projects assigned to `Both`, and exposes every matching book rather than truncating the list.
+- Projects offers a **My assignments** filter whose meaning follows the current **Using as** identity.
+- The visual system uses contemporary component treatment (intentional selects/inputs, larger radii, focus states, quieter surfaces, modern dialogs/cards) while preserving the parchment / editorial / archival identity. Browser-default or form-era chrome is not an acceptable final visual state.

@@ -193,6 +193,7 @@ function filteredProjects() {
   const q = els.search.value.trim().toLowerCase();
   const topic = $('filter-topic')?.value || '';
   const assignee = $('filter-assignee')?.value || '';
+  const assigneeMatch = p => !assignee || (assignee === '__mine__' ? (p.assignee === state.actor || p.assignee === 'Both') : p.assignee === assignee);
   const status = $('filter-status')?.value || '';
   const schedule = $('filter-schedule')?.value || '';
   const sort = $('sort-projects')?.value || state.projectSort || 'updated';
@@ -210,7 +211,7 @@ function filteredProjects() {
       || (schedule === 'no_deadline' && !p.due_date && !isPublishReady(p));
     return (!q || text.includes(q))
       && (!topic || p.topic_en === topic)
-      && (!assignee || p.assignee === assignee)
+      && assigneeMatch(p)
       && (!status || p.status === status)
       && scheduleMatch
       && (!blocked || p.blocked)
@@ -408,6 +409,27 @@ function paceModel() {
   };
 }
 
+function assignedProjectMarkup(p) {
+  const due = p.due_date ? dateText(p.due_date) : 'No deadline';
+  return `<article class="assigned-card" data-project-id="${p.id}">
+    <div class="assigned-cover">${coverMarkup(p,true)}</div>
+    <div class="assigned-body">
+      <div class="assigned-topline">
+        <span class="pill status-${p.status}">${STATUS[p.status]}</span>
+        ${p.published ? '<span class="pill">Published</span>' : ''}
+      </div>
+      <div class="title-ar">${escapeHtml(p.title_ar)}</div>
+      ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
+      <div class="assigned-meta">${escapeHtml(due)}${p.assignee === 'Both' ? ' · Shared' : ''}</div>
+      <div class="entry-actions assigned-actions">
+        ${workOnBookMarkup(p)}
+        ${googleDocLinkMarkup(p)}
+        ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}
+      </div>
+    </div>
+  </article>`;
+}
+
 function renderDashboard() {
   const model = paceModel();
   const {total,translated,published} = model;
@@ -442,9 +464,14 @@ function renderDashboard() {
     <div class="pace-number"><strong>${model.pace30 >= 2 ? model.pace30.toFixed(model.pace30>=10?0:1) : '—'}</strong><span>books / 30 days</span></div>
     <div class="pace-copy"><strong>${escapeHtml(forecast)}</strong><span>${model.pace30 >= 2 ? `Based on ${model.basis}; ${model.remaining} books remain.` : `${model.remaining} books remain.`}</span></div>`;
 
-  const recent = [...state.projects].sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at))).slice(0,6);
-  $('recent-projects').innerHTML = recent.map(p=>projectMarkup(p)).join('') || '<p class="muted">No projects yet.</p>';
-  bindProjectClicks($('recent-projects'));
+  const assigned = sortProjects(
+    state.projects.filter(p => p.assignee === state.actor || p.assignee === 'Both'),
+    'title'
+  );
+  $('my-projects-title').textContent = `${state.actor}'s assigned projects`;
+  $('my-projects-count').textContent = `${assigned.length} book${assigned.length===1?'':'s'}`;
+  $('my-projects').innerHTML = assigned.map(assignedProjectMarkup).join('') || `<div class="assigned-empty">No books are assigned to ${escapeHtml(state.actor)} yet.</div>`;
+  bindProjectClicks($('my-projects'));
 }
 
 function renderBatchToolbar() {
@@ -612,16 +639,82 @@ function bindBoardDrag() {
   });
 }
 
+function timelineDay(value) {
+  if (!value) return null;
+  const parts=String(value).split('-').map(Number);
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+  return Math.floor(Date.UTC(parts[0],parts[1]-1,parts[2])/86400000);
+}
+function timelineDate(day) { return new Date(day*86400000); }
+function timelineMonths(minDay,maxDay) {
+  const segments=[];
+  let cursor=new Date(timelineDate(minDay));
+  cursor.setUTCDate(1);
+  while (Math.floor(cursor.getTime()/86400000) <= maxDay) {
+    const start=Math.max(minDay,Math.floor(cursor.getTime()/86400000));
+    const next=new Date(cursor); next.setUTCMonth(next.getUTCMonth()+1);
+    const end=Math.min(maxDay+1,Math.floor(next.getTime()/86400000));
+    if (end>start) segments.push({label:cursor.toLocaleDateString(undefined,{month:'short',year:'numeric',timeZone:'UTC'}),start,end});
+    cursor=next;
+  }
+  return segments;
+}
 function renderTimeline() {
-  const scheduled = state.projects.filter(p => p.due_date).sort((a,b) => a.due_date.localeCompare(b.due_date));
-  const unscheduled = state.projects.filter(p => !p.due_date && !isPublishReady(p));
-  const today = localDateKey();
-  const row = p => {
-    const overdue = p.due_date && p.due_date < today && !isPublishReady(p);
-    return `<article class="timeline-row" data-project-id="${p.id}"><div class="timeline-date ${overdue ? 'overdue' : ''}">${p.due_date ? dateText(p.due_date) : 'No deadline'}</div><div><div class="title-ar">${escapeHtml(p.title_ar)}</div><div class="timeline-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span>${overdue ? '<span class="pill blocked">Overdue</span>' : ''}</div><div class="entry-actions timeline-actions">${googleDocLinkMarkup(p)}${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}</div>${quickControlsMarkup(p,true)}</div></article>`;
-  };
-  $('timeline-list').innerHTML = scheduled.map(row).join('') + (unscheduled.length ? `<div class="timeline-divider">Unscheduled</div>${unscheduled.map(row).join('')}` : '') || '<p class="muted">No projects yet.</p>';
-  bindProjectClicks($('timeline-list'));
+  const dated=state.projects.filter(p=>p.start_date || p.due_date);
+  const unscheduled=state.projects.filter(p=>!p.start_date && !p.due_date && !isPublishReady(p));
+  const todayKey=localDateKey();
+  const today=timelineDay(todayKey);
+  if (!dated.length) {
+    $('timeline-visual').innerHTML='<div class="timeline-empty">Add a start date or deadline to place a book on the timeline.</div>';
+  } else {
+    const points=[today];
+    dated.forEach(p=>{
+      const s=timelineDay(p.start_date), d=timelineDay(p.due_date);
+      if (s!==null) points.push(s);
+      if (d!==null) points.push(d);
+    });
+    const minDay=Math.min(...points)-7;
+    const maxDay=Math.max(...points)+14;
+    const span=Math.max(1,maxDay-minDay);
+    const trackWidth=Math.max(900,Math.min(2800,span*9));
+    const px=day=>((day-minDay)/span)*trackWidth;
+    const monthMarkup=timelineMonths(minDay,maxDay).map(m=>{
+      const left=px(m.start), width=Math.max(1,px(m.end)-left);
+      return `<div class="timeline-month" style="left:${left}px;width:${width}px">${escapeHtml(m.label)}</div>`;
+    }).join('');
+    const todayLeft=px(today);
+    const sorted=[...dated].sort((a,b)=>(a.due_date||a.start_date||'9999').localeCompare(b.due_date||b.start_date||'9999'));
+    const rows=sorted.map(p=>{
+      const start=timelineDay(p.start_date || p.due_date);
+      const end=timelineDay(p.due_date || p.start_date);
+      const left=px(start);
+      const width=Math.max(12,px(Math.max(start+1,end+1))-left);
+      const milestone=!p.start_date || !p.due_date || start===end;
+      const overdue=Boolean(p.due_date && p.due_date < todayKey && !isPublishReady(p));
+      const barTitle=p.start_date && p.due_date && p.start_date!==p.due_date
+        ? `${dateText(p.start_date)} → ${dateText(p.due_date)}`
+        : (p.due_date ? `Due ${dateText(p.due_date)}` : `Starts ${dateText(p.start_date)}`);
+      return `<div class="timeline-lane" data-project-id="${p.id}">
+        <div class="timeline-label">
+          <div class="timeline-label-title" dir="rtl">${escapeHtml(p.title_ar)}</div>
+          <div class="timeline-label-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span><span>${escapeHtml(barTitle)}</span></div>
+        </div>
+        <div class="timeline-track" style="width:${trackWidth}px">
+          <div class="timeline-today" style="left:${todayLeft}px"></div>
+          <button class="timeline-bar ${milestone?'milestone':''} ${overdue?'overdue':''}" type="button" data-project-id="${p.id}" style="left:${left}px;width:${width}px" title="${escapeHtml(barTitle)}"><span>${escapeHtml(p.title_en || p.title_ar)}</span></button>
+        </div>
+      </div>`;
+    }).join('');
+    $('timeline-visual').innerHTML=`<div class="timeline-scroll"><div class="timeline-canvas" style="--timeline-track-width:${trackWidth}px">
+      <div class="timeline-axis"><div class="timeline-axis-label">Projects</div><div class="timeline-months" style="width:${trackWidth}px">${monthMarkup}<div class="timeline-today axis" style="left:${todayLeft}px"><span>Today</span></div></div></div>
+      ${rows}
+    </div></div>`;
+  }
+  $('timeline-unscheduled').innerHTML=unscheduled.length
+    ? `<div class="timeline-unscheduled-head"><span>Without dates</span><strong>${unscheduled.length}</strong></div><div class="timeline-unscheduled-grid">${unscheduled.map(assignedProjectMarkup).join('')}</div>`
+    : '';
+  bindProjectClicks($('timeline-visual'));
+  bindProjectClicks($('timeline-unscheduled'));
 }
 
 function renderStats() {
@@ -999,8 +1092,18 @@ async function init() {
 
 document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view)));
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
+$('view-my-projects')?.addEventListener('click',()=>{
+  $('filter-assignee').value='__mine__';
+  setView('projects');
+  renderProjects();
+});
 els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
-els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorage.setItem('haydariActor',state.actor);});
+els.actor.addEventListener('change',()=>{
+  state.actor=els.actor.value;
+  localStorage.setItem('haydariActor',state.actor);
+  renderDashboard();
+  if ($('filter-assignee')?.value === '__mine__') renderProjects();
+});
 ['filter-topic','filter-assignee','filter-status','filter-schedule','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('sort-projects')?.addEventListener('change',()=>{state.projectSort=$('sort-projects').value;localStorage.setItem('haydariProjectSort',state.projectSort);renderProjects();});
 $('group-projects')?.addEventListener('change',()=>{state.projectGrouping=$('group-projects').value;localStorage.setItem('haydariProjectGrouping',state.projectGrouping);renderProjects();});

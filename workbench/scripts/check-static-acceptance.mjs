@@ -79,6 +79,14 @@ assert(appSource.includes('openEnglishBookDialog(id,true)'), 'Work on Book auto-
 assert(appSource.includes('reservedPdfWindow'), 'Work on Book post-link popup-safe continuation is missing.');
 assert(appSource.includes('function clearProjectFilters()'), 'Clear filters behavior is missing.');
 assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters control is missing.');
+assert(indexSource.includes('id="my-projects"') && indexSource.includes('id="my-projects-count"'), 'Personal assigned-project dashboard is missing.');
+assert(appSource.includes("p.assignee === state.actor || p.assignee === 'Both'"), 'Actor-scoped assignment logic is missing.');
+assert(indexSource.includes('value="__mine__">My assignments'), 'My assignments filter is missing.');
+assert(appSource.includes("if ($('filter-assignee')?.value === '__mine__') renderProjects();"), 'Actor changes do not refresh My assignments filtering.');
+assert(indexSource.includes('id="timeline-visual"') && indexSource.includes('id="timeline-unscheduled"'), 'Real timeline surface is missing.');
+assert(appSource.includes('function timelineMonths(minDay,maxDay)') && appSource.includes('timeline-bar'), 'Time-axis renderer is missing.');
+assert(appSource.includes('function render() { renderDashboard(); renderProjects(); renderBoard(); renderTimeline(); renderStats();'), 'Central render no longer refreshes Stats.');
+assert(appSource.includes("els.dialog.close(); await loadData();"), 'Project save does not reload live state after mutation.');
 assert(indexSource.includes('id="group-projects"'), 'Series grouping control is missing.');
 assert(appSource.includes('function seriesGroupedMarkup(list)'), 'Series grouping renderer is missing.');
 assert(appSource.includes("localStorage.setItem('haydariProjectGrouping'"), 'Series grouping preference is not remembered.');
