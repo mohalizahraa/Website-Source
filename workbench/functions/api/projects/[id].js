@@ -19,7 +19,7 @@ export async function onRequestGet(context) {
   await ensureCatalog(context.env.DB);
   const id = idFrom(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
-  const row = await context.env.DB.prepare('SELECT * FROM projects WHERE id = ?').bind(id).first();
+  const row = await context.env.DB.prepare('SELECT p.*, EXISTS(SELECT 1 FROM project_covers c WHERE c.project_id=p.id) AS has_uploaded_cover FROM projects p WHERE p.id = ?').bind(id).first();
   return row ? json({ project: normalizeProject(row) }) : json({ error: 'Project not found.' }, 404);
 }
 
