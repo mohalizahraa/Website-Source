@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { BOOK_CATALOG } from '../functions/_catalog.js';
 
 const OUT = new URL('../public/covers/', import.meta.url);
@@ -6,6 +6,12 @@ const TIMEOUT_MS = 20000;
 const CONCURRENCY = 8;
 
 await mkdir(OUT, { recursive: true });
+
+let existingMap = {};
+try {
+  const parsed = JSON.parse(await readFile(new URL('../public/cover-map.json', import.meta.url), 'utf8'));
+  existingMap = parsed.covers || {};
+} catch {}
 
 function htmlDecode(value='') {
   return value
@@ -164,7 +170,7 @@ for (const [id, item] of Object.entries(discovered)) {
   ids.push(id); bySource.set(key, ids);
 }
 
-const map = {};
+const map = { ...existingMap };
 for (const [id, item] of Object.entries(discovered)) {
   const key = item.source_url.replace(/\?.*$/, '');
   if ((bySource.get(key) || []).length >= 3) continue; // repeated theme/logo image, not a book-specific cover
@@ -175,4 +181,4 @@ for (const [id, item] of Object.entries(discovered)) {
 }
 
 await writeFile(new URL('../public/cover-map.json', import.meta.url), JSON.stringify({generated_at:new Date().toISOString(),covers:map}, null, 2)+'\n');
-console.log(`Saved ${Object.keys(map).length} unique official cover images.`);
+console.log(`Cover map now contains ${Object.keys(map).length} official cover mappings (${Object.keys(discovered).length} discovered this run).`);
