@@ -67,12 +67,17 @@ function projectMarkup(p, compact=false) {
     <span class="pill assignee-pill">${escapeHtml(p.assignee)}</span>
     <span class="pill status-${p.status}">${STATUS[p.status]}</span>
     ${p.blocked ? `<span class="pill blocked">Blocked</span>` : ''}
+    ${p.google_doc_url ? `<a class="mini-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">Google Doc</a>` : ''}
+    ${p.source_pdf_url ? `<a class="mini-link" href="${escapeHtml(p.source_pdf_url)}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}
     ${compact ? `</div>` : `<span class="due">${dateText(p.due_date)}</span>`}
   </article>`;
 }
 
 function bindProjectClicks(root=document) {
-  root.querySelectorAll('[data-project-id]').forEach(el => el.addEventListener('click', () => openProject(Number(el.dataset.projectId))));
+  root.querySelectorAll('[data-project-id]').forEach(el => el.addEventListener('click', event => {
+    if (event.target.closest('a')) return;
+    openProject(Number(el.dataset.projectId));
+  }));
 }
 
 function renderDashboard() {
@@ -160,18 +165,30 @@ function bindBoardDrag() {
   });
 }
 
+function renderTimeline() {
+  const scheduled = state.projects.filter(p => p.due_date).sort((a,b) => a.due_date.localeCompare(b.due_date));
+  const unscheduled = state.projects.filter(p => !p.due_date && !['completed','published'].includes(p.status));
+  const today = new Date().toISOString().slice(0,10);
+  const row = p => {
+    const overdue = p.due_date && p.due_date < today && !['completed','published'].includes(p.status);
+    return `<article class="timeline-row" data-project-id="${p.id}"><div class="timeline-date ${overdue ? 'overdue' : ''}">${p.due_date ? dateText(p.due_date) : 'No deadline'}</div><div><div class="title-ar">${escapeHtml(p.title_ar)}</div><div class="timeline-meta"><span class="pill">${escapeHtml(p.assignee)}</span><span class="pill status-${p.status}">${STATUS[p.status]}</span>${overdue ? '<span class="pill blocked">Overdue</span>' : ''}</div></div></article>`;
+  };
+  $('timeline-list').innerHTML = scheduled.map(row).join('') + (unscheduled.length ? `<div class="timeline-divider">Unscheduled</div>${unscheduled.map(row).join('')}` : '') || '<p class="muted">No projects yet.</p>';
+  bindProjectClicks($('timeline-list'));
+}
+
 function renderActivity() {
   $('activity-list').innerHTML = state.activity.map(a => `<div class="activity-item"><time>${new Date(a.created_at.replace(' ','T')+'Z').toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${new Date(a.created_at.replace(' ','T')+'Z').toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`).join('') || '<p class="muted">No activity yet.</p>';
 }
 
-function render() { renderDashboard(); renderProjects(); renderBoard(); renderActivity(); }
+function render() { renderDashboard(); renderProjects(); renderBoard(); renderTimeline(); renderActivity(); }
 
 function setView(view) {
   state.view = view;
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active-view'));
   $(`${view}-view`).classList.add('active-view');
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active', x.dataset.view===view));
-  els.title.textContent = ({dashboard:'Dashboard',projects:'Projects',board:'Board',activity:'Activity'})[view];
+  els.title.textContent = ({dashboard:'Dashboard',projects:'Projects',board:'Board',timeline:'Timeline',activity:'Activity'})[view];
 }
 
 function openProject(id) {
@@ -183,6 +200,7 @@ function openProject(id) {
   $('assignee').value = p?.assignee || 'Unassigned';
   $('status').value = p?.status || 'not_started';
   $('priority').value = p?.priority || 'normal';
+  $('start-date').value = p?.start_date || '';
   $('due-date').value = p?.due_date || '';
   $('google-doc-url').value = p?.google_doc_url || '';
   $('source-url').value = p?.source_url || '';
@@ -190,6 +208,10 @@ function openProject(id) {
   $('blocked').checked = Boolean(p?.blocked);
   $('blocker-reason').value = p?.blocker_reason || '';
   $('notes').value = p?.notes || '';
+  const meta = [];
+  if (p?.completed_at) meta.push(`Completed ${new Date(p.completed_at).toLocaleDateString()}${p.completed_by ? ` by ${escapeHtml(p.completed_by)}` : ''}`);
+  if (p?.published_at) meta.push(`Published ${new Date(p.published_at).toLocaleDateString()}${p.published_by ? ` by ${escapeHtml(p.published_by)}` : ''}`);
+  $('completion-meta').innerHTML = meta.map(x => `<span>${x}</span>`).join('');
   els.dialog.showModal();
 }
 
@@ -198,7 +220,7 @@ async function saveProject(event) {
   const id = Number(Q$(project-id').value) || null;
   const payload = {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
-    status: $('status').value, priority: $('priority').value, due_date: $('due-date').value,
+    status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
     google_doc_url: $('google-doc-url').value.trim(), source_url: $('source-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
   };
