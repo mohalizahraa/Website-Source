@@ -8,7 +8,7 @@ const STATUS = {
 const STATUS_ORDER = Object.keys(STATUS);
 const ASSIGNEES = ['Zahraa','Mohammed','Both','Unassigned'];
 const savedActor = localStorage.getItem('haydariActor');
-const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
+const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -66,6 +66,24 @@ function parseDateTime(value) {
 }
 function isDone(p) { return ['completed','published'].includes(p.status); }
 function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || imported?.source_url || ''; }
+function hasCover(p) { return Boolean(p?.has_uploaded_cover || coverFor(p)); }
+function monthKey(value) { return String(value || '').slice(0,7); }
+function median(values) {
+  const sorted=values.filter(Number.isFinite).sort((a,b)=>a-b);
+  if (!sorted.length) return 400;
+  const mid=Math.floor(sorted.length/2);
+  return sorted.length%2 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
+}
+function looksLikeIndexedVolume(p) {
+  return /(?:^|[\s,(])(?:ج|جزء|vol(?:ume)?\.?|part)\s*\(?\d+/iu.test(`${p?.title_ar || ''} ${p?.title_en || ''}`);
+}
+function estimatedPages(p, fallbackPages) {
+  const pages=Number(p?.pages);
+  if (Number.isFinite(pages) && pages > 0) return pages;
+  const volumes=Number(p?.volumes);
+  if (Number.isFinite(volumes) && volumes > 1 && !looksLikeIndexedVolume(p)) return fallbackPages * volumes;
+  return fallbackPages;
+}
 function assigneeOptions(current) { return ASSIGNEES.map(name => `<option value="${name}" ${current===name?'selected':''}>${name}</option>`).join(''); }
 function coverMarkup(p, compact=false) {
   const cached = state.coverObjectUrls.get(p.id) || '';
@@ -125,23 +143,51 @@ function hydrateUploadedCovers(root=document) {
   ids.forEach(id => ensureUploadedCover(id));
 }
 
+function syncTopicFilter() {
+  const select=$('filter-topic');
+  if (!select) return;
+  const previous=select.value;
+  const topics=[...new Map(state.projects
+    .filter(p=>p.topic_en)
+    .map(p=>[p.topic_en,{en:p.topic_en,ar:p.topic_ar || ''}])).values()]
+    .sort((a,b)=>a.en.localeCompare(b.en));
+  select.innerHTML='<option value="">All topics</option>'+topics.map(t =>
+    `<option value="${escapeHtml(t.en)}">${escapeHtml(t.en)}${t.ar ? ` — ${escapeHtml(t.ar)}` : ''}</option>`
+  ).join('');
+  if ([...select.options].some(o=>o.value===previous)) select.value=previous;
+}
+
 function filteredProjects() {
   const q = els.search.value.trim().toLowerCase();
+  const topic = $('filter-topic')?.value || '';
   const assignee = $('filter-assignee')?.value || '';
   const status = $('filter-status')?.value || '';
+  const schedule = $('filter-schedule')?.value || '';
   const blocked = $('filter-blocked')?.checked || false;
   const missingPdf = $('filter-missing-pdf')?.checked || false;
+  const missingCover = $('filter-missing-cover')?.checked || false;
+  const noEnglish = $('filter-no-english')?.checked || false;
+  const today = new Date().toISOString().slice(0,10);
+  const thisMonth = today.slice(0,7);
   return state.projects.filter(p => {
-    const text = `${p.title_ar} ${p.title_en || ''} ${p.translit || ''} ${p.author || ''} ${p.author_ar || ''} ${p.category || ''}`.toLowerCase();
+    const text = `${p.title_ar} ${p.title_en || ''} ${p.translit || ''} ${p.author || ''} ${p.author_ar || ''} ${p.category || ''} ${p.topic_en || ''} ${p.topic_ar || ''}`.toLowerCase();
+    const scheduleMatch = !schedule
+      || (schedule === 'overdue' && p.due_date && p.due_date < today && !isDone(p))
+      || (schedule === 'due_month' && p.due_date && monthKey(p.due_date) === thisMonth && !isDone(p))
+      || (schedule === 'no_deadline' && !p.due_date && !isDone(p));
     return (!q || text.includes(q))
+      && (!topic || p.topic_en === topic)
       && (!assignee || p.assignee === assignee)
       && (!status || p.status === status)
+      && scheduleMatch
       && (!blocked || p.blocked)
-      && (!missingPdf || p.pdf_missing);
+      && (!missingPdf || p.pdf_missing)
+      && (!missingCover || !hasCover(p))
+      && (!noEnglish || !p.google_doc_url);
   });
 }
 
-function projectMarkup(p, compact=false) {
+function projectMarkup(p, compact=false, selectable=false) {
   if (compact) {
     return `<article class="project-card" data-project-id="${p.id}" draggable="true">
       <div class="compact-card-head"><div class="compact-cover-slot">${coverMarkup(p,true)}</div><div class="compact-card-titles">
@@ -162,8 +208,8 @@ function projectMarkup(p, compact=false) {
   }
 
   const facts = [p.pages ? `${p.pages} pages` : '', p.volumes && p.volumes > 1 ? `${p.volumes} volumes` : ''].filter(Boolean).join(' · ');
-  return `<article class="project-row" data-project-id="${p.id}">
-    <div class="cover-cell">${coverMarkup(p)}</div>
+  return `<article class="project-row ${selectable && state.selectedIds.has(p.id) ? 'selected' : ''}" data-project-id="${p.id}">
+    <div class="cover-cell">${selectable ? `<label class="select-book" title="Select book"><input class="select-book-input" type="checkbox" data-select-project="${p.id}" ${state.selectedIds.has(p.id)?'checked':''} aria-label="Select ${escapeHtml(p.title_ar)}"><span aria-hidden="true"></span></label>` : ''}${coverMarkup(p)}</div>
     <div class="project-main">
       <div class="meta-row">
         <div><span class="rubric">${escapeHtml(p.topic_en || p.category || 'Book')}</span>${p.topic_ar ? `<span class="rubric-ar">${escapeHtml(p.topic_ar)}</span>` : ''}</div>
@@ -190,6 +236,13 @@ function bindProjectClicks(root=document) {
   root.querySelectorAll('[data-project-id]').forEach(el => el.addEventListener('click', event => {
     if (event.target.closest('a,button,input,select,label')) return;
     openProject(Number(el.dataset.projectId));
+  }));
+  root.querySelectorAll('[data-select-project]').forEach(input => input.addEventListener('change', event => {
+    event.stopPropagation();
+    const id=Number(input.dataset.selectProject);
+    if (input.checked) state.selectedIds.add(id); else state.selectedIds.delete(id);
+    input.closest('.project-row')?.classList.toggle('selected',input.checked);
+    renderBatchToolbar();
   }));
   bindQuickActions(root);
 }
@@ -223,26 +276,51 @@ function paceModel() {
   const total = state.projects.length;
   const translated = state.projects.filter(isDone).length;
   const published = state.projects.filter(p => p.status === 'published').length;
-  const events = state.projects
-    .filter(p => p.completed_at)
-    .map(p => parseDateTime(p.completed_at))
-    .filter(Boolean)
-    .sort((a,b)=>a-b);
+  const completedProjects = state.projects
+    .map(p=>({project:p,date:parseDateTime(p.completed_at)}))
+    .filter(x=>x.date)
+    .sort((a,b)=>a.date-b.date);
+  const events=completedProjects.map(x=>x.date);
   const now = new Date();
-  const cutoff = new Date(now.getTime() - 30*86400000);
-  const recent = events.filter(d => d >= cutoff);
-  let pace30 = recent.length;
+  const cutoff30 = new Date(now.getTime() - 30*86400000);
+  const cutoff90 = new Date(now.getTime() - 90*86400000);
+  const recent30 = completedProjects.filter(x => x.date >= cutoff30);
+  const recent90 = completedProjects.filter(x => x.date >= cutoff90);
+  let pace30 = recent30.length;
   let basis = 'last 30 days';
-  if (pace30 < 2 && events.length >= 2) {
-    const spanDays = Math.max(7, (now - events[0]) / 86400000);
-    pace30 = events.length / spanDays * 30;
+  if (pace30 < 2 && completedProjects.length >= 2) {
+    const spanDays = Math.max(7, (now - completedProjects[0].date) / 86400000);
+    pace30 = completedProjects.length / spanDays * 30;
     basis = 'all completion history';
   }
+  const pace90 = recent90.length / 3;
   const remaining = Math.max(0,total-translated);
   let forecastDate = null;
   if (remaining === 0) forecastDate = now;
   else if (pace30 > 0.05) forecastDate = new Date(now.getTime() + (remaining / (pace30/30))*86400000);
-  return {total,translated,published,events,pace30,basis,remaining,forecastDate};
+
+  const knownPages=state.projects.map(p=>Number(p.pages)).filter(n=>Number.isFinite(n)&&n>0);
+  const fallbackPages=Math.round(median(knownPages));
+  const workloadOf=p=>estimatedPages(p,fallbackPages);
+  const totalWork=state.projects.reduce((sum,p)=>sum+workloadOf(p),0);
+  const completedWork=state.projects.filter(isDone).reduce((sum,p)=>sum+workloadOf(p),0);
+  const remainingWork=Math.max(0,totalWork-completedWork);
+  let workloadPace30=recent30.reduce((sum,x)=>sum+workloadOf(x.project),0);
+  let workloadBasis='last 30 days';
+  if (recent30.length < 2 && completedProjects.length >= 2) {
+    const spanDays=Math.max(7,(now-completedProjects[0].date)/86400000);
+    const allWork=completedProjects.reduce((sum,x)=>sum+workloadOf(x.project),0);
+    workloadPace30=allWork/spanDays*30;
+    workloadBasis='all completion history';
+  }
+  let workloadForecastDate=null;
+  if (remainingWork===0) workloadForecastDate=now;
+  else if (workloadPace30>1) workloadForecastDate=new Date(now.getTime()+(remainingWork/(workloadPace30/30))*86400000);
+
+  return {
+    total,translated,published,events,completedProjects,pace30,pace90,basis,remaining,forecastDate,
+    fallbackPages,totalWork,completedWork,remainingWork,workloadPace30,workloadBasis,workloadForecastDate
+  };
 }
 
 function renderDashboard() {
@@ -284,13 +362,66 @@ function renderDashboard() {
   bindProjectClicks($('recent-projects'));
 }
 
+function renderBatchToolbar() {
+  const toolbar=$('batch-toolbar');
+  if (!toolbar) return;
+  const selected=state.selectedIds.size;
+  toolbar.classList.toggle('hidden', selected === 0);
+  $('batch-count').textContent=`${selected} selected`;
+  const visible=filteredProjects();
+  const allVisible=visible.length>0 && visible.every(p=>state.selectedIds.has(p.id));
+  $('select-visible').checked=allVisible;
+  $('select-visible').indeterminate=!allVisible && visible.some(p=>state.selectedIds.has(p.id));
+}
+
 function renderProjects() {
+  syncTopicFilter();
   const list = filteredProjects();
   const audit = state.pdfAudit;
   const pdfText = audit ? ` · PDFs: ${audit.available} verified · ${audit.missing} missing · ${audit.unchecked} checking` : '';
-  $('project-count').textContent = `${list.length} of ${state.projects.length} books${pdfText}`;
-  $('projects-list').innerHTML = list.map(p=>projectMarkup(p)).join('') || '<p class="muted">No projects match these filters.</p>';
+  const coverCount=state.projects.filter(hasCover).length;
+  $('project-count').textContent = `${list.length} of ${state.projects.length} books · Covers: ${coverCount}/${state.projects.length}${pdfText}`;
+  $('projects-list').innerHTML = list.map(p=>projectMarkup(p,false,true)).join('') || '<p class="muted">No projects match these filters.</p>';
   bindProjectClicks($('projects-list'));
+  hydrateUploadedCovers($('projects-list'));
+  renderBatchToolbar();
+}
+
+async function runWithConcurrency(items, limit, worker) {
+  let cursor=0;
+  const runners=Array.from({length:Math.min(limit,items.length)}, async()=>{
+    while(cursor<items.length){
+      const item=items[cursor++];
+      await worker(item);
+    }
+  });
+  await Promise.all(runners);
+}
+
+async function applyBatch() {
+  const ids=[...state.selectedIds];
+  if (!ids.length) return;
+  const patch={};
+  if ($('batch-assignee').value) patch.assignee=$('batch-assignee').value;
+  if ($('batch-status').value) patch.status=$('batch-status').value;
+  if ($('batch-deadline').value) patch.due_date=$('batch-deadline').value;
+  if (!Object.keys(patch).length) { toast('Choose a batch change first'); return; }
+  $('apply-batch').disabled=true;
+  let failures=0;
+  try {
+    await runWithConcurrency(ids,5,async id=>{
+      try { await api(`/api/projects/${id}`,{method:'PATCH',body:JSON.stringify(patch)}); }
+      catch { failures+=1; }
+    });
+    state.selectedIds.clear();
+    $('batch-assignee').value='';
+    $('batch-status').value='';
+    $('batch-deadline').value='';
+    await loadData();
+    toast(failures ? `Updated ${ids.length-failures}; ${failures} failed` : `Updated ${ids.length} books`);
+  } finally {
+    $('apply-batch').disabled=false;
+  }
 }
 
 function renderBoard() {
@@ -372,6 +503,8 @@ function renderStats() {
   $('stat-published').textContent = model.published;
   $('stat-published-sub').textContent = `of ${model.total} books · ${pct(model.published,model.total)}%`;
   $('stat-pace').textContent = model.pace30 >= 2 ? model.pace30.toFixed(model.pace30>=10?0:1) : '—';
+  const paceSub=$('stat-pace-sub');
+  if (paceSub) paceSub.textContent = model.pace30 >= 2 ? `books / 30 days · 90d pace ${model.pace90.toFixed(1)}` : 'books per 30 days';
   $('stat-forecast').textContent = model.forecastDate
     ? (model.remaining === 0 ? 'Done' : model.forecastDate.toLocaleDateString(undefined,{month:'short',year:'numeric'}))
     : '—';
@@ -379,10 +512,21 @@ function renderStats() {
     ? (model.remaining === 0 ? 'Translation complete' : `${model.remaining} remaining · ${model.basis}`)
     : 'Need at least two completions for a stable pace';
 
+  $('stat-workload-pace').textContent = model.workloadPace30 > 1 ? Math.round(model.workloadPace30).toLocaleString() : '—';
+  $('stat-workload-forecast').textContent = model.workloadForecastDate
+    ? (model.remainingWork === 0 ? 'Done' : model.workloadForecastDate.toLocaleDateString(undefined,{month:'short',year:'numeric'}))
+    : '—';
+  $('stat-workload-forecast-sub').textContent = model.workloadForecastDate
+    ? (model.remainingWork === 0
+      ? 'Estimated workload complete'
+      : `${Math.round(model.remainingWork).toLocaleString()} page-equivalents remain · ${model.workloadBasis}`)
+    : `Uses known pages; missing counts use ~${model.fallbackPages} pages/book`;
+
   $('stats-by-person').innerHTML = ASSIGNEES.map(person => {
     const list=state.projects.filter(p=>p.assignee===person);
     const done=list.filter(isDone).length;
-    return `<div class="summary-row"><span>${person}</span><strong>${done}/${list.length} · ${pct(done,list.length)}%</strong></div>`;
+    const recentByPerson=model.completedProjects.filter(x=>x.date>=new Date(Date.now()-30*86400000) && x.project.completed_by===person).length;
+    return `<div class="summary-row"><span>${person}</span><strong>${done}/${list.length} · ${pct(done,list.length)}%${['Zahraa','Mohammed'].includes(person) ? ` · ${recentByPerson}/30d` : ''}</strong></div>`;
   }).join('');
   $('stats-deadlines').innerHTML = [
     ['Overdue',overdue],['Due in next 30 days',dueSoon],['Active without deadline',unscheduled],['Blocked',active.filter(p=>p.blocked).length]
@@ -395,8 +539,9 @@ function progressChartMarkup(model) {
   if (!model.events.length) return '<div class="chart-empty">Completion history will appear here after the first translated book is marked Completed.</div>';
   const width=760, height=280, left=46, right=18, top=18, bottom=42;
   const start = new Date(model.events[0]); start.setHours(0,0,0,0);
-  const end = new Date(); end.setHours(23,59,59,999);
-  const span = Math.max(86400000,end-start);
+  const now = new Date(); now.setHours(23,59,59,999);
+  const projectedEnd=model.forecastDate && model.forecastDate>now ? model.forecastDate : now;
+  const span = Math.max(86400000,projectedEnd-start);
   const dayCounts = new Map();
   for (const d of model.events) {
     const key=d.toISOString().slice(0,10);
@@ -408,11 +553,15 @@ function progressChartMarkup(model) {
     running += n;
     points.push({date:new Date(`${key}T12:00:00Z`),count:running});
   }
-  points.push({date:end,count:running});
+  points.push({date:now,count:running});
   const x=d=>left+((d-start)/span)*(width-left-right);
   const y=n=>top+(1-(n/Math.max(1,model.total)))*(height-top-bottom);
   const path=points.map((p,i)=>`${i?'L':'M'} ${x(p.date).toFixed(1)} ${y(p.count).toFixed(1)}`).join(' ');
   const pctNow=pct(model.translated,model.total);
+  const projection=model.forecastDate && model.forecastDate>now
+    ? `<line class="chart-projection" x1="${x(now)}" y1="${y(model.translated)}" x2="${x(model.forecastDate)}" y2="${y(model.total)}"></line>
+       <text class="chart-label" x="${width-right}" y="${top+12}" text-anchor="end">Projected finish</text>`
+    : '';
   return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Cumulative translation progress">
     <line class="chart-axis" x1="${left}" y1="${top}" x2="${left}" y2="${height-bottom}"></line>
     <line class="chart-axis" x1="${left}" y1="${height-bottom}" x2="${width-right}" y2="${height-bottom}"></line>
@@ -421,10 +570,11 @@ function progressChartMarkup(model) {
     <text class="chart-label" x="${left-8}" y="${y(model.total/2)+4}" text-anchor="end">50%</text>
     <text class="chart-label" x="${left-8}" y="${height-bottom+4}" text-anchor="end">0%</text>
     <path class="chart-line" d="${path}"></path>
-    <circle class="chart-point" cx="${x(end)}" cy="${y(model.translated)}" r="4"></circle>
-    <text class="chart-value" x="${Math.max(left+30,x(end)-6)}" y="${Math.max(top+14,y(model.translated)-10)}" text-anchor="end">${pctNow}%</text>
+    ${projection}
+    <circle class="chart-point" cx="${x(now)}" cy="${y(model.translated)}" r="4"></circle>
+    <text class="chart-value" x="${Math.max(left+30,x(now)-6)}" y="${Math.max(top+14,y(model.translated)-10)}" text-anchor="end">${pctNow}%</text>
     <text class="chart-label" x="${left}" y="${height-12}">${start.toLocaleDateString(undefined,{month:'short',year:'2-digit'})}</text>
-    <text class="chart-label" x="${width-right}" y="${height-12}" text-anchor="end">Today</text>
+    <text class="chart-label" x="${width-right}" y="${height-12}" text-anchor="end">${projectedEnd===now ? 'Today' : model.forecastDate.toLocaleDateString(undefined,{month:'short',year:'2-digit'})}</text>
   </svg>`;
 }
 
@@ -692,8 +842,16 @@ document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click'
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
 els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
 els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorage.setItem('haydariActor',state.actor);});
-['filter-assignee','filter-status','filter-blocked','filter-missing-pdf'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+['filter-topic','filter-assignee','filter-status','filter-schedule','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('new-project').addEventListener('click',()=>openProject(null));
+$('select-visible').addEventListener('change',()=>{
+  const visible=filteredProjects();
+  if ($('select-visible').checked) visible.forEach(p=>state.selectedIds.add(p.id));
+  else visible.forEach(p=>state.selectedIds.delete(p.id));
+  renderProjects();
+});
+$('clear-batch').addEventListener('click',()=>{state.selectedIds.clear();renderProjects();});
+$('apply-batch').addEventListener('click',applyBatch);
 $('cover-url').addEventListener('input',()=>renderCoverPreview(state.projects.find(p=>p.id===Number($('project-id').value))));
 $('upload-cover').addEventListener('click',uploadCoverPhoto);
 $('remove-uploaded-cover').addEventListener('click',removeUploadedCover);
