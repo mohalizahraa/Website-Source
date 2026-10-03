@@ -47,18 +47,24 @@ export async function onRequestPatch(context) {
   if (!updates.length) return json({ project: normalizeProject(before) });
 
   const now = new Date().toISOString();
+  const actor = actorFromRequest(context.request);
   if (body.status === 'completed' && before.status !== 'completed' && before.status !== 'published') {
     updates.push('completed_at = ?'); values.push(now);
+    updates.push('completed_by = ?'); values.push(actor);
   }
   if (body.status === 'published' && before.status !== 'published') {
-    if (!before.completed_at) { updates.push('completed_at = ?'); values.push(now); }
+    if (!before.completed_at) { updates.push('completed_at = ?'); values.push(now); updates.push('completed_by = ?'); values.push(actor); }
     updates.push('published_at = ?'); values.push(now);
+    updates.push('published_by = ?'); values.push(actor);
   }
   if (body.status && !['completed','published'].includes(body.status) && ['completed','published'].includes(before.status)) {
     updates.push('completed_at = NULL');
+    updates.push('completed_by = NULL');
     updates.push('published_at = NULL');
+    updates.push('published_by = NULL');
   } else if (body.status === 'completed' && before.status === 'published') {
     updates.push('published_at = NULL');
+    updates.push('published_by = NULL');
   }
   updates.push('updated_at = ?'); values.push(now);
   values.push(id);
@@ -67,6 +73,6 @@ export async function onRequestPatch(context) {
     `UPDATE projects SET ${updates.join(', ')} WHERE id = ? RETURNING *`
   ).bind(...values).first();
 
-  await recordActivity(context.env.DB, id, actorFromRequest(context.request), 'updated project', before, after);
+  await recordActivity(context.env.DB, id, actor, 'updated project', before, after);
   return json({ project: normalizeProject(after) });
 }
