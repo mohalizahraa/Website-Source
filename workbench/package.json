@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev public",
-    "check": "node --check public/app.js && node --check functions/_lib.js && node --check functions/api/health.js && node --check functions/api/activity.js && node --check functions/api/projects/index.js && node --check 'functions/api/projects/[id].js'"
+    "check": "node --check public/app.js && node --check functions/_lib.js && node --check functions/api/health.js && node --check functions/api/activity.js && node --check functions/api/pdf-audit.js && node --check 'functions/api/pdf/[id].js' && node --check functions/api/projects/index.js && node --check 'functions/api/projects/[id].js'"
   },
-  "devDependencies": { "wrangler": "^4.0.0" }
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
 }
