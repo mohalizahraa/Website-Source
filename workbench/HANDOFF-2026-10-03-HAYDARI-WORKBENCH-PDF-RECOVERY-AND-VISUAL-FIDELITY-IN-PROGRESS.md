@@ -367,3 +367,27 @@ The current repair is done only when all of the following are true:
 ## 12. Restart prompt
 
 > Continue the Haydari Translation Workbench from `workbench/HANDOFF-2026-10-03-HAYDARI-WORKBENCH-PDF-RECOVERY-AND-VISUAL-FIDELITY-IN-PROGRESS.md`. Freshly load Operator `AGENTS.md`, Core, every materially routed owner/profile, `workbench/README.md`, current `workbench` HEAD, and the complete affected dependency cone. Preserve all founder-locked product/access/status/progress/visual/privacy/cost requirements. Resume the 176-book PDF recovery and verification frontier from the current live state: a PDF is available only if the actual file is positively retrievable; official/dead `.pdf` links are not evidence. Keep unresolved books labeled/filterable as PDF missing, preserve the 11 existing Zahraa work records, verify representative PDFs through the live iPhone/Safari recipient path, re-audit the full denominator, repair any regressions, and continue until the active repair reaches the floor. Never commit the capability key or private work state.
+
+
+## 2026-10-03 post-recovery workflow update
+
+This section supersedes the older in-progress PDF denominator and records the newest Workbench state.
+
+- Full PDF byte audit: **172 / 176 available, 4 missing, 0 unchecked**.
+- Assignments can now be changed inline to Zahraa / Mohammed / Both / Unassigned without opening the full editor. Legacy `Brother` projection normalizes to Mohammed.
+- Deadlines can be set or cleared inline in Projects, Board, recent-project rows, and Timeline.
+- Every working book surface exposes **English Book**. Unlinked books open a Google-Doc linking flow (including a `docs.new` shortcut); linked books open their saved Google Doc.
+- A per-project `cover_url` runtime field exists for private/manual overrides.
+- The public official-cover recovery map now contains **138 / 176** books. Missing/broken images fall back to the archive rosette; the remaining 38 books can use manual cover overrides.
+- A new Stats view and dashboard pace panel provide translated/published counts, progress by person, deadline summaries, recent completion pace, cumulative translation progress, and a finish-date projection once enough completion history exists.
+- New Google Doc links, cover URLs, and date inputs are validated server-side.
+- Current edited JS/API modules parse successfully; all literal DOM id references resolve; Cloudflare Pages has deployed the feature-bearing head successfully.
+- Temporary userPKM self-hosted scan workflows used for public cover recovery were removed after use. No paid GitHub compute was used.
+
+Still requiring recipient-path proof before declaring the whole Workbench fully closed:
+- confirm the private D1 state still contains the original 11 Zahraa-assigned records after live migration;
+- exercise actual assignment, unassignment, deadline, English Book linking, and cover override persistence through the private live link;
+- verify representative Arabic PDFs through the real Safari/iPhone path, including byte-range behavior;
+- visually inspect the deployed authenticated Workbench at desktop/mobile widths and obtain founder acceptance of the restored archive visual treatment.
+
+Do not commit or echo the private capability link, private Google Doc URLs, assignments, deadlines, or notes while performing those checks.
