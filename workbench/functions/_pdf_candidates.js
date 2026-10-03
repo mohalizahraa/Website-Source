@@ -2,6 +2,11 @@
 // Every candidate is still subjected to the automated byte-level PDF audit before the UI can expose it.
 // Do not add HTML download pages, ZIP/RAR packages, guessed URLs, or same-title editions whose identity does not match the catalogue record.
 export const PDF_CANDIDATE_OVERRIDES = {
+  "book-44": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%A7%D9%88%D9%84%D9%89/%D9%85%D9%82%D8%AF%D9%85%D8%A7%D8%AA-%D9%85%D9%86%D9%87%D8%AC%D9%8A%D8%A9.pdf",
+    "source_page": "https://alhaydari.com/ar/2016/11/51506/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
   "book-45": {
     "source_page": "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89/",
     "note": "Al-Mohsin exact-title page: Sharh al-Halqa al-Ula"
@@ -15,6 +20,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC1.pdf",
     "source_page": "https://alhaydari.com/ar/2016/11/3347/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-51": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC2.pdf",
+    "source_page": "https://alhaydari.com/ar/2016/11/3340/",
+    "note": "Official Haydari download target; observed as application/pdf"
   },
   "book-52": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC3.pdf",
@@ -30,6 +40,16 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC5.pdf",
     "source_page": "https://alhaydari.com/ar/2016/11/46512/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-55": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC1.pdf",
+    "source_page": "https://alhaydari.com/ar/2016/11/53313/",
+    "note": "Official Haydari direct-PDF target; automated byte audit decides availability"
+  },
+  "book-56": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC2.pdf",
+    "source_page": "https://alhaydari.com/ar/2016/11/53317/",
+    "note": "Official Haydari direct-PDF target; automated byte audit decides availability"
   },
   "book-57": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC3.pdf",
@@ -84,6 +104,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2016/03/57649/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-69": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A-%D8%AC1.pdf",
+    "source_page": "https://alhaydari.com/ar/2016/03/57648/",
+    "note": "Official Haydari direct-PDF target; automated byte audit decides availability"
+  },
   "book-70": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%8A%D8%B2%D8%A7%D9%86-%D8%AA%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D9%85%D9%88%D8%B1%D9%88%D8%AB-%D8%A7%D9%84%D8%B1%D9%88%D8%A7%D8%A6%D9%8A.pdf",
     "source_page": "https://alhaydari.com/ar/2015/12/56897/",
@@ -103,6 +128,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%AF%D9%84%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9.pdf",
     "source_page": "https://alhaydari.com/ar/2015/11/56773/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-74": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%B1%D8%A4%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D9%88%D9%86%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D9%8A.pdf",
+    "source_page": "https://alhaydari.com/ar/2015/09/56734/",
+    "note": "Official Haydari category download target; fetch timed out, so automated byte audit decides availability"
   },
   "book-75": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1-%D8%AC2.pdf",
@@ -128,6 +158,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC1.pdf",
     "source_page": "https://alhaydari.com/ar/2015/03/3284/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-80": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B9%D8%B5%D9%85%D8%A9-%D8%A7%D9%84%D8%A3%D9%86%D8%A8%D9%8A%D8%A7%D8%A1-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%A7%D9%84%D9%83%D8%B1%D9%8A%D9%85.pdf",
+    "source_page": "https://alhaydari.com/ar/2015/02/55915/",
+    "note": "Official Haydari category download target; response exceeded web fetch limit, automated byte audit decides availability"
   },
   "book-81": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A8%D8%AD%D9%88%D8%AB-%D8%AA%D8%AD%D9%84%D9%8A%D9%84%D9%8A%D8%A9-%D9%81%D9%8A-%D9%85%D8%B1%D8%A7%D8%AA%D8%A8%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A8%D8%AD%D9%88%D8%AB-%D8%AA%D8%AD%D9%84%D9%8A%D9%84%D9%8A%D8%A9-%D9%81%D9%8A-%D9%85%D8%B1%D8%A7%D8%AA%D8%A8%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87-%D8%AC2.pdf",
@@ -169,10 +204,30 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2014/11/54990/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-90": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF-%D8%AC1.pdf",
+    "source_page": "https://alhaydari.com/ar/2014/11/54988/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
+  "book-92": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9-%D8%AC2.pdf",
+    "source_page": "https://alhaydari.com/ar/2014/10/54591/",
+    "note": "Official Haydari direct-PDF target; automated byte audit decides availability"
+  },
+  "book-93": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9-%D8%AC1.pdf",
+    "source_page": "https://alhaydari.com/ar/2014/10/54588/",
+    "note": "Official Haydari direct-PDF target; automated byte audit decides availability"
+  },
   "book-94": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC3.pdf",
     "source_page": "https://alhaydari.com/ar/2014/08/53747/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-95": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC2.pdf",
+    "source_page": "https://alhaydari.com/ar/2014/08/31483/",
+    "note": "Official Haydari category download target; observed as application/pdf"
   },
   "book-96": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC1.pdf",
@@ -182,6 +237,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
   "book-97": {
     "source_page": "https://almohsinlibrary.com/book/%D9%85%D8%B9%D8%A7%D9%84%D9%85-%D8%A7%D9%84%D8%AA%D8%AC%D8%AF%D9%8A%D8%AF-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A/",
     "note": "Al-Mohsin exact-title page: Ma'alim al-tajdid al-fiqhi"
+  },
+  "book-98": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A2%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D8%B1%D8%B3%D9%8A.pdf",
+    "source_page": "https://alhaydari.com/ar/2014/07/47274/",
+    "note": "Official Haydari category download target; observed as application/pdf"
   },
   "book-99": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%81%D9%82%D9%87-%D8%A7%D9%84%D8%B5%D9%8A%D8%A7%D9%85.pdf",
@@ -203,6 +263,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2014/05/51618/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-103": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A7%D9%84%D8%AB%D9%82%D9%84%D9%8A%D9%86-%D8%B3%D9%86%D8%AF%D8%A7%D9%8B-%D9%88%D8%AF%D9%84%D8%A7%D9%84%D8%A9.pdf",
+    "source_page": "https://alhaydari.com/ar/2014/02/52345/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
   "book-104": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%82%D8%A7%D9%85%D8%A7%D8%AA-%D9%88%D9%85%D8%B3%D8%A4%D9%88%D9%84%D9%8A%D8%A7%D8%AA-%D8%A3%D8%A6%D9%85%D8%A9-%D8%A3%D9%87%D9%84-%D8%A7%D9%84%D8%A8%D9%8A%D8%AA.pdf",
     "source_page": "https://alhaydari.com/ar/2014/02/52294/",
@@ -212,6 +277,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A7%D9%86%D8%B3%D8%A7%D9%86-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D8%AC%D8%A8%D8%B1-%D9%88%D8%A7%D9%84%D8%AA%D9%81%D9%88%D9%8A%D8%B6.pdf",
     "source_page": "https://alhaydari.com/ar/2014/02/51936/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-106": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%85%D9%86-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A5%D9%84%D9%89-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
+    "source_page": "https://alhaydari.com/ar/2013/12/51462/",
+    "note": "Official Haydari category download target; observed as application/pdf"
   },
   "book-107": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%86%D8%A8%D8%B0%D8%A9-%D8%B9%D9%86-%D8%AD%D9%8A%D8%A7%D8%AA%D9%87-%D9%85%D9%86%D9%87%D8%AC%D9%87-%D9%85%D8%B4%D8%B1%D9%88%D8%B9%D9%87%20%D8%A7%D9%84%D8%A7%D8%B5%D9%84%D8%A7%D8%AD%D9%8A.pdf",
@@ -237,6 +307,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D8%AF%D8%AE%D9%84-%D8%A5%D9%84%D9%89-%D8%A7%D9%84%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D9%8A.pdf",
     "source_page": "https://alhaydari.com/ar/2013/09/50348/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-112": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%B9%D8%A7%D8%AF%D8%A9-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D8%A7%D9%84%D9%81%D9%83%D8%B1-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
+    "source_page": "https://alhaydari.com/ar/2013/09/50247/",
+    "note": "Official Haydari direct PDF; observed as application/pdf"
   },
   "book-113": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D8%AF%D8%A7%D8%B1%D8%B3-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D8%B5%D8%B1-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A.pdf",
@@ -432,6 +507,16 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2011/09/3409/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-153": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%81%D9%87%D9%88%D9%85-%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%B9%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
+    "source_page": "https://alhaydari.com/ar/2011/09/3405/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
+  "book-154": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D9%85%D8%B1%D8%A7%D8%AA%D8%A8-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1-%D9%88%D8%A7%D9%84%D8%B3%D9%84%D9%88%D9%83-%D8%A7%D9%84%D9%8A-%D8%A7%D9%84%D9%84%D9%87.pdf",
+    "source_page": "https://alhaydari.com/ar/2011/09/3381/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
   "book-155": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
     "source_page": "https://alhaydari.com/ar/2011/09/3377/",
@@ -466,6 +551,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2011/09/3280/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-162": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D9%8F%D8%AB%D9%84%D9%8F-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A%D9%91%D8%A9-%D9%81%D9%8A-%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%81%D9%84%D8%A7%D8%B7%D9%88%D9%86.pdf",
+    "source_page": "https://alhaydari.com/ar/2011/09/3246/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
   "book-163": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D9%84%D8%A8%D8%A7%D8%A8-%D9%81%D9%8A-%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%83%D8%AA%D8%A7%D8%A8.pdf",
     "source_page": "https://alhaydari.com/ar/2011/09/3236/",
@@ -475,6 +565,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84.pdf",
     "source_page": "https://alhaydari.com/ar/2011/09/3227/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-165": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%A5%D8%B9%D8%AC%D8%A7%D8%B2-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D8%B7%D8%A8%D9%8A%D9%82.pdf",
+    "source_page": "https://alhaydari.com/ar/2011/09/3219/",
+    "note": "Official Haydari download target; observed as application/pdf"
   },
   "book-166": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%AA%D9%82%D9%88%D9%89-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
@@ -486,6 +581,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2011/09/3211/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-168": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B1%D8%A7%D8%B3%D8%AE%D9%88%D9%86-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D9%84%D9%85.pdf",
+    "source_page": "https://alhaydari.com/ar/2011/09/3204/",
+    "note": "Official Haydari download target; observed as application/pdf"
+  },
   "book-169": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%84%D8%B3%D9%81%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86.pdf",
     "source_page": "https://alhaydari.com/ar/2011/09/3200/",
@@ -496,6 +596,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "source_page": "https://alhaydari.com/ar/2011/09/3192/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
   },
+  "book-171": {
+    "url": "https://archive.alhaydari.com/ebook/ar/b%20aqidah.pdf",
+    "source_page": "https://alhaydari.com/ar/2011/09/3188/",
+    "note": "Official Haydari category download target; response exceeded web fetch limit, automated byte audit decides availability"
+  },
   "book-172": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF.pdf",
     "source_page": "https://alhaydari.com/ar/2011/09/3182/",
@@ -505,6 +610,11 @@ export const PDF_CANDIDATE_OVERRIDES = {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85.pdf",
     "source_page": "https://alhaydari.com/ar/2011/09/3178/",
     "note": "Official Haydari detail-page download link; direct PDF positively verified"
+  },
+  "book-175": {
+    "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%83%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D8%AC2.pdf",
+    "source_page": "https://alhaydari.com/ar/category/ebooks/curriculum/",
+    "note": "Official Haydari category download target; observed as application/pdf"
   },
   "book-176": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%83%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D8%AC1.pdf",
