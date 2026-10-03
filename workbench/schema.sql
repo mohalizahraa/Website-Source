@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS projects (
   pdf_checked_at TEXT,
   pdf_check_note TEXT,
   google_doc_url TEXT,
+  cover_url TEXT,
   start_date TEXT,
   due_date TEXT,
   blocked INTEGER NOT NULL DEFAULT 0 CHECK (blocked IN (0,1)),
