@@ -105,3 +105,8 @@ Series metadata is public catalogue metadata in `public/series-map.json`, derive
 In grouped mode, each official series/collection is rendered as a parchment-and-gold visual shelf with its Arabic and English series name and members ordered by official part/volume position. Standalones remain together in a quieter dedicated section. Filtering still applies before grouping; the chosen grouping mode is remembered locally on that device.
 
 Do not infer series membership merely from similar titles or from `volumes > 1`; add relationships only when supported by the official site/archive.
+
+
+### Official-site series correction — 2026-10-03
+
+A second official-site sweep recovered the seven-book **مفاهيم قرآنية، عقائدية، أخلاقية** series. The official archive numbers the current catalogue members 1–7, from **الاسم الأعظم حقيقته ومظاهره** through **أولويات منهجية في فهم المعارف الدينية**. These records must not appear as standalones.

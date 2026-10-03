@@ -82,8 +82,10 @@ assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters contro
 assert(indexSource.includes('id="group-projects"'), 'Series grouping control is missing.');
 assert(appSource.includes('function seriesGroupedMarkup(list)'), 'Series grouping renderer is missing.');
 assert(appSource.includes("localStorage.setItem('haydariProjectGrouping'"), 'Series grouping preference is not remembered.');
-assert(seriesMap.version === '2026-10-03-official-series-v1', 'Unexpected series-map version.');
+assert(seriesMap.version === '2026-10-03-official-series-v2', 'Unexpected series-map version.');
 assert(seriesMap.books['book-3']?.group === 'educational-ethics' && seriesMap.books['book-3']?.position === 5, 'Educational Ethics mapping is incomplete.');
+assert(seriesMap.books['book-37']?.group === 'quranic-doctrinal-ethical-concepts' && seriesMap.books['book-37']?.position === 1, 'Concepts-series opening volume is missing.');
+assert(seriesMap.books['book-133']?.group === 'quranic-doctrinal-ethical-concepts' && seriesMap.books['book-133']?.position === 7, 'Concepts-series seventh volume is missing.');
 assert(seriesMap.books['book-43']?.role === 'umbrella' && seriesMap.groups['usul-lessons-commentary']?.total === 20, 'Uṣūl umbrella mapping is incomplete.');
 assert(seriesMap.books['book-152']?.role === 'umbrella' && seriesMap.groups['creed-ethics-collection']?.type === 'collection', 'Creed/Ethics collection mapping is incomplete.');
 for (const id of Object.keys(seriesMap.books || {})) assert(catalogIds.has(id), `Series map references unknown catalogue ID ${id}.`);

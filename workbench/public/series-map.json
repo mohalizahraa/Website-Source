@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-03-official-series-v1",
+  "version": "2026-10-03-official-series-v2",
   "provenance": "Series/collection relationships are derived from Sayyid Kamal al-Haydari's official website and official archive bibliography. Unmapped catalogue records are treated as standalone.",
   "groups": {
     "educational-ethics": {
@@ -196,6 +196,14 @@
       "total": 4,
       "source_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%81%D9%8A-%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D9%88%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D9%88%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
       "note": "Official bibliography labels Khums as booklet 2, Women's Rulings as 3, and Selected Hajj/ʿUmrah Rites as 4; booklet 1 is not a separate record in the 176-book catalogue."
+    },
+    "quranic-doctrinal-ethical-concepts": {
+      "type": "series",
+      "name_ar": "مفاهيم قرآنية، عقائدية، أخلاقية",
+      "name_en": "Qurʾānic, Doctrinal, and Ethical Concepts",
+      "total": 7,
+      "source_url": "https://alhaydari.com/ar/2012/08/35207/",
+      "note": "Official site identifies the set as a series; official book pages/archive number the seven catalogue members 1–7."
     }
   },
   "books": {
@@ -709,6 +717,41 @@
       "group": "fiqh-fatwa-booklets",
       "role": "member",
       "position": 4
+    },
+    "book-37": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 1
+    },
+    "book-138": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 2
+    },
+    "book-137": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 3
+    },
+    "book-136": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 4
+    },
+    "book-135": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 5
+    },
+    "book-134": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 6
+    },
+    "book-133": {
+      "group": "quranic-doctrinal-ethical-concepts",
+      "role": "member",
+      "position": 7
     }
   }
 }
