@@ -133,6 +133,12 @@
         <label>Deadline<input id="due-date" type="date" /></label>
         <label class="full">English Book — Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/document/..." /></label>
         <label class="full">Book cover image URL <span class="field-note">optional override</span><input id="cover-url" type="url" placeholder="https://.../cover.jpg" /></label>
+        <label class="full">Import cover photo from device <span class="field-note">JPEG, PNG, or WebP</span><input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+        <div class="full cover-upload-actions">
+          <button id="upload-cover" type="button" class="secondary">Import cover photo</button>
+          <button id="remove-uploaded-cover" type="button" class="secondary">Remove uploaded photo</button>
+          <span id="cover-upload-note" class="muted"></span>
+        </div>
         <div id="cover-preview" class="full cover-preview"></div>
         <label class="full">Arabic PDF — direct file<input id="source-pdf-url" type="url" placeholder="Direct .pdf URL" /></label>
         <div id="pdf-state" class="full pdf-state"></div>
