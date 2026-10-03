@@ -217,7 +217,7 @@ function openProject(id) {
 
 async function saveProject(event) {
   event.preventDefault();
-  const id = Number(Q$(project-id').value) || null;
+  const id = Number($('project-id').value) || null;
   const payload = {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
     status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
