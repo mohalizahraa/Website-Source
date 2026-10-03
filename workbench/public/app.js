@@ -7,7 +7,7 @@ const STATUS = {
 };
 const STATUS_ORDER = Object.keys(STATUS);
 const savedActor = localStorage.getItem('haydariActor');
-const state = { projects: [], activity: [], view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
+const state = { projects: [], activity: [], pdfAudit: null, view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa' };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -73,7 +73,7 @@ function projectMarkup(p, compact=false) {
       ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
       <div class="meta">
         <span class="pill">${escapeHtml(p.assignee)}</span>
-        ${p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : ''}
+        ${p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : (p.pdf_unchecked ? '<span class="pill">PDF checking…</span>' : '')}
         ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
       </div>
     </article>`;
@@ -92,7 +92,7 @@ function projectMarkup(p, compact=false) {
       ${p.translit ? `<div class="title-translit">${escapeHtml(p.translit)}</div>` : ''}
       ${p.author || p.author_ar ? `<div class="author-row">${p.author ? `<span>${escapeHtml(p.author)}</span>` : ''}${p.author_ar ? `<span class="author-ar">${escapeHtml(p.author_ar)}</span>` : ''}</div>` : ''}
       <div class="entry-actions">
-        ${p.source_pdf_url ? `<a class="mini-link pdf" href="${escapeHtml(p.source_pdf_url)}" target="_blank" rel="noopener">Arabic PDF</a>` : '<span class="pill pdf-missing">PDF missing</span>'}
+        ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : (p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : '<span class="pill">PDF checking…</span>')}
         ${p.google_doc_url ? `<a class="mini-link secondary-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">Google Doc</a>` : ''}
         ${p.source_url ? `<a class="mini-link secondary-link" href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener">Catalog page</a>` : ''}
       </div>
@@ -128,9 +128,10 @@ function renderDashboard() {
   const blocked = state.projects.filter(p => p.blocked);
   const due = state.projects.filter(p => p.due_date && !['completed','published'].includes(p.status));
   const missingPdf = state.projects.filter(p => p.pdf_missing).length;
+  const uncheckedPdf = state.projects.filter(p => p.pdf_unchecked).length;
   $('now-list').innerHTML = [
     ['Active', active.length], ['In review', state.projects.filter(p=>p.status==='review').length], ['Blocked', blocked.length],
-    ['With deadlines', due.length], ['Missing PDF', missingPdf]
+    ['With deadlines', due.length], ['Missing PDF', missingPdf], ['PDFs still checking', uncheckedPdf]
   ].map(([label,n])=>`<div class="summary-row"><span>${label}</span><strong>${n}</strong></div>`).join('');
 
   const people = ['Zahraa','Mohammed','Both','Unassigned'];
@@ -147,7 +148,9 @@ function renderDashboard() {
 
 function renderProjects() {
   const list = filteredProjects();
-  $('project-count').textContent = `${list.length} of ${state.projects.length} books`;
+  const audit = state.pdfAudit;
+  const pdfText = audit ? ` · PDFs: ${audit.available} verified · ${audit.missing} missing · ${audit.unchecked} checking` : '';
+  $('project-count').textContent = `${list.length} of ${state.projects.length} books${pdfText}`;
   $('projects-list').innerHTML = list.map(p=>projectMarkup(p)).join('') || '<p class="muted">No projects match these filters.</p>';
   bindProjectClicks($('projects-list'));
 }
@@ -241,9 +244,13 @@ function openProject(id) {
   $('google-doc-url').value = p?.google_doc_url || '';
   $('source-url').value = p?.source_url || '';
   $('source-pdf-url').value = p?.source_pdf_url || '';
-  $('pdf-state').innerHTML = p ? (p.source_pdf_url
-    ? `<span>Direct PDF available</span>`
-    : `<span class="missing">PDF missing from archive${p.package_url ? ' — archive only provides a ZIP/RAR package' : ''}</span>`) : '';
+  $('pdf-state').innerHTML = p ? (
+    p.pdf_available
+      ? `<span>Verified direct PDF available</span>`
+      : p.pdf_missing
+        ? `<span class="missing">PDF missing or unusable${p.package_url ? ' — archive only provides a ZIP/RAR package' : ''}${p.pdf_check_note ? ` · ${escapeHtml(p.pdf_check_note)}` : ''}</span>`
+        : `<span>PDF awaiting verification${p.pdf_check_note ? ` · ${escapeHtml(p.pdf_check_note)}` : ''}</span>`
+  ) : '';
   $('blocked').checked = Boolean(p?.blocked);
   $('blocker-reason').value = p?.blocker_reason || '';
   $('notes').value = p?.notes || '';
@@ -272,16 +279,41 @@ async function saveProject(event) {
 
 async function loadData() {
   const [projects, activity] = await Promise.all([api('/api/projects'), api('/api/activity')]);
-  state.projects = projects.projects || []; state.activity = activity.activity || []; render();
+  state.projects = projects.projects || [];
+  state.activity = activity.activity || [];
+  render();
+}
+
+async function refreshProjects() {
+  const projects = await api('/api/projects');
+  state.projects = projects.projects || [];
+  render();
+}
+
+async function auditPdfs() {
+  let rounds = 0;
+  while (rounds < 20) {
+    const result = await api('/api/pdf-audit', {
+      method: 'POST',
+      body: JSON.stringify({ limit: 12 }),
+    });
+    state.pdfAudit = result.counts || state.pdfAudit;
+    await refreshProjects();
+    rounds += 1;
+    if (!result.processed || !result.counts?.unchecked) break;
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
 }
 
 async function init() {
   state.key = readKey(); els.actor.value = state.actor;
   if (!state.key) { els.gate.classList.remove('hidden'); return; }
   try {
-    await api('/api/health');
+    const health = await api('/api/health');
+    state.pdfAudit = health.pdfs || null;
     els.app.classList.remove('hidden');
     await loadData();
+    if (state.pdfAudit?.unchecked) auditPdfs().catch(error => toast(`PDF verification paused: ${error.message}`));
   } catch (e) {
     els.gate.classList.remove('hidden');
     els.gate.querySelector('p').textContent = e.message;
