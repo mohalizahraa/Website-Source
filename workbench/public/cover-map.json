@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T20:32:00.228Z",
+  "generated_at": "2026-10-03T20:32:30.919Z",
   "covers": {
     "book-4": {
       "source_url": "https://alhaydari.com/ar/files/2019/10/x020.jpg.pagespeed.ic.3BgK09VSbH.jpg"
@@ -423,6 +423,71 @@
     },
     "book-162": {
       "source_url": "https://alhaydari.com/ar/files/2011/09/%D8%A7%D9%84%D9%85%D8%AB%D9%84-%D8%A7%D9%84%D8%A5%D9%84%D9%87%DB%8C%D8%A9.jpg"
+    },
+    "book-18": {
+      "source_url": "https://alhaydari.com/ar/files/2018/12/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-22"
+    },
+    "book-19": {
+      "source_url": "https://alhaydari.com/ar/files/2018/12/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-22"
+    },
+    "book-20": {
+      "source_url": "https://alhaydari.com/ar/files/2018/12/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-22"
+    },
+    "book-21": {
+      "source_url": "https://alhaydari.com/ar/files/2018/12/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-22"
+    },
+    "book-29": {
+      "source_url": "https://alhaydari.com/ar/files/2018/02/xGalingor2.jpg.pagespeed.ic.bZFzMP4BrP.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-33"
+    },
+    "book-30": {
+      "source_url": "https://alhaydari.com/ar/files/2018/02/xGalingor2.jpg.pagespeed.ic.bZFzMP4BrP.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-33"
+    },
+    "book-31": {
+      "source_url": "https://alhaydari.com/ar/files/2018/02/xGalingor2.jpg.pagespeed.ic.bZFzMP4BrP.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-33"
+    },
+    "book-32": {
+      "source_url": "https://alhaydari.com/ar/files/2018/02/xGalingor2.jpg.pagespeed.ic.bZFzMP4BrP.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-33"
+    },
+    "book-75": {
+      "source_url": "https://alhaydari.com/ar/files/2015/08/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-76"
+    },
+    "book-78": {
+      "source_url": "https://alhaydari.com/ar/files/2015/03/%D9%85%D9%86%D8%B7%D9%82.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-77"
+    },
+    "book-79": {
+      "source_url": "https://alhaydari.com/ar/files/2015/03/%D9%85%D9%86%D8%B7%D9%82.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-77"
+    },
+    "book-85": {
+      "source_url": "https://alhaydari.com/ar/files/2015/01/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-84"
+    },
+    "book-95": {
+      "source_url": "https://alhaydari.com/ar/files/2014/08/03.jpg",
+      "provenance": "official-series-cover",
+      "source_book": "book-94"
     }
   }
 }
