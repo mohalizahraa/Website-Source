@@ -63,7 +63,21 @@ export async function ensureCatalog(db) {
   if (auditCurrent?.value !== PDF_AUDIT_VERSION) {
     const auditStatements = [];
     for (const [catalogId, evidence] of Object.entries(PDF_AUDIT)) {
-      const status = evidence?.status === 'available' && evidence?.url ? 'available' : 'missing';
+      const verifiedUrl = evidence?.url || null;
+      const candidateUrl = evidence?.candidate_url || null;
+      const status =
+        evidence?.status === 'available' && verifiedUrl
+          ? 'available'
+          : evidence?.status === 'unchecked' && candidateUrl
+            ? 'unchecked'
+            : 'missing';
+      const sourcePdfUrl =
+        status === 'available'
+          ? verifiedUrl
+          : status === 'unchecked'
+            ? candidateUrl
+            : null;
+
       auditStatements.push(db.prepare(
         `UPDATE projects
             SET source_pdf_url = ?,
@@ -72,7 +86,7 @@ export async function ensureCatalog(db) {
                 pdf_check_note = ?
           WHERE catalog_id = ?`
       ).bind(
-        status === 'available' ? evidence.url : null,
+        sourcePdfUrl,
         status,
         evidence?.checked_at || null,
         evidence?.note || null,
