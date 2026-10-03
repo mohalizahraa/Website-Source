@@ -9,7 +9,8 @@ export const PDF_CANDIDATE_OVERRIDES = {
   },
   "book-45": {
     "source_page": "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89/",
-    "note": "Al-Mohsin exact-title page: Sharh al-Halqa al-Ula"
+    "note": "Al-Mohsin exact-title page: Sharh al-Halqa al-Ula; direct URL reverified in full 2026-10-03 byte audit",
+    "url": "https://download.almohsinlibrary.com/FQH/FQH1087.pdf"
   },
   "book-46": {
     "url": "https://download.almohsinlibrary.com/FQH/FQH1088.pdf",
@@ -68,7 +69,8 @@ export const PDF_CANDIDATE_OVERRIDES = {
   },
   "book-60": {
     "source_page": "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-3/",
-    "note": "Al-Mohsin exact-title page: al-usul al-amaliyya vol. 3"
+    "note": "Al-Mohsin exact-title page: al-usul al-amaliyya vol. 3; direct URL reverified in full 2026-10-03 byte audit",
+    "url": "https://download.almohsinlibrary.com/FQH/FQH1081.pdf"
   },
   "book-61": {
     "url": "https://download.almohsinlibrary.com/FQH/FQH1082.pdf",
@@ -77,7 +79,8 @@ export const PDF_CANDIDATE_OVERRIDES = {
   },
   "book-62": {
     "source_page": "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-5/",
-    "note": "Al-Mohsin exact-title page: al-usul al-amaliyya vol. 5"
+    "note": "Al-Mohsin exact-title page: al-usul al-amaliyya vol. 5; direct URL reverified in full 2026-10-03 byte audit",
+    "url": "https://download.almohsinlibrary.com/FQH/FQH1083.pdf"
   },
   "book-64": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC3.pdf",
@@ -236,7 +239,8 @@ export const PDF_CANDIDATE_OVERRIDES = {
   },
   "book-97": {
     "source_page": "https://almohsinlibrary.com/book/%D9%85%D8%B9%D8%A7%D9%84%D9%85-%D8%A7%D9%84%D8%AA%D8%AC%D8%AF%D9%8A%D8%AF-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A/",
-    "note": "Al-Mohsin exact-title page: Ma'alim al-tajdid al-fiqhi"
+    "note": "Al-Mohsin exact-title page: Ma'alim al-tajdid al-fiqhi; direct URL reverified in full 2026-10-03 byte audit",
+    "url": "https://download.almohsinlibrary.com/FQH/FQH1073.pdf"
   },
   "book-98": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A2%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D8%B1%D8%B3%D9%8A.pdf",
@@ -355,7 +359,8 @@ export const PDF_CANDIDATE_OVERRIDES = {
   },
   "book-121": {
     "source_page": "https://almohsinlibrary.com/book/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%82%D9%87%D9%8A%D8%A9-%D8%B9%D9%82%D8%AF-%D8%A7%D9%84%D8%A8%D9%8A%D8%B9/",
-    "note": "Al-Mohsin exact-title page: Buhuth fiqhiyya - 'aqd al-bay'"
+    "note": "Al-Mohsin exact-title page: Buhuth fiqhiyya - 'aqd al-bay'; direct URL reverified in full 2026-10-03 byte audit",
+    "url": "https://download.almohsinlibrary.com/FQH/FQH1062.pdf"
   },
   "book-122": {
     "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A8%D8%AD%D8%AB-%D8%AD%D9%88%D9%84-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
