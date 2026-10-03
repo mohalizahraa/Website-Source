@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T20:45:23.526Z",
+  "generated_at": "2026-10-03T20:49:02.313Z",
   "covers": {
     "book-4": {
       "source_url": "https://alhaydari.com/ar/files/2019/10/x020.jpg.pagespeed.ic.3BgK09VSbH.jpg"
@@ -554,6 +554,21 @@
       "source_url": "https://alhaydari.com/ar/files/2011/09/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D9%86%D9%81%D8%B3-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D9%8A.jpg",
       "provenance": "official-exact-cover",
       "source_page": "https://alhaydari.com/ar/2011/09/3555/"
+    },
+    "book-25": {
+      "source_url": "https://alhaydari.com/ar/files/2018/10/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_page": "https://alhaydari.com/ar/category/ebooks/jurisprudence/"
+    },
+    "book-26": {
+      "source_url": "https://alhaydari.com/ar/files/2018/10/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_page": "https://alhaydari.com/ar/category/ebooks/jurisprudence/"
+    },
+    "book-27": {
+      "source_url": "https://alhaydari.com/ar/files/2018/10/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9.jpg",
+      "provenance": "official-series-cover",
+      "source_page": "https://alhaydari.com/ar/category/ebooks/jurisprudence/"
     }
   }
 }
