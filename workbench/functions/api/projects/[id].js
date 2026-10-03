@@ -1,7 +1,7 @@
 import { actorFromRequest, ensureCatalog, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
 
 const fields = new Set([
-  'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url',
+  'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url','cover_url',
   'start_date','due_date','blocked','blocker_reason','notes'
 ]);
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
