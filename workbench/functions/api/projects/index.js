@@ -1,4 +1,4 @@
-import { actorFromRequest, ensureCatalog, json, normalizeProject, recordActivity, requireAccess } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, requireAccess, validIsoDate } from '../../_lib.js';
 
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
 const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
@@ -23,6 +23,11 @@ export async function onRequestPost(context) {
   const assignee = validAssignees.has(body.assignee) ? body.assignee : 'Unassigned';
   const status = validStatuses.has(body.status) ? body.status : 'not_started';
   const priority = validPriorities.has(body.priority) ? body.priority : 'normal';
+  const googleDocUrl = normalizeGoogleDocUrl(body.google_doc_url);
+  if (googleDocUrl === false) return json({ error: 'English Book must be a Google Docs document link.' }, 400);
+  const coverUrl = normalizeHttpUrl(body.cover_url);
+  if (coverUrl === false) return json({ error: 'Cover image must use an http(s) URL.' }, 400);
+  if (!validIsoDate(body.start_date) || !validIsoDate(body.due_date)) return json({ error: 'Dates must use YYYY-MM-DD.' }, 400);
   const actor = actorFromRequest(context.request);
   const now = new Date().toISOString();
   const completedAt = ['completed','published'].includes(status) ? now : null;
@@ -38,7 +43,7 @@ export async function onRequestPost(context) {
      RETURNING *`
   ).bind(
     body.title_ar.trim(), body.title_en?.trim() || null, assignee, status, priority,
-    body.source_url || null, pdfUrl, pdfStatus, pdfNote, body.google_doc_url || null, body.cover_url || null,
+    body.source_url || null, pdfUrl, pdfStatus, pdfNote, googleDocUrl, coverUrl,
     body.start_date || null, body.due_date || null, body.blocked ? 1 : 0,
     body.blocker_reason || null, body.notes || null, completedAt, completedBy, publishedAt, publishedBy,
   ).first();
