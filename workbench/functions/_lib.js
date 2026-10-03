@@ -139,6 +139,7 @@ export function normalizeProject(row) {
   const hasPdfUrl = Boolean(row.source_pdf_url);
   return {
     ...row,
+    assignee: row.assignee === 'Brother' ? 'Mohammed' : row.assignee,
     blocked: Boolean(row.blocked),
     pdf_status: pdfStatus,
     pdf_available: pdfStatus === 'available' && hasPdfUrl,
