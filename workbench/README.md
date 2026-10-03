@@ -18,11 +18,19 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - Publication progress numerator = `Published` only.
 - `blocked` is a separate flag, not a status.
 
+- Assignment can be changed inline on a book: Zahraa / Mohammed / Both / Unassigned.
+- Deadlines can be set or cleared inline and are reflected in Timeline.
+- Every book always exposes an **English Book** action. If no translation Doc is linked yet, the action opens the linking flow; once linked, the same action opens that Google Doc.
+- Book covers use an automatic official-cover map plus a per-project cover override.
+- Stats use real project completion timestamps for translated/published counts, pace, finish projection, progress-by-person, deadline summaries, and a cumulative progress graph.
+
 ## Data boundary
 
 The public book catalogue metadata is committed as `functions/_catalog.js` and is derived from the canonical archive on `main`. The Workbench reconciles that catalogue into D1 without overwriting existing assignment/progress state.
 
 Private work state — assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key — remains runtime data in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
+
+Cover recovery currently contains **66 official cover mappings** from the original Haydari book pages. Books without an imported image keep the archive fallback and can receive a per-book cover override in the Workbench.
 
 Current catalogue denominator: **176 books**. The fresh full byte-level audit completed on the founder's self-hosted Mac/ARM64 runner on 2026-10-03 and verified **172 working direct PDFs**, **4 missing**, and **0 unchecked**. Evidence is preserved in `public/pdf-audit.json` and in GitHub Actions run `37112926137` / job `111174193227`. The Workbench runtime audit owner is `functions/_pdf_audit.js`.
 
