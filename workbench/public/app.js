@@ -68,6 +68,7 @@ function projectMarkup(p, compact=false) {
     <span class="pill status-${p.status}">${STATUS[p.status]}</span>
     ${p.blocked ? `<span class="pill blocked">Blocked</span>` : ''}
     ${p.google_doc_url ? `<a class="mini-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">Google Doc</a>` : ''}
+    ${p.source_url ? `<a class="mini-link" href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener">Arabic source</a>` : ''}
     ${p.source_pdf_url ? `<a class="mini-link" href="${escapeHtml(p.source_pdf_url)}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}
     ${compact ? `</div>` : `<span class="due">${dateText(p.due_date)}</span>`}
   </article>`;
