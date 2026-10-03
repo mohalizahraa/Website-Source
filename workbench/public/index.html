@@ -44,7 +44,7 @@
           <article class="progress-container">
             <div class="progress-head"><span class="progress-label">Books' Translation Progress</span><strong id="translation-ratio">0 / 0</strong></div>
             <div class="progress-bar"><div class="progress-fill" id="translation-bar"></div></div>
-            <div class="progress-text"><strong id="translation-percent">0%</strong> completed or published</div>
+            <div class="progress-text"><strong id="translation-percent">0%</strong> translation finished</div>
           </article>
           <article class="progress-container">
             <div class="progress-head"><span class="progress-label">Books' Publication Progress</span><strong id="publication-ratio">0 / 0</strong></div>
@@ -70,7 +70,7 @@
           <div class="filter-content active filters">
             <select id="filter-topic"><option value="">All topics</option></select>
             <select id="filter-assignee"><option value="">All people</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
-            <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
+            <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select>
             <select id="filter-schedule"><option value="">Any schedule</option><option value="overdue">Overdue</option><option value="due_month">Due this month</option><option value="no_deadline">No deadline</option></select>
             <select id="sort-projects" aria-label="Sort projects">
               <option value="updated">Sort: Recently updated</option>
@@ -91,7 +91,7 @@
           <label class="check batch-select-all"><input id="select-visible" type="checkbox" /> Select visible</label>
           <strong id="batch-count">0 selected</strong>
           <select id="batch-assignee"><option value="">Assign…</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
-          <select id="batch-status"><option value="">Set status…</option><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select>
+          <select id="batch-status"><option value="">Set status…</option><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select>
           <input id="batch-deadline" type="date" aria-label="Batch deadline" />
           <button id="apply-batch" type="button" class="secondary">Apply</button>
           <button id="clear-batch" type="button" class="text-button">Clear selection</button>
@@ -119,7 +119,7 @@
           <article class="stat-card"><span class="stat-label">Workload forecast</span><strong id="stat-workload-forecast">—</strong><small id="stat-workload-forecast-sub">Uses page-equivalent workload</small></article>
         </div>
         <section class="panel chart-panel">
-          <div class="panel-head"><h3>Translation progress over time</h3><span class="muted">Completed + Published</span></div>
+          <div class="panel-head"><h3>Translation progress over time</h3><span class="muted">Translation finished</span></div>
           <div id="progress-chart" class="progress-chart" aria-label="Translation completion graph"></div>
         </section>
         <div class="dashboard-grid">
@@ -145,7 +145,7 @@
         <label class="full">Arabic title<input id="title-ar" dir="rtl" required /></label>
         <label class="full">English working title<input id="title-en" /></label>
         <label>Assignee<select id="assignee"><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select></label>
-        <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="published">Published</option></select></label>
+        <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select></label>
         <label>Priority<select id="priority"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
         <label>Start date<input id="start-date" type="date" /></label>
         <label>Deadline<input id="due-date" type="date" /></label>
@@ -160,7 +160,7 @@
         <div id="cover-preview" class="full cover-preview"></div>
         <label class="full">Arabic PDF — direct file<input id="source-pdf-url" type="url" placeholder="Direct .pdf URL" /></label>
         <div id="pdf-state" class="full pdf-state"></div>
-        <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
+        <label class="full check blocked-check"><input id="published" type="checkbox" /> Published</label>\n        <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
         <label class="full">Blocker reason<input id="blocker-reason" /></label>
         <label class="full">Notes<textarea id="notes" rows="4"></textarea></label>
         <div id="completion-meta" class="full completion-meta"></div>

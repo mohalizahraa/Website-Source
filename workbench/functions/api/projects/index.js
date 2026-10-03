@@ -17,7 +17,8 @@ export async function onRequestPost(context) {
   const body = await context.request.json().catch(() => null);
   if (!body?.title_ar?.trim()) return json({ error: 'Arabic title is required.' }, 400);
   const assignee = validAssignees.has(body.assignee) ? body.assignee : 'Unassigned';
-  const status = validStatuses.has(body.status) ? body.status : 'not_started';
+  let status = validStatuses.has(body.status) ? body.status : 'not_started';
+  if (body.published) status = 'published';
   const priority = validPriorities.has(body.priority) ? body.priority : 'normal';
   const googleDocUrl = normalizeGoogleDocUrl(body.google_doc_url);
   if (googleDocUrl === false) return json({ error: 'English Book must be a Google Docs document link.' }, 400);
@@ -26,9 +27,9 @@ export async function onRequestPost(context) {
   if (!validIsoDate(body.start_date) || !validIsoDate(body.due_date)) return json({ error: 'Dates must use YYYY-MM-DD.' }, 400);
   const actor = actorFromRequest(context.request);
   const now = new Date().toISOString();
-  const completedAt = ['completed','published'].includes(status) ? now : null;
+  const completedAt = ['review','completed','published'].includes(status) ? now : null;
   const completedBy = completedAt ? actor : null;
-  const publishedAt = status === 'published' ? now : null;
+  const publishedAt = body.published ? now : null;
   const publishedBy = publishedAt ? actor : null;
   const pdfUrl = body.source_pdf_url || null;
   const pdfStatus = pdfUrl ? 'unchecked' : 'missing';

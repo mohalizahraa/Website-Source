@@ -13,6 +13,8 @@ const [catalogSource, coverMap, pdfAudit, appSource, indexSource] = await Promis
   fs.readFile(new URL('public/app.js', root), 'utf8'),
   fs.readFile(new URL('public/index.html', root), 'utf8'),
 ]);
+const libSource = await fs.readFile(new URL('functions/_lib.js', root), 'utf8');
+
 
 const marker = 'export const BOOK_CATALOG = ';
 const markerIndex = catalogSource.indexOf(marker);
@@ -76,5 +78,9 @@ assert(appSource.includes('openEnglishBookDialog(id,true)'), 'Work on Book auto-
 assert(appSource.includes('reservedPdfWindow'), 'Work on Book post-link popup-safe continuation is missing.');
 assert(appSource.includes('function clearProjectFilters()'), 'Clear filters behavior is missing.');
 assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters control is missing.');
+assert(appSource.includes("review: 'Needs Formatting'") && appSource.includes("completed: 'Needs Review'") && appSource.includes("published: 'Publish Ready'"), 'Production-stage labels are missing.');
+assert(indexSource.includes('id="published"'), 'Separate Published control is missing.');
+assert(libSource.includes("'production-stages-v2'"), 'Status-model migration is missing.');
+assert(!indexSource.includes('>In Progress</option>') && !indexSource.includes('>Review</option>') && !indexSource.includes('>Completed</option>'), 'Legacy status labels remain in the UI.');
 
 console.log('Workbench static acceptance passed: 176 books, 10 topics, 176 covers, 172 available PDFs, 4 missing, 0 unchecked.');

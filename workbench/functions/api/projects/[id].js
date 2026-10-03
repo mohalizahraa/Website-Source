@@ -30,6 +30,7 @@ export async function onRequestPatch(context) {
   const body = await context.request.json().catch(() => null);
   if (!body || typeof body !== 'object') return json({ error: 'Invalid JSON body.' }, 400);
 
+  if (body.published === true) body.status = 'published';
   if (body.status !== undefined && !validStatuses.has(body.status)) return json({ error: 'Invalid status.' }, 400);
   if (body.assignee !== undefined && !validAssignees.has(body.assignee)) return json({ error: 'Invalid assignee.' }, 400);
   if (body.priority !== undefined && !validPriorities.has(body.priority)) return json({ error: 'Invalid priority.' }, 400);
@@ -71,28 +72,35 @@ export async function onRequestPatch(context) {
     }
   }
 
-  if (!updates.length) return json({ project: normalizeProject(before) });
-
   const now = new Date().toISOString();
   const actor = actorFromRequest(context.request);
-  if (body.status === 'completed' && before.status !== 'completed' && before.status !== 'published') {
+  const translatedStatuses = new Set(['review','completed','published']);
+  const nextStatus = body.status ?? before.status;
+  const wasTranslated = translatedStatuses.has(before.status);
+  const willBeTranslated = translatedStatuses.has(nextStatus);
+
+  if (!wasTranslated && willBeTranslated) {
     updates.push('completed_at = ?'); values.push(now);
     updates.push('completed_by = ?'); values.push(actor);
-  }
-  if (body.status === 'published' && before.status !== 'published') {
-    if (!before.completed_at) { updates.push('completed_at = ?'); values.push(now); updates.push('completed_by = ?'); values.push(actor); }
-    updates.push('published_at = ?'); values.push(now);
-    updates.push('published_by = ?'); values.push(actor);
-  }
-  if (body.status && !['completed','published'].includes(body.status) && ['completed','published'].includes(before.status)) {
+  } else if (wasTranslated && !willBeTranslated) {
     updates.push('completed_at = NULL');
     updates.push('completed_by = NULL');
-    updates.push('published_at = NULL');
-    updates.push('published_by = NULL');
-  } else if (body.status === 'completed' && before.status === 'published') {
+  }
+
+  if (body.published !== undefined) {
+    if (body.published && !before.published_at) {
+      updates.push('published_at = ?'); values.push(now);
+      updates.push('published_by = ?'); values.push(actor);
+    } else if (!body.published && before.published_at) {
+      updates.push('published_at = NULL');
+      updates.push('published_by = NULL');
+    }
+  } else if (body.status !== undefined && body.status !== 'published' && before.published_at) {
     updates.push('published_at = NULL');
     updates.push('published_by = NULL');
   }
+
+  if (!updates.length) return json({ project: normalizeProject(before) });
   updates.push('updated_at = ?'); values.push(now);
   values.push(id);
 

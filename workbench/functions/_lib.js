@@ -16,6 +16,23 @@ export async function ensureCatalog(db) {
     if (!names.has(name)) await db.prepare(`ALTER TABLE projects ADD COLUMN ${name} ${type}`).run();
   }
   await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_catalog_id ON projects(catalog_id) WHERE catalog_id IS NOT NULL').run();
+  const statusModel = await db.prepare("SELECT value FROM workbench_meta WHERE key='status_model_version'").first();
+  if (statusModel?.value !== 'production-stages-v2') {
+    await db.batch([
+      db.prepare(`UPDATE projects
+        SET status = CASE
+          WHEN status='review' THEN 'completed'
+          WHEN status='completed' THEN 'published'
+          ELSE status
+        END,
+        completed_at = CASE
+          WHEN status='review' AND completed_at IS NULL THEN COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)
+          ELSE completed_at
+        END
+        WHERE status IN ('review','completed')`),
+      db.prepare("INSERT INTO workbench_meta(key,value) VALUES('status_model_version','production-stages-v2') ON CONFLICT(key) DO UPDATE SET value=excluded.value")
+    ]);
+  }
   await db.prepare(
     "UPDATE projects SET pdf_status='missing', pdf_check_note=COALESCE(pdf_check_note,'No direct PDF candidate in catalog') WHERE (source_pdf_url IS NULL OR source_pdf_url='') AND pdf_status='unchecked'"
   ).run();
@@ -161,5 +178,6 @@ export function normalizeProject(row) {
     pdf_available: pdfStatus === 'available' && hasPdfUrl,
     pdf_missing: pdfStatus === 'missing' || (!hasPdfUrl && pdfStatus !== 'unchecked'),
     pdf_unchecked: pdfStatus === 'unchecked',
+    published: Boolean(row.published_at),
   };
 }

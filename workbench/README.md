@@ -6,16 +6,18 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 
 - One shared workspace and database for Zahraa + Mohammed (Brother).
 - No account/login/password UI.
-- Access uses one long shared capability key carried in the URL fragment (`#key=...`); the browser remembers it locally and sends it only to the same-origin API.
+- The deployed Workbench URL opens the shared workspace directly; there is no private-link/capability-key gate.
 - Either collaborator may edit or reassign any project. Assignee is organizational metadata, not an ACL.
 - Device identity is selected as `Zahraa` or `Mohammed` and is used only for activity attribution.
-- Statuses: **Not Started → In Progress → Review → Completed → Published**.
+- Workflow statuses: **Not Started → Translating → Needs Formatting → Needs Review → Publish Ready**. **Published** is tracked separately.
 - The Workbench preserves the archive's parchment / paper / oxblood / gold / sage visual language and Amiri + EB Garamond typography.
 - The primary Arabic-source action must open the direct PDF file. A catalogue detail/download page is never labeled as the Arabic PDF.
 - Projects without a direct PDF are visibly labeled **PDF missing** and can be filtered as a group.
-- **Completed means ready for publishing.**
-- Translation progress numerator = `Completed + Published`.
-- Publication progress numerator = `Published` only.
+- **Needs Formatting** means translation is finished but formatting is not.
+- **Needs Review** means translation and formatting are finished but the book is not yet publish-ready.
+- **Publish Ready** means translation, formatting, and thorough review are finished.
+- Translation progress numerator = `Needs Formatting + Needs Review + Publish Ready`.
+- Publication progress numerator = books independently marked **Published**.
 - `blocked` is a separate flag, not a status.
 
 - Assignment can be changed inline on a book: Zahraa / Mohammed / Both / Unassigned.
@@ -37,7 +39,7 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 
 The public book catalogue metadata is committed as `functions/_catalog.js` and is derived from the canonical archive on `main`. The Workbench reconciles that catalogue into D1 without overwriting existing assignment/progress state.
 
-Private work state — assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key — remains runtime data in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
+Private work state — assignments, deadlines, progress, notes, working Google Doc links, and activity — remains runtime data in D1 and must not be committed to this public repository.
 
 Cover recovery now contains **176/176 cover mappings** from the original Haydari book pages. Books without an imported image keep the archive fallback and can receive a per-book cover override in the Workbench.
 
@@ -65,9 +67,8 @@ Recommended Git-integrated Pages settings:
 Required runtime configuration:
 
 - D1 binding named `DB`
-- encrypted secret `WORKBENCH_ACCESS_TOKEN`
 
-The shared capability URL is `https://<workbench-host>/#key=<long-random-secret>`. Anyone who obtains the key can access/edit the workspace, by design.
+The normal Workbench URL opens the workspace directly.
 
 ## Verification
 
@@ -84,3 +85,8 @@ A URL that merely ends in `.pdf` is not considered available. Candidate URLs are
 - Transient/rate-limit/server failures remain `unchecked` for later retry rather than being falsely labeled missing.
 - Editing a PDF URL resets it to `unchecked`.
 - The Projects view supports **Missing PDF only** filtering.
+
+
+## Production-stage status migration — 2026-10-03
+
+Existing data migrates semantically once: old Review → Needs Review; old Completed → Publish Ready; old Published remains Publish Ready with its publication timestamp. Newly translated books enter Needs Formatting. Published is independent from workflow status.
