@@ -1,14 +1,7 @@
 // Candidate direct-PDF replacements discovered from public web sources.
 // Every candidate is still subjected to the automated byte-level PDF audit before the UI can expose it.
-// Do not add HTML download pages, ZIP/RAR packages, or guessed URLs here.
+// Do not add HTML download pages, ZIP/RAR packages, guessed URLs, or same-title editions whose identity does not match the catalogue record.
 export const PDF_CANDIDATE_OVERRIDES = {
-  "book-128": { url: "https://download.almohsinlibrary.com/FQH/FQH1063.pdf", note: "Al-Mohsin Library direct PDF: al-fatawa al-fiqhiyya vol. 1" },
-  "book-129": { url: "https://download.almohsinlibrary.com/FQH/FQH1064.pdf", note: "Al-Mohsin Library direct PDF: al-fatawa al-fiqhiyya vol. 2" },
-  "book-139": { url: "https://download.almohsinlibrary.com/FQH/FQH1067.pdf", note: "Al-Mohsin Library direct PDF: selected Hajj rites" },
-  "book-143": { url: "https://download.almohsinlibrary.com/FQH/FQH1068.pdf", note: "Al-Mohsin Library direct PDF: Khums profits" },
-  "book-144": { url: "https://download.almohsinlibrary.com/FQH/FQH1069.pdf", note: "Al-Mohsin Library direct PDF: selected rulings for women" },
-  "book-160": { url: "https://download.almohsinlibrary.com/FQH/FQH1072.pdf", note: "Al-Mohsin Library page exposes this direct PDF candidate; verifier decides availability" }
-, 
   "book-45": { source_page: "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89/", note: "Al-Mohsin exact-title page: Sharh al-Halqa al-Ula" },
   "book-46": { url: "https://download.almohsinlibrary.com/FQH/FQH1088.pdf", source_page: "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%A7%D9%84%D9%80%D8%AF%D8%B1%D9%88%D8%B3-1-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A/", note: "Al-Mohsin exact-title page exposes FQH1088.pdf" },
   "book-58": { url: "https://download.almohsinlibrary.com/FQH/FQH1079.pdf", source_page: "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84/", note: "Verified direct PDF: al-usul al-amaliyya vol. 1" },
@@ -18,6 +11,13 @@ export const PDF_CANDIDATE_OVERRIDES = {
   "book-62": { source_page: "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-5/", note: "Al-Mohsin exact-title page: al-usul al-amaliyya vol. 5" },
   "book-97": { source_page: "https://almohsinlibrary.com/book/%D9%85%D8%B9%D8%A7%D9%84%D9%85-%D8%A7%D9%84%D8%AA%D8%AC%D8%AF%D9%8A%D8%AF-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A/", note: "Al-Mohsin exact-title page: Ma'alim al-tajdid al-fiqhi" },
   "book-121": { source_page: "https://almohsinlibrary.com/book/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%82%D9%87%D9%8A%D8%A9-%D8%B9%D9%82%D8%AF-%D8%A7%D9%84%D8%A8%D9%8A%D8%B9/", note: "Al-Mohsin exact-title page: Buhuth fiqhiyya - 'aqd al-bay'" },
+  "book-128": { url: "https://download.almohsinlibrary.com/FQH/FQH1063.pdf", note: "Al-Mohsin Library direct PDF: al-fatawa al-fiqhiyya vol. 1" },
+  "book-129": { url: "https://download.almohsinlibrary.com/FQH/FQH1064.pdf", note: "Al-Mohsin Library direct PDF: al-fatawa al-fiqhiyya vol. 2" },
+  "book-131": { url: "https://download.almohsinlibrary.com/FQH/FQH1066.pdf", source_page: "https://almohsinlibrary.com/book/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%84%D8%AD%D8%AC-12/", note: "Al-Mohsin exact-title/author page exposes FQH1066.pdf for Manasik al-Hajj" },
+  "book-139": { url: "https://download.almohsinlibrary.com/FQH/FQH1067.pdf", note: "Al-Mohsin Library direct PDF: selected Hajj rites" },
+  "book-143": { url: "https://download.almohsinlibrary.com/FQH/FQH1068.pdf", note: "Al-Mohsin Library direct PDF: Khums profits" },
+  "book-144": { url: "https://download.almohsinlibrary.com/FQH/FQH1069.pdf", note: "Al-Mohsin Library direct PDF: selected rulings for women" },
   "book-158": { url: "https://download.almohsinlibrary.com/FQH/FQH1092.pdf", source_page: "https://almohsinlibrary.com/book/%D9%83%D8%AA%D8%A8-%D8%A3%D8%B5%D9%88%D9%84%D9%8A%D8%A9-%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%A5%D8%B3%D8%AA%D9%86%D8%A8%D8%A7%D8%B7-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A-%D8%A7%D9%84%D9%82/", note: "Al-Mohsin exact-title page exposes FQH1092.pdf for al-Qat'" },
-  "book-173": { source_page: "https://almohsinlibrary.com/book/%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85-5/", note: "Al-Mohsin exact author/title page: 'Ilm al-Imam, 537 pages" }
+  "book-159": { url: "https://download.almohsinlibrary.com/FQH/FQH1071.pdf", source_page: "https://almohsinlibrary.com/book/%D9%84-%D8%A7%D8%B6%D8%B1%D8%B1-%D9%88%D9%84%D8%A7-%D8%B6%D8%B1%D8%A7%D8%B1/", note: "Al-Mohsin exact-title/author page exposes FQH1071.pdf for La Darar wa-la Dirar" },
+  "book-160": { url: "https://download.almohsinlibrary.com/FQH/FQH1072.pdf", note: "Al-Mohsin Library page exposes this direct PDF candidate; verifier decides availability" }
 };
