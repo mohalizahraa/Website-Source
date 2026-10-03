@@ -9,6 +9,7 @@ const CATALOG_COLUMNS = [
 
 export async function ensureCatalog(db) {
   await db.prepare('CREATE TABLE IF NOT EXISTS workbench_meta (key TEXT PRIMARY KEY, value TEXT)').run();
+  await db.prepare('CREATE TABLE IF NOT EXISTS project_covers (project_id INTEGER PRIMARY KEY, mime_type TEXT NOT NULL, image_bytes BLOB NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE)').run();
   const existingColumns = await db.prepare('PRAGMA table_info(projects)').all();
   const names = new Set((existingColumns.results || []).map(row => row.name));
   for (const [name, type] of CATALOG_COLUMNS) {
@@ -163,6 +164,7 @@ export function normalizeProject(row) {
     ...row,
     assignee: row.assignee === 'Brother' ? 'Mohammed' : row.assignee,
     blocked: Boolean(row.blocked),
+    has_uploaded_cover: Boolean(row.has_uploaded_cover),
     pdf_status: pdfStatus,
     pdf_available: pdfStatus === 'available' && hasPdfUrl,
     pdf_missing: pdfStatus === 'missing' || (!hasPdfUrl && pdfStatus !== 'unchecked'),
