@@ -85,5 +85,5 @@ export async function recordActivity(db, projectId, actor, action, before, after
 }
 
 export function normalizeProject(row) {
-  return { ...row, blocked: Boolean(row.blocked) };
+  return { ...row, blocked: Boolean(row.blocked), pdf_missing: !row.source_pdf_url };
 }
