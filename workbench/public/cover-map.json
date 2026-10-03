@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T09:59:01.509Z",
+  "generated_at": "2026-10-03T20:32:00.228Z",
   "covers": {
     "book-4": {
       "source_url": "https://alhaydari.com/ar/files/2019/10/x020.jpg.pagespeed.ic.3BgK09VSbH.jpg"
@@ -414,6 +414,15 @@
     },
     "book-175": {
       "source_url": "https://alhaydari.com/ar/files/2011/08/48.png"
+    },
+    "book-72": {
+      "source_url": "https://alhaydari.com/ar/files/2015/11/akhlaghona.jpg"
+    },
+    "book-141": {
+      "source_url": "https://alhaydari.com/ar/files/2012/08/02-1.jpg"
+    },
+    "book-162": {
+      "source_url": "https://alhaydari.com/ar/files/2011/09/%D8%A7%D9%84%D9%85%D8%AB%D9%84-%D8%A7%D9%84%D8%A5%D9%84%D9%87%DB%8C%D8%A9.jpg"
     }
   }
 }
