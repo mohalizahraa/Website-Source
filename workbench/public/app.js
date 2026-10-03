@@ -55,23 +55,54 @@ function filteredProjects() {
   const assignee = $('filter-assignee')?.value || '';
   const status = $('filter-status')?.value || '';
   const blocked = $('filter-blocked')?.checked || false;
+  const missingPdf = $('filter-missing-pdf')?.checked || false;
   return state.projects.filter(p => {
-    const text = `${p.title_ar} ${p.title_en || ''}`.toLowerCase();
-    return (!q || text.includes(q)) && (!assignee || p.assignee === assignee) && (!status || p.status === status) && (!blocked || p.blocked);
+    const text = `${p.title_ar} ${p.title_en || ''} ${p.translit || ''} ${p.author || ''} ${p.author_ar || ''} ${p.category || ''}`.toLowerCase();
+    return (!q || text.includes(q))
+      && (!assignee || p.assignee === assignee)
+      && (!status || p.status === status)
+      && (!blocked || p.blocked)
+      && (!missingPdf || p.pdf_missing);
   });
 }
 
 function projectMarkup(p, compact=false) {
-  return `<article class="${compact ? 'project-card' : 'project-row'}" data-project-id="${p.id}" ${compact ? 'draggable="true"' : ''}>
-    <div><div class="title-ar">${escapeHtml(p.title_ar)}</div>${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}</div>
-    ${compact ? `<div class="meta">` : ''}
-    <span class="pill assignee-pill">${escapeHtml(p.assignee)}</span>
-    <span class="pill status-${p.status}">${STATUS[p.status]}</span>
-    ${p.blocked ? `<span class="pill blocked">Blocked</span>` : ''}
-    ${p.google_doc_url ? `<a class="mini-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">Google Doc</a>` : ''}
-    ${p.source_url ? `<a class="mini-link" href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener">Arabic source</a>` : ''}
-    ${p.source_pdf_url ? `<a class="mini-link" href="${escapeHtml(p.source_pdf_url)}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}
-    ${compact ? `</div>` : `<span class="due">${dateText(p.due_date)}</span>`}
+  if (compact) {
+    return `<article class="project-card" data-project-id="${p.id}" draggable="true">
+      <div class="title-ar">${escapeHtml(p.title_ar)}</div>
+      ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
+      <div class="meta">
+        <span class="pill">${escapeHtml(p.assignee)}</span>
+        ${p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : ''}
+        ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
+      </div>
+    </article>`;
+  }
+
+  const facts = [p.pages ? `${p.pages} pages` : '', p.volumes && p.volumes > 1 ? `${p.volumes} volumes` : ''].filter(Boolean).join(' · ');
+  return `<article class="project-row" data-project-id="${p.id}">
+    <svg class="rosette" aria-hidden="true"><use href="#rosette"></use></svg>
+    <div class="project-main">
+      <div class="meta-row">
+        <div><span class="rubric">${escapeHtml(p.topic_en || p.category || 'Book')}</span>${p.topic_ar ? `<span class="rubric-ar">${escapeHtml(p.topic_ar)}</span>` : ''}</div>
+        <span class="facts">${escapeHtml(facts)}</span>
+      </div>
+      <div class="title-ar">${escapeHtml(p.title_ar)}</div>
+      ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
+      ${p.translit ? `<div class="title-translit">${escapeHtml(p.translit)}</div>` : ''}
+      ${p.author || p.author_ar ? `<div class="author-row">${p.author ? `<span>${escapeHtml(p.author)}</span>` : ''}${p.author_ar ? `<span class="author-ar">${escapeHtml(p.author_ar)}</span>` : ''}</div>` : ''}
+      <div class="entry-actions">
+        ${p.source_pdf_url ? `<a class="mini-link pdf" href="${escapeHtml(p.source_pdf_url)}" target="_blank" rel="noopener">Arabic PDF</a>` : '<span class="pill pdf-missing">PDF missing</span>'}
+        ${p.google_doc_url ? `<a class="mini-link secondary-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">Google Doc</a>` : ''}
+        ${p.source_url ? `<a class="mini-link secondary-link" href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener">Catalog page</a>` : ''}
+      </div>
+    </div>
+    <div class="project-side">
+      <span class="pill">${escapeHtml(p.assignee)}</span>
+      <span class="pill status-${p.status}">${STATUS[p.status]}</span>
+      ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
+      <span class="due">${dateText(p.due_date)}</span>
+    </div>
   </article>`;
 }
 
@@ -96,8 +127,10 @@ function renderDashboard() {
   const active = state.projects.filter(p => ['in_progress','review'].includes(p.status));
   const blocked = state.projects.filter(p => p.blocked);
   const due = state.projects.filter(p => p.due_date && !['completed','published'].includes(p.status));
+  const missingPdf = state.projects.filter(p => p.pdf_missing).length;
   $('now-list').innerHTML = [
-    ['Active', active.length], ['In review', state.projects.filter(p=>p.status==='review').length], ['Blocked', blocked.length], ['With deadlines', due.length]
+    ['Active', active.length], ['In review', state.projects.filter(p=>p.status==='review').length], ['Blocked', blocked.length],
+    ['With deadlines', due.length], ['Missing PDF', missingPdf]
   ].map(([label,n])=>`<div class="summary-row"><span>${label}</span><strong>${n}</strong></div>`).join('');
 
   const people = ['Zahraa','Mohammed','Both','Unassigned'];
@@ -114,13 +147,14 @@ function renderDashboard() {
 
 function renderProjects() {
   const list = filteredProjects();
+  $('project-count').textContent = `${list.length} of ${state.projects.length} books`;
   $('projects-list').innerHTML = list.map(p=>projectMarkup(p)).join('') || '<p class="muted">No projects match these filters.</p>';
   bindProjectClicks($('projects-list'));
 }
 
 function renderBoard() {
   const q = els.search.value.trim().toLowerCase();
-  const base = state.projects.filter(p=>!q || `${p.title_ar} ${p.title_en||''}`.toLowerCase().includes(q));
+  const base = state.projects.filter(p=>!q || `${p.title_ar} ${p.title_en||''} ${p.translit||''} ${p.author||''} ${p.category||''}`.toLowerCase().includes(q));
   $('board').innerHTML = STATUS_ORDER.map(status => {
     const list = base.filter(p=>p.status===status);
     return `<section class="board-col" data-status="${status}"><div class="board-head"><strong>${STATUS[status]}</strong><span class="pill">${list.length}</span></div><div class="board-list" data-status="${status}">${list.map(p=>projectMarkup(p,true)).join('') || '<p class="muted">Empty</p>'}</div></section>`;
@@ -207,6 +241,9 @@ function openProject(id) {
   $('google-doc-url').value = p?.google_doc_url || '';
   $('source-url').value = p?.source_url || '';
   $('source-pdf-url').value = p?.source_pdf_url || '';
+  $('pdf-state').innerHTML = p ? (p.source_pdf_url
+    ? `<span>Direct PDF available</span>`
+    : `<span class="missing">PDF missing from archive${p.package_url ? ' — archive only provides a ZIP/RAR package' : ''}</span>`) : '';
   $('blocked').checked = Boolean(p?.blocked);
   $('blocker-reason').value = p?.blocker_reason || '';
   $('notes').value = p?.notes || '';
@@ -254,7 +291,7 @@ async function init() {
 document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view)));
 els.search.addEventListener('input',()=>{renderProjects();renderBoard();});
 els.actor.addEventListener('change',()=>{state.actor=els.actor.value;localStorage.setItem('haydariActor',state.actor);});
-['filter-assignee','filter-status','filter-blocked'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+['filter-assignee','filter-status','filter-blocked','filter-missing-pdf'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('new-project').addEventListener('click',()=>openProject(null));
 $('close-dialog').addEventListener('click',()=>els.dialog.close());
 $('cancel-dialog').addEventListener('click',()=>els.dialog.close());
