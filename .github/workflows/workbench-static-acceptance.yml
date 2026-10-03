@@ -4,7 +4,11 @@ on:
   push:
     branches: [workbench]
     paths:
-      - "workbench/**"
+      - "workbench/functions/**"
+      - "workbench/public/**"
+      - "workbench/scripts/**"
+      - "workbench/package.json"
+      - "workbench/schema.sql"
       - ".github/workflows/workbench-static-acceptance.yml"
   workflow_dispatch:
 
