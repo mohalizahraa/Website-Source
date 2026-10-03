@@ -51,7 +51,7 @@ function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 function dateText(value) { return value ? new Date(`${value}T12:00:00Z`).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : 'No deadline'; }
 function escapeHtml(s='') { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function isDone(p) { return ['completed','published'].includes(p.status); }
-function coverFor(p) { return p?.cover_url || state.coverMap[p?.catalog_id]?.path || ''; }
+function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || imported?.source_url || ''; }
 function assigneeOptions(current) { return ASSIGNEES.map(name => `<option value="${name}" ${current===name?'selected':''}>${name}</option>`).join(''); }
 function coverMarkup(p, compact=false) {
   const src = coverFor(p);
