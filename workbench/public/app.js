@@ -68,6 +68,17 @@ function isDone(p) { return ['completed','published'].includes(p.status); }
 function coverFor(p) { const imported=state.coverMap[p?.catalog_id]; return p?.cover_url || imported?.path || imported?.source_url || ''; }
 function hasCover(p) { return Boolean(p?.has_uploaded_cover || coverFor(p)); }
 function monthKey(value) { return String(value || '').slice(0,7); }
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+function localDateKeyAfterDays(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return localDateKey(date);
+}
 function median(values) {
   const sorted=values.filter(Number.isFinite).sort((a,b)=>a-b);
   if (!sorted.length) return 400;
@@ -167,7 +178,7 @@ function filteredProjects() {
   const missingPdf = $('filter-missing-pdf')?.checked || false;
   const missingCover = $('filter-missing-cover')?.checked || false;
   const noEnglish = $('filter-no-english')?.checked || false;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateKey();
   const thisMonth = today.slice(0,7);
   return state.projects.filter(p => {
     const text = `${p.title_ar} ${p.title_en || ''} ${p.translit || ''} ${p.author || ''} ${p.author_ar || ''} ${p.category || ''} ${p.topic_en || ''} ${p.topic_ar || ''}`.toLowerCase();
@@ -480,7 +491,7 @@ function bindBoardDrag() {
 function renderTimeline() {
   const scheduled = state.projects.filter(p => p.due_date).sort((a,b) => a.due_date.localeCompare(b.due_date));
   const unscheduled = state.projects.filter(p => !p.due_date && !['completed','published'].includes(p.status));
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateKey();
   const row = p => {
     const overdue = p.due_date && p.due_date < today && !['completed','published'].includes(p.status);
     return `<article class="timeline-row" data-project-id="${p.id}"><div class="timeline-date ${overdue ? 'overdue' : ''}">${p.due_date ? dateText(p.due_date) : 'No deadline'}</div><div><div class="title-ar">${escapeHtml(p.title_ar)}</div><div class="timeline-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span>${overdue ? '<span class="pill blocked">Overdue</span>' : ''}</div><div class="entry-actions timeline-actions">${googleDocLinkMarkup(p)}${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}</div>${quickControlsMarkup(p,true)}</div></article>`;
@@ -491,10 +502,10 @@ function renderTimeline() {
 
 function renderStats() {
   const model = paceModel();
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateKey();
   const active = state.projects.filter(p=>!isDone(p));
   const overdue = active.filter(p=>p.due_date && p.due_date < today).length;
-  const next30 = new Date(Date.now()+30*86400000).toISOString().slice(0,10);
+  const next30 = localDateKeyAfterDays(30);
   const dueSoon = active.filter(p=>p.due_date && p.due_date >= today && p.due_date <= next30).length;
   const unscheduled = active.filter(p=>!p.due_date).length;
 
