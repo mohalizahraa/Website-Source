@@ -11,28 +11,21 @@ const SORT_VALUES = ['updated','deadline','title','status','assignee','topic'];
 const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', numeric:true });
 const savedActor = localStorage.getItem('haydariActor');
 const savedProjectSort = localStorage.getItem('haydariProjectSort');
-const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', key: '', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', pendingWorkOnLink: null };
+const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', pendingWorkOnLink: null };
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  app: $('app'), gate: $('access-gate'), title: $('view-title'), search: $('search'), actor: $('actor'), dialog: $('project-dialog'),
+  app: $('app'), title: $('view-title'), search: $('search'), actor: $('actor'), dialog: $('project-dialog'),
   form: $('project-form'), toast: $('toast'),
 };
 
-function readKey() {
-  const params = new URLSearchParams(location.hash.replace(/^#/, ''));
-  const incoming = params.get('key');
-  if (incoming) {
-    localStorage.setItem('haydariWorkbenchKey', incoming);
-    history.replaceState(null, '', location.pathname + location.search);
-    return incoming;
-  }
-  return localStorage.getItem('haydariWorkbenchKey') || '';
+function clearLegacyAccessKey() {
+  localStorage.removeItem('haydariWorkbenchKey');
+  if (location.hash.startsWith('#key=')) history.replaceState(null, '', location.pathname + location.search);
 }
 
 async function authenticatedFetch(path, options = {}) {
   const headers = new Headers(options.headers || {});
-  headers.set('x-workbench-key', state.key);
   headers.set('x-workbench-actor', state.actor);
   return fetch(path, { ...options, headers });
 }
@@ -42,7 +35,6 @@ async function api(path, options = {}) {
     ...options,
     headers: {
       'content-type': 'application/json',
-      'x-workbench-key': state.key,
       'x-workbench-actor': state.actor,
       ...(options.headers || {}),
     },
@@ -908,19 +900,17 @@ async function auditPdfs() {
 }
 
 async function init() {
-  state.key = readKey(); els.actor.value = state.actor;
+  clearLegacyAccessKey();
+  els.actor.value = state.actor;
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
-  if (!state.key) { els.gate.classList.remove('hidden'); return; }
   try {
     const health = await api('/api/health');
     state.pdfAudit = health.pdfs || null;
-    els.app.classList.remove('hidden');
     await loadCoverMap();
     await loadData();
     if (state.pdfAudit?.unchecked) auditPdfs().catch(error => toast(`PDF verification paused: ${error.message}`));
   } catch (e) {
-    els.gate.classList.remove('hidden');
-    els.gate.querySelector('p').textContent = e.message;
+    toast(`Could not load workspace: ${e.message}`);
   }
 }
 
