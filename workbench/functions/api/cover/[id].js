@@ -1,4 +1,4 @@
-import { actorFromRequest, ensureCatalog, json, recordActivity, requireAccess } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, recordActivity } from '../../_lib.js';
 
 const MAX_COVER_BYTES = 1_500_000;
 const ALLOWED_TYPES = new Set(['image/jpeg','image/png','image/webp']);
@@ -18,8 +18,6 @@ function validImageMagic(bytes, type) {
 }
 
 export async function onRequestGet(context) {
-  const denied = requireAccess(context);
-  if (denied) return denied;
   await ensureCatalog(context.env.DB);
   const id = projectId(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
@@ -42,8 +40,6 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPut(context) {
-  const denied = requireAccess(context);
-  if (denied) return denied;
   await ensureCatalog(context.env.DB);
   const id = projectId(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
@@ -86,8 +82,6 @@ export async function onRequestPut(context) {
 }
 
 export async function onRequestDelete(context) {
-  const denied = requireAccess(context);
-  if (denied) return denied;
   await ensureCatalog(context.env.DB);
   const id = projectId(context);
   if (!id) return json({ error: 'Invalid project id.' }, 400);
