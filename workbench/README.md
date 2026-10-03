@@ -23,6 +23,11 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - Every book always exposes an **English Book** action. If no translation Doc is linked yet, the action opens the linking flow; once linked, the same action opens that Google Doc.
 - Book covers use an automatic official-cover map plus a per-project cover override.
 - Stats use real project completion timestamps for translated/published counts, pace, finish projection, progress-by-person, deadline summaries, and a cumulative progress graph.
+- Projects can be filtered by the Sayyid site's own ten subject categories: Qurʾānic Exegesis and Sciences, Theology and Doctrine, Mysticism, Ethics and Education, Jurisprudence, Principles of Jurisprudence, Epistemology, Philosophy, Logic, and Thought/Culture/Biography.
+- Projects also support overdue/due-this-month/no-deadline, missing-cover, and missing-English-Book filters plus multi-select batch assignment/status/deadline edits.
+- Mobile controls use touch-sized targets and 16px form text so the iPhone/Safari recipient path is practical without accidental zoom/tiny controls.
+- The official translation progress definition remains book-count based. Stats may additionally show a clearly secondary workload estimate using known page counts, corpus-median fallback for unknown page counts, and multi-volume weighting only for umbrella records rather than individually indexed volumes.
+- Founder decision 2026-10-03: do **not** turn the Dashboard into an automatically prioritized "what to do next" screen, and do **not** expand Activity into semantic field-by-field change prose as part of this improvement pass.
 
 ## Data boundary
 
