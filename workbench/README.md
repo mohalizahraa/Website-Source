@@ -10,16 +10,21 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - Either collaborator may edit or reassign any project. Assignee is organizational metadata, not an ACL.
 - Device identity is selected as `Zahraa` or `Mohammed` and is used only for activity attribution.
 - Statuses: **Not Started → In Progress → Review → Completed → Published**.
+- The Workbench preserves the archive's parchment / paper / oxblood / gold / sage visual language and Amiri + EB Garamond typography.
+- The primary Arabic-source action must open the direct PDF file. A catalogue detail/download page is never labeled as the Arabic PDF.
+- Projects without a direct PDF are visibly labeled **PDF missing** and can be filtered as a group.
 - **Completed means ready for publishing.**
 - Translation progress numerator = `Completed + Published`.
 - Publication progress numerator = `Published` only.
 - `blocked` is a separate flag, not a status.
 
-## Private data boundary
+## Data boundary
 
-Project assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key are runtime data. They belong in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
+The public book catalogue metadata is committed as `functions/_catalog.js` and is derived from the canonical archive on `main`. The Workbench reconciles that catalogue into D1 without overwriting existing assignment/progress state.
 
-The initial project list is provisioned directly into D1 from the authorized source document during deployment. The repository contains only schema and application code.
+Private work state — assignments, deadlines, progress, notes, working Google Doc links, activity, and the shared access key — remains runtime data in D1 / encrypted Cloudflare secrets and must not be committed to this public repository.
+
+Current catalogue denominator: **176 books**. **172** have direct PDF URLs. **4** have only ZIP/RAR archive packages and are therefore classified as **PDF missing** in the Workbench.
 
 ## Cloudflare Pages + D1
 
