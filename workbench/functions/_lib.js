@@ -108,6 +108,28 @@ export function json(data, status = 200) {
   });
 }
 
+export function normalizeGoogleDocUrl(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+  try {
+    const url = new URL(String(raw).trim());
+    if (url.protocol !== 'https:' || url.hostname !== 'docs.google.com' || !url.pathname.startsWith('/document/')) return false;
+    return url.href;
+  } catch { return false; }
+}
+
+export function normalizeHttpUrl(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+  try {
+    const url = new URL(String(raw).trim());
+    if (!['https:','http:'].includes(url.protocol)) return false;
+    return url.href;
+  } catch { return false; }
+}
+
+export function validIsoDate(raw) {
+  return raw === null || raw === undefined || raw === '' || /^\d{4}-\d{2}-\d{2}$/.test(String(raw));
+}
+
 export function actorFromRequest(request) {
   const actor = (request.headers.get('x-workbench-actor') || '').trim();
   return ['Zahraa', 'Mohammed', 'Brother'].includes(actor) ? actor : 'Unknown';
