@@ -55,32 +55,23 @@ Before calling this wave complete:
 3. Production `https://haydari-translation-workbench.pages.dev/` must visibly contain the new Board/Timeline scope controls and mobile/activity UX rather than the old markup.
 4. English Book opens must remain guarded in deployed behavior.
 
-The previous deployment blocker remains relevant until disproved: Cloudflare Pages was serving stale Board markup even after newer `workbench` commits, while GitHub commit status only exposed a blocked Vercel status and no Cloudflare deployment status.
+The earlier Cloudflare deployment-freshness blocker is now **closed**. Fresh production inspection on 2026-10-04 confirmed the collaborative UX markup/assets are live, including Board/Timeline `Zahraa | Mohammed | Shared` scope controls and Activity filters.
 
 ## Suspended infrastructure loops
 
-- Cloudflare Pages Git-integration/deployment freshness if production remains stale.
-- Google Drive Anyone-with-link → Editor permission state, separate from Workbench guard routing.
 - Permanent self-hosted runner capacity/routing.
 
-## Exact continuation
-
-Re-check the newest self-hosted Workbench static-acceptance run and production HTML after this UX commit. If production is still stale, preserve that as an explicit Cloudflare deployment blocker; do not claim branch state is live state.
-
-
-## Latest exact state after implementation
+## Current production verification
 
 - Six-part UX implementation commit: `7bbd61b581c782d78d5f007f6f30fd8880ed9c36`.
 - Follow-up Dashboard person-drilldown cleanup commit: `dfc4f6bf5bb18617e19efbcc8af0d2e75f0c01c7`.
-- Latest self-hosted Workbench static-acceptance run: `37190338758` on `dfc4f6bf`; state at verification: **queued**.
-- Fresh production verification after `dfc4f6bf`: **still stale**.
-  - live identity label remains `Using as`;
-  - live Board still contains only the old bare `#board` container;
-  - live Timeline has no collaboration-scope toolbar;
-  - live Activity has no filters.
-- GitHub combined status still exposes only the blocked Vercel status; no Cloudflare deployment status is attached.
+- Production `https://haydari-translation-workbench.pages.dev/` now serves the collaborative UX wave rather than the stale pre-wave markup.
+- Public `/pdf-audit.json` serves audit version `audit-2026-10-04T09:45:28.147Z-172ok-4missing-0unchecked-172pagecounts-72mismatches`.
+- Fresh live `/api/projects` verification: **176 total / 172 available / 4 missing / 0 unchecked / 172 page-count-verified / 172 physical-PDF basis**.
+- Recovered source records `book-47`, `book-48`, and `book-49` are live as available with verified physical counts **442 / 404 / 383**.
+- Drive metadata for all **12/12** currently linked English Books is `anyone / writer`.
 
-Truth boundary: the UX wave is **implemented on the workbench branch but not verified/deployed in production**. The next execution step is infrastructure/deployment recovery, not more UX design.
+Truth boundary: the approved UX wave, current PDF audit state, physical page-count propagation, and linked-English-Book sharing state are **verified live in production**.
 
 
 ## Whole-site English-title consistency correction
