@@ -1,6 +1,6 @@
 // Public catalogue metadata derived from the canonical archive on main.
 // Work-management state is NOT stored here.
-export const CATALOG_VERSION = "main-945208b4-176+physical-page-fix-v1+supplication-physical-page-fix-v1";
+export const CATALOG_VERSION = "main-945208b4-176+physical-page-fix-v1+supplication-physical-page-fix-v1+physical-page-audit-20261004";
 export const BOOK_CATALOG = [
   {
     "catalog_id": "book-1",
@@ -83,7 +83,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2019/06/68024/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almead%2006.pdf",
     "package_url": null,
-    "pages": null,
+    "pages": 474,
     "volumes": 6,
     "date": "2019-06-27"
   },
@@ -100,7 +100,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2019/06/68023/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almead%2005.pdf",
     "package_url": null,
-    "pages": null,
+    "pages": 434,
     "volumes": 6,
     "date": "2019-06-27"
   },
@@ -117,7 +117,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2019/06/68022/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almead%2004.pdf",
     "package_url": null,
-    "pages": null,
+    "pages": 490,
     "volumes": 6,
     "date": "2019-06-27"
   },
@@ -134,7 +134,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2019/06/68021/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almead%2003.pdf",
     "package_url": null,
-    "pages": null,
+    "pages": 494,
     "volumes": 6,
     "date": "2019-06-27"
   },
@@ -151,7 +151,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2019/06/68020/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almead%2002.pdf",
     "package_url": null,
-    "pages": null,
+    "pages": 461,
     "volumes": null,
     "date": "2019-06-27"
   },
@@ -168,7 +168,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2019/06/68018/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almead%2001.pdf",
     "package_url": null,
-    "pages": null,
+    "pages": 486,
     "volumes": 6,
     "date": "2019-06-27"
   },
@@ -627,7 +627,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2017/03/60128/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%A5%D8%B3%D9%85-%D8%A7%D9%84%D8%A3%D8%B9%D8%B8%D9%85.pdf",
     "package_url": null,
-    "pages": 158,
+    "pages": 165,
     "volumes": 1,
     "date": "2017-03-30"
   },
@@ -661,7 +661,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2017/03/60134/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%B1%D9%85%D8%B2%D9%8A%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D8%AB%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D9%86%D8%B5-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86%D9%8A.pdf",
     "package_url": null,
-    "pages": 202,
+    "pages": 215,
     "volumes": 1,
     "date": "2017-03-29"
   },
@@ -763,7 +763,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/3351/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/sharh_alhalaka1.pdf",
     "package_url": null,
-    "pages": 366,
+    "pages": 370,
     "volumes": 1,
     "date": "2016-11-14"
   },
@@ -780,7 +780,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/3344/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_1.pdf",
     "package_url": null,
-    "pages": 414,
+    "pages": 411,
     "volumes": 4,
     "date": "2016-11-14"
   },
@@ -797,7 +797,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/3336/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج2.pdf",
     "package_url": null,
-    "pages": 439,
+    "pages": 442,
     "volumes": 4,
     "date": "2016-11-14"
   },
@@ -814,7 +814,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/3332/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج3.pdf",
     "package_url": null,
-    "pages": 399,
+    "pages": 404,
     "volumes": 4,
     "date": "2016-11-14"
   },
@@ -831,7 +831,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/3328/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج4.pdf",
     "package_url": null,
-    "pages": 367,
+    "pages": 383,
     "volumes": 4,
     "date": "2016-11-14"
   },
@@ -899,7 +899,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/46506/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/halqah3_yaqobi/04.pdf",
     "package_url": null,
-    "pages": 541,
+    "pages": 451,
     "volumes": 5,
     "date": "2016-11-14"
   },
@@ -916,7 +916,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/46512/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/halqah3_yaqobi/05.pdf",
     "package_url": null,
-    "pages": 497,
+    "pages": 511,
     "volumes": 5,
     "date": "2016-11-14"
   },
@@ -1069,7 +1069,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2016/11/67482/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B9%D9%85%D9%84%D9%8A%D8%A9/%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B9%D9%85%D9%84%D9%8A%D8%A9-%D8%AC6.pdf",
     "package_url": null,
-    "pages": 430,
+    "pages": 443,
     "volumes": 6,
     "date": "2016-11-14"
   },
@@ -1375,7 +1375,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2015/02/3420/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/tohed2.pdf",
     "package_url": null,
-    "pages": 560,
+    "pages": 559,
     "volumes": 2,
     "date": "2015-02-10"
   },
@@ -1392,7 +1392,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2015/02/3196/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/altohid.pdf",
     "package_url": null,
-    "pages": 526,
+    "pages": 528,
     "volumes": 2,
     "date": "2015-02-10"
   },
@@ -1426,7 +1426,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2015/01/3289/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/sharh_bedaya1.pdf",
     "package_url": null,
-    "pages": 419,
+    "pages": 424,
     "volumes": 2,
     "date": "2015-01-28"
   },
@@ -1545,7 +1545,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2014/10/54593/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almaalem.pdf",
     "package_url": null,
-    "pages": 361,
+    "pages": 360,
     "volumes": 1,
     "date": "2014-10-01"
   },
@@ -1579,7 +1579,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2014/10/54588/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/almaad01.pdf",
     "package_url": null,
-    "pages": 478,
+    "pages": 476,
     "volumes": 2,
     "date": "2014-10-01"
   },
@@ -1647,7 +1647,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2014/07/3311/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/malem_tajdeid.pdf",
     "package_url": null,
-    "pages": 214,
+    "pages": 219,
     "volumes": 1,
     "date": "2014-07-13"
   },
@@ -1664,7 +1664,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2014/07/47274/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/ayat_korsi.pdf",
     "package_url": null,
-    "pages": 218,
+    "pages": 231,
     "volumes": 1,
     "date": "2014-07-13"
   },
@@ -1732,7 +1732,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2014/05/51618/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/manhaj_salin.pdf",
     "package_url": null,
-    "pages": 559,
+    "pages": 574,
     "volumes": 1,
     "date": "2014-05-25"
   },
@@ -1800,7 +1800,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/12/51462/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/man_mahwar.pdf",
     "package_url": null,
-    "pages": 124,
+    "pages": 132,
     "volumes": 1,
     "date": "2013-12-29"
   },
@@ -1817,7 +1817,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/12/51402/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/korras.pdf",
     "package_url": null,
-    "pages": 298,
+    "pages": 296,
     "volumes": 1,
     "date": "2013-12-16"
   },
@@ -1987,7 +1987,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/04/47290/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/tabatabaii.pdf",
     "package_url": null,
-    "pages": 194,
+    "pages": 207,
     "volumes": 1,
     "date": "2013-04-30"
   },
@@ -2004,7 +2004,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/04/47282/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/manhaj_tafsir.pdf",
     "package_url": null,
-    "pages": 202,
+    "pages": 215,
     "volumes": 1,
     "date": "2013-04-30"
   },
@@ -2021,7 +2021,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/04/47278/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/mafatih_fahm.pdf",
     "package_url": null,
-    "pages": 195,
+    "pages": 209,
     "volumes": 1,
     "date": "2013-04-30"
   },
@@ -2038,7 +2038,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/02/46338/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/koliyat.pdf",
     "package_url": null,
-    "pages": 343,
+    "pages": 352,
     "volumes": 1,
     "date": "2013-02-12"
   },
@@ -2055,7 +2055,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/02/46330/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/bohos.pdf",
     "package_url": null,
-    "pages": 461,
+    "pages": 470,
     "volumes": 1,
     "date": "2013-02-12"
   },
@@ -2072,7 +2072,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/02/46115/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/bhoth_imamahe.pdf",
     "package_url": null,
-    "pages": 424,
+    "pages": 389,
     "volumes": 1,
     "date": "2013-02-04"
   },
@@ -2106,7 +2106,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/02/46071/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/thabet_m.pdf",
     "package_url": null,
-    "pages": 178,
+    "pages": 176,
     "volumes": 1,
     "date": "2013-02-03"
   },
@@ -2123,7 +2123,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/02/46054/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/tavil_q.pdf",
     "package_url": null,
-    "pages": 238,
+    "pages": 351,
     "volumes": 1,
     "date": "2013-02-02"
   },
@@ -2140,7 +2140,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/01/45984/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/ebn-teaymeh.pdf",
     "package_url": null,
-    "pages": 522,
+    "pages": 529,
     "volumes": 1,
     "date": "2013-01-21"
   },
@@ -2191,7 +2191,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/09/41417/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/fatava_j2.pdf",
     "package_url": null,
-    "pages": 452,
+    "pages": 459,
     "volumes": 3,
     "date": "2012-09-27"
   },
@@ -2208,7 +2208,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/09/40434/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/soltah.pdf",
     "package_url": null,
-    "pages": 330,
+    "pages": 335,
     "volumes": 1,
     "date": "2012-09-08"
   },
@@ -2225,7 +2225,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/09/40364/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/mansek_haj.pdf",
     "package_url": null,
-    "pages": 291,
+    "pages": 298,
     "volumes": 1,
     "date": "2012-09-08"
   },
@@ -2259,7 +2259,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/34141/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/olaviat.pdf",
     "package_url": null,
-    "pages": 104,
+    "pages": 111,
     "volumes": 1,
     "date": "2012-08-23"
   },
@@ -2276,7 +2276,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/34098/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/seanah_quran.pdf",
     "package_url": null,
-    "pages": 144,
+    "pages": 151,
     "volumes": 1,
     "date": "2012-08-23"
   },
@@ -2293,7 +2293,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/34055/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/abda3.pdf",
     "package_url": null,
-    "pages": 98,
+    "pages": 105,
     "volumes": 1,
     "date": "2012-08-23"
   },
@@ -2310,7 +2310,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/34034/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/qadha.pdf",
     "package_url": null,
-    "pages": 174,
+    "pages": 181,
     "volumes": 1,
     "date": "2012-08-23"
   },
@@ -2327,7 +2327,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/34027/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/badaa.pdf",
     "package_url": null,
-    "pages": 115,
+    "pages": 122,
     "volumes": 1,
     "date": "2012-08-23"
   },
@@ -2344,7 +2344,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/34022/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/gholo.pdf",
     "package_url": null,
-    "pages": 110,
+    "pages": 117,
     "volumes": 1,
     "date": "2012-08-23"
   },
@@ -2378,7 +2378,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2012/08/27211/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/mantq_fahm3.pdf",
     "package_url": null,
-    "pages": 519,
+    "pages": 524,
     "volumes": 3,
     "date": "2012-08-05"
   },
@@ -2514,7 +2514,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3551/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/mazhab_dati.pdf",
     "package_url": null,
-    "pages": 574,
+    "pages": 578,
     "volumes": 1,
     "date": "2011-09-21"
   },
@@ -2531,7 +2531,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3547/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/madkhal_maerfah.pdf",
     "package_url": null,
-    "pages": 445,
+    "pages": 448,
     "volumes": 1,
     "date": "2011-09-21"
   },
@@ -2548,7 +2548,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3424/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/asmah.pdf",
     "package_url": null,
-    "pages": 320,
+    "pages": 312,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2565,7 +2565,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3412/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/tafaqoh_fy_din.pdf",
     "package_url": null,
-    "pages": 222,
+    "pages": 221,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2582,7 +2582,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3409/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/fy_dhalal_aqedah.pdf",
     "package_url": null,
-    "pages": 496,
+    "pages": 492,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2599,7 +2599,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3405/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/mafhom_shafaaf_fy_quran.pdf",
     "package_url": null,
-    "pages": 189,
+    "pages": 186,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2616,7 +2616,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3381/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/man_khalq_allah.pdf",
     "package_url": null,
-    "pages": 260,
+    "pages": 262,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2633,7 +2633,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3377/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/arfan_shai.pdf",
     "package_url": null,
-    "pages": 396,
+    "pages": 464,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2650,7 +2650,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3369/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/alm_akhraq.pdf",
     "package_url": null,
-    "pages": 153,
+    "pages": 151,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2667,7 +2667,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3355/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/alzan.PDF",
     "package_url": null,
-    "pages": 433,
+    "pages": 432,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2684,7 +2684,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3324/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/qatee.pdf",
     "package_url": null,
-    "pages": 542,
+    "pages": 543,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2701,7 +2701,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3318/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/la_darar_al_derar.pdf",
     "package_url": null,
-    "pages": 432,
+    "pages": 419,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2735,7 +2735,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3280/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/falsafah_sadr_almtalhin.pdf",
     "package_url": null,
-    "pages": 367,
+    "pages": 368,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2752,7 +2752,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3246/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/mothol%20elahiyya_%20farakid_1388_pdf%20file.pdf",
     "package_url": null,
-    "pages": 334,
+    "pages": 343,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2769,7 +2769,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3236/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/lobab.pdf",
     "package_url": null,
-    "pages": 476,
+    "pages": 480,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2803,7 +2803,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3219/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/aajaz.pdf",
     "package_url": null,
-    "pages": 222,
+    "pages": 197,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2820,7 +2820,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3215/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/taqva_fy_quran.pdf",
     "package_url": null,
-    "pages": 239,
+    "pages": 213,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2837,7 +2837,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3211/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/yosef_sadiq.pdf",
     "package_url": null,
-    "pages": 246,
+    "pages": 248,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2854,7 +2854,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3204/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/alrasikhoon.pdf",
     "package_url": null,
-    "pages": 526,
+    "pages": 528,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2871,7 +2871,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3200/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/falsafh_din.pdf",
     "package_url": null,
-    "pages": 244,
+    "pages": 249,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2888,7 +2888,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3192/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/alvelaya_attakveeniyah.pdf",
     "package_url": null,
-    "pages": 272,
+    "pages": 276,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2905,7 +2905,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3188/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/buhooth%20aqaediyah%201-3_%20farakid_1389_pdf%20file.pdf",
     "package_url": null,
-    "pages": 252,
+    "pages": 254,
     "volumes": 2,
     "date": "2011-09-18"
   },
@@ -2922,7 +2922,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3182/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/doroos_fittawheed.pdf",
     "package_url": null,
-    "pages": 452,
+    "pages": 456,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2939,7 +2939,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3178/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/alm_alimam.pdf",
     "package_url": null,
-    "pages": 628,
+    "pages": 627,
     "volumes": 1,
     "date": "2011-09-18"
   },
@@ -2956,7 +2956,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/09/3170/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/buhooth%20aqaediyah%202.pdf",
     "package_url": null,
-    "pages": 245,
+    "pages": 254,
     "volumes": 2,
     "date": "2011-09-18"
   },
@@ -2973,7 +2973,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/08/54178/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/kamal_alhaydari02.pdf",
     "package_url": null,
-    "pages": 1166,
+    "pages": 632,
     "volumes": 2,
     "date": "2011-08-25"
   },
@@ -2990,7 +2990,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2011/08/406/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/kamal_alhaydari01.pdf",
     "package_url": null,
-    "pages": 564,
+    "pages": 579,
     "volumes": 1,
     "date": "2011-08-25"
   }
