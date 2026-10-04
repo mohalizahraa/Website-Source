@@ -44,15 +44,19 @@ async function discoverPdfCandidates(sourcePage) {
   }
 }
 
-async function candidatesFor(book) {
+function directCandidatesFor(book) {
   const override = PDF_CANDIDATE_OVERRIDES[book.catalog_id];
-  const direct = [override?.url, book.pdf_url].filter(Boolean);
+  return [...new Set([override?.url, book.pdf_url].filter(Boolean))];
+}
+
+async function fallbackCandidatesFor(book) {
+  const override = PDF_CANDIDATE_OVERRIDES[book.catalog_id];
   const sourcePages = [override?.source_page, book.detail_url].filter(Boolean);
   const discovered = [];
   for (const sourcePage of sourcePages) {
     discovered.push(...await discoverPdfCandidates(sourcePage));
   }
-  return [...new Set([...direct, ...discovered])];
+  return [...new Set(discovered)];
 }
 
 async function preparePdfCounter(tempRoot) {
@@ -181,22 +185,34 @@ async function worker() {
     const i = cursor++;
     if (i >= BOOK_CATALOG.length) return;
     const book = BOOK_CATALOG[i];
-    const candidates = await candidatesFor(book);
+    const attemptedCandidates = [];
     let verified = { status: 'missing', final_url: null, physical_pages: null, size_bytes: null, note: 'No direct PDF candidate' };
     let selectedCandidate = null;
     let bestUnresolved = null;
-    for (const candidate of candidates) {
-      const attempt = await verifyAndCount(book, candidate, tempRoot, countPages);
-      if (attempt.status === 'available') {
-        verified = attempt;
-        selectedCandidate = candidate;
-        break;
+
+    async function tryCandidates(candidates) {
+      for (const candidate of candidates) {
+        if (!candidate || attemptedCandidates.includes(candidate)) continue;
+        attemptedCandidates.push(candidate);
+        const attempt = await verifyAndCount(book, candidate, tempRoot, countPages);
+        if (attempt.status === 'available') {
+          verified = attempt;
+          selectedCandidate = candidate;
+          return true;
+        }
+        if (attempt.status === 'unchecked') bestUnresolved = { attempt, candidate };
+        if (!bestUnresolved) {
+          verified = attempt;
+          selectedCandidate = candidate;
+        }
       }
-      if (attempt.status === 'unchecked') bestUnresolved = { attempt, candidate };
-      if (!bestUnresolved) {
-        verified = attempt;
-        selectedCandidate = candidate;
-      }
+      return false;
+    }
+
+    const directHit = await tryCandidates(directCandidatesFor(book));
+    if (!directHit) {
+      const discovered = await fallbackCandidatesFor(book);
+      await tryCandidates(discovered);
     }
     if (verified.status !== 'available' && bestUnresolved) {
       verified = bestUnresolved.attempt;
@@ -207,7 +223,7 @@ async function worker() {
     results[book.catalog_id] = {
       title_ar: book.title_ar,
       candidate_url: selectedCandidate,
-      attempted_candidates: candidates,
+      attempted_candidates: attemptedCandidates,
       status: verified.status,
       url: verified.final_url,
       checked_at: new Date().toISOString(),
