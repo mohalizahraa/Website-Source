@@ -1,3 +1,5 @@
+> **SUPERSEDED — DO NOT RESUME FROM 34/131.** Current authority is `workbench/HANDOFF-2026-10-04-REPENTANCE-132-OF-132-NEEDS-REVIEW-PROGRESS-INVARIANT-FIX.md`, with Repentance verified at **132/132** and **Needs Review**. The old denominator/checkpoint below is preserved only as historical incident context.
+
 # HANDOFF — 2026-10-04 — Repentance 34/131, Workbench PDF bridge live
 
 Status: restart-safe continuation projection.  
