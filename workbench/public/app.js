@@ -112,7 +112,7 @@ function coverMarkup(p, compact=false) {
 }
 function googleDocLinkMarkup(p) {
   return p.google_doc_url
-    ? `<a class="mini-link secondary-link english-book-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">English Book</a>`
+    ? `<button class="mini-link secondary-link english-book-link" type="button" data-open-english="${p.id}">English Book</button>`
     : `<button class="mini-link secondary-link english-book-button" type="button" data-link-english="${p.id}">English Book · link</button>`;
 }
 async function setProjectDeadline(id, value) {
@@ -321,7 +321,24 @@ function bindProjectClicks(root=document) {
   bindQuickActions(root);
 }
 
-function startWorkOnBook(id) {
+async function resolveEnglishBook(id) {
+  return api(`/api/english-book/${id}`);
+}
+
+function openEnglishBook(id) {
+  const reservedWindow=window.open('about:blank','_blank');
+  if (reservedWindow) reservedWindow.opener=null;
+  resolveEnglishBook(id).then(result => {
+    if (reservedWindow) reservedWindow.location.replace(result.url);
+    else window.location.assign(result.url);
+  }).catch(error => {
+    if (reservedWindow) reservedWindow.close();
+    toast(error.message);
+    openEnglishBookDialog(id);
+  });
+}
+
+async function startWorkOnBook(id) {
   const project=state.projects.find(p=>p.id===id);
   if (!project) return;
   if (!project.google_doc_url) {
@@ -329,11 +346,17 @@ function startWorkOnBook(id) {
     toast('Link the English Book first');
     return;
   }
-  if (project.pdf_available) {
-    const pdfWindow=window.open(`/api/pdf/${project.id}`,'_blank');
-    if (pdfWindow) pdfWindow.opener=null;
+  const pdfWindow=project.pdf_available ? window.open('about:blank','_blank') : null;
+  if (pdfWindow) pdfWindow.opener=null;
+  try {
+    const result=await resolveEnglishBook(id);
+    if (pdfWindow) pdfWindow.location.replace(`/api/pdf/${project.id}`);
+    window.location.assign(result.url);
+  } catch(error) {
+    if (pdfWindow) pdfWindow.close();
+    toast(error.message);
+    openEnglishBookDialog(id,true);
   }
-  window.location.assign(project.google_doc_url);
 }
 
 function bindQuickActions(root=document) {
@@ -360,6 +383,10 @@ function bindQuickActions(root=document) {
     event.stopPropagation();
     try { await setProjectDeadline(Number(button.dataset.clearDeadline),null); }
     catch (error) { toast(error.message); }
+  }));
+  root.querySelectorAll('[data-open-english]').forEach(button => button.addEventListener('click', event => {
+    event.stopPropagation();
+    openEnglishBook(Number(button.dataset.openEnglish));
   }));
   root.querySelectorAll('[data-link-english]').forEach(button => button.addEventListener('click', event => {
     event.stopPropagation();
@@ -961,9 +988,12 @@ async function saveProject(event) {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
     status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
     translated_pages: Number($('translated-pages').value || 0),
-    google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
+    cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     published: $('published').checked, blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
   };
+  const googleDocUrl=$('google-doc-url').value.trim();
+  const currentProject=id ? state.projects.find(project=>project.id===id) : null;
+  if (!id || googleDocUrl !== (currentProject?.google_doc_url || '')) payload.google_doc_url=googleDocUrl;
   try {
     if (id) await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify(payload)});
     else await api('/api/projects', {method:'POST', body:JSON.stringify(payload)});
@@ -1131,8 +1161,9 @@ async function saveEnglishBook(event) {
     state.pendingWorkOnLink=null;
     await loadData();
     if (continueWork) {
+      const verified=await resolveEnglishBook(id);
       if (reservedPdfWindow) reservedPdfWindow.location.replace(`/api/pdf/${id}`);
-      window.location.assign(url);
+      window.location.assign(verified.url);
       return;
     }
     if (reservedPdfWindow) reservedPdfWindow.close();
