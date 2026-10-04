@@ -2,7 +2,6 @@ import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalize
 
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
 const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
-const validPriorities = new Set(['low','normal','high','urgent']);
 
 export async function onRequestGet(context) {
   await ensureCatalog(context.env.DB);
@@ -19,7 +18,6 @@ export async function onRequestPost(context) {
   const assignee = validAssignees.has(body.assignee) ? body.assignee : 'Unassigned';
   let status = validStatuses.has(body.status) ? body.status : 'not_started';
   if (body.published) status = 'published';
-  const priority = validPriorities.has(body.priority) ? body.priority : 'normal';
   const googleDocUrl = normalizeGoogleDocUrl(body.google_doc_url);
   if (googleDocUrl === false) return json({ error: 'English Book must be a Google Docs document link.' }, 400);
   if (googleDocUrl) {
@@ -39,11 +37,11 @@ export async function onRequestPost(context) {
   const pdfStatus = pdfUrl ? 'unchecked' : 'missing';
   const pdfNote = pdfUrl ? 'Awaiting validation' : 'No direct PDF URL';
   const result = await context.env.DB.prepare(
-    `INSERT INTO projects (title_ar, title_en, assignee, status, priority, source_url, source_pdf_url, pdf_status, pdf_check_note, google_doc_url, cover_url, start_date, due_date, blocked, blocker_reason, notes, completed_at, completed_by, published_at, published_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO projects (title_ar, title_en, assignee, status, source_url, source_pdf_url, pdf_status, pdf_check_note, google_doc_url, cover_url, start_date, due_date, blocked, blocker_reason, notes, completed_at, completed_by, published_at, published_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      RETURNING *`
   ).bind(
-    body.title_ar.trim(), body.title_en?.trim() || null, assignee, status, priority,
+    body.title_ar.trim(), body.title_en?.trim() || null, assignee, status,
     body.source_url || null, pdfUrl, pdfStatus, pdfNote, googleDocUrl, coverUrl,
     body.start_date || null, body.due_date || null, body.blocked ? 1 : 0,
     body.blocker_reason || null, body.notes || null, completedAt, completedBy, publishedAt, publishedBy,
