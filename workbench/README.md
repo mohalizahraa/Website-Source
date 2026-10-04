@@ -151,6 +151,10 @@ Each project can store a source-PDF page counter (`translated_pages`) against it
 
 Page progress is source-relative: **X/Y means X physical pages of the authoritative Arabic PDF have been processed into the English translation target**, not Google Doc pages. A positive first progress update automatically moves a Not Started book to Translating, but page count alone does not certify formatting, semantic review, or publication readiness.
 
+**Verified-progress invariant:** source-page progress is verification-owned state, not ordinary editable project metadata. The generic project editor and generic project PATCH route must never write `translated_pages`. Progress may advance only through the dedicated checkpoint route after the target mutation has been read back; every checkpoint carries the expected previous count (optimistic-concurrency guard), authoritative physical-PDF denominator, source-PDF SHA-256, and current Google Doc revision, and is persisted in `translation_progress_checkpoints`. Stale writers fail closed instead of overwriting a newer count.
+
+The stored Workbench counter is a synchronized checkpoint projection, **not independent proof of manuscript coverage**. If it ever conflicts with authoritative source↔target evidence, stop, reconcile the manuscript, correct the checkpoint, and only then report progress. The authoritative denominator is the actual physical page count of the canonical PDF used by the translation workflow. For **Repentance / book-123**, that PDF is **132 physical pages**; the previous catalogue value of 131 was a metadata mismatch and is corrected here.
+
 
 ### Assigned-workload progress baseline — 2026-10-04
 
