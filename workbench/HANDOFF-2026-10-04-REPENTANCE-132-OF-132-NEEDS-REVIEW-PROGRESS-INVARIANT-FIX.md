@@ -17,7 +17,7 @@ This **supersedes** `workbench/HANDOFF-2026-10-04-REPENTANCE-34-OF-131-WORKBENCH
 - live verified progress: **132/132**
 - live Workbench status: **completed / Needs Review**
 - English Doc: `https://docs.google.com/document/d/1xBIpS5TXEQT42_JuoKlu5CgW95_B2wenYSk8LN_wcRg/edit`
-- Google Doc revision after formatting repair: `ANLCKQmNtHI2JDSbcQ67eGEt0c17Z4q8i-XZ7O_Hx1JB0DQ9h6oKlfGjT0YKJXj2iA0_togmLg-rlcgjxTT7GO7pOUAUaghwE_h9GgRF7f8`
+- Google Doc revision after second thorough formatting pass: `ANLCKQlJZ7v3n5XjEuQdzrwYPg_aZ5KqZRX2DVuy227He_WnBcGss9n0IXXlfwtZyB_snUN4k6RULisSxs2npTCyu941VIiOc0FS97OFtaI`
 - native footnotes preserved: **170**
 - ordinary Arabic-letter residue in English body at verification: **0**
 
@@ -69,3 +69,28 @@ The next admissible book-local work is **review/QA**, not additional translation
 
 - Google Drive “Anyone with the link → Editor” sharing remains a separate infrastructure/permissions question unless independently verified fixed.
 - Permanent cross-repo/self-hosted runner capacity remains a broader infrastructure loop, but it is not a blocker for this completed Repentance translation.
+
+
+## Second thorough formatting pass — completed
+
+The founder requested a second, more exhaustive formatting pass after the initial normalization. This pass re-audited the whole English manuscript rather than merely checking the font family.
+
+Repairs/verification included:
+
+- restored the established **14 pt Amiri** main-body baseline through the substantive chapters;
+- kept denser back-matter typography separate from body prose;
+- normalized real chapter/section/subsection hierarchy with native Docs heading structure;
+- normalized chapter-opening topic pages against the Arabic source structure;
+- repaired Chapter Two’s opening outline so it no longer renders stray bullets absent from the source;
+- normalized every Qurʾānic bracketed quotation span to the established green treatment: **135/135** spans;
+- normalized all **170 native footnote paragraphs** to Amiri 10 pt with the established first-line indent;
+- normalized verse-index sūrah labels and hadith-index authority subheads;
+- repaired editorial-note styling;
+- fixed two severe paragraph spillovers before forced chapter breaks with keep-lines-together handling;
+- final exported PDF tightened from **110 to 109 pages** without content removal;
+- visually inspected the entire 110-page pre-final export in page contact sheets, then re-exported and re-inspected every affected page after the spillover repairs;
+- final connector readback: **0 ordinary Arabic-letter residue**, **0 non-Amiri body runs**, **0 footnote-formatting outliers**, **135/135 Qurʾānic spans green**.
+
+The current Google Doc revision is `ANLCKQlJZ7v3n5XjEuQdzrwYPg_aZ5KqZRX2DVuy227He_WnBcGss9n0IXXlfwtZyB_snUN4k6RULisSxs2npTCyu941VIiOc0FS97OFtaI`.
+
+No additional translation text was added during this formatting pass.
