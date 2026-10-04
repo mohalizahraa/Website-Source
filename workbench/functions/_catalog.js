@@ -1,6 +1,6 @@
 // Public catalogue metadata derived from the canonical archive on main.
 // Work-management state is NOT stored here.
-export const CATALOG_VERSION = "main-945208b4-176+physical-page-fix-v1";
+export const CATALOG_VERSION = "main-945208b4-176+physical-page-fix-v1+supplication-physical-page-fix-v1";
 export const BOOK_CATALOG = [
   {
     "catalog_id": "book-1",
@@ -2240,9 +2240,9 @@ export const BOOK_CATALOG = [
     "topic_en": "Ethics and Education",
     "topic_ar": "الأخلاق والتربية",
     "detail_url": "https://alhaydari.com/ar/2012/08/34150/",
-    "pdf_url": "https://archive.alhaydari.com/ebook/ar/dooa.pdf",
+    "pdf_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AF%D8%B9%D8%A7%D8%A1-%D8%A5%D8%B4%D8%B1%D8%A7%D9%82%D8%A7%D8%AA%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87.pdf",
     "package_url": null,
-    "pages": 273,
+    "pages": 280,
     "volumes": 1,
     "date": "2012-08-23"
   },
