@@ -22,9 +22,12 @@ const savedActivityType = localStorage.getItem('haydariActivityType');
 const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', liveRevision: null, pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', viewScope: VIEW_SCOPES.includes(savedViewScope) ? savedViewScope : 'Shared', mobileBoardStatus: STATUS_ORDER.includes(savedMobileBoardStatus) ? savedMobileBoardStatus : 'in_progress', activityActorFilter: ACTIVITY_ACTORS.includes(savedActivityActor) ? savedActivityActor : 'all', activityTypeFilter: ACTIVITY_TYPES.includes(savedActivityType) ? savedActivityType : 'all', pendingWorkOnLink: null };
 const LIVE_REVISION_MS = 2000;
 const LIVE_REVISION_RETRY_MS = 1000;
+const LIVE_MARKER_SYNC_MS = 5000;
 let liveSyncTimer = null;
 let liveSyncInFlight = false;
 let liveRevisionInFlight = false;
+let markerSyncInFlight = false;
+let lastMarkerSyncAt = 0;
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -1483,10 +1486,39 @@ async function syncSharedData({allowHidden=false}={}) {
   }
 }
 
+async function syncVerifiedTranslationMarkers() {
+  if (document.hidden || markerSyncInFlight) return true;
+  const now=Date.now();
+  if (now-lastMarkerSyncAt < LIVE_MARKER_SYNC_MS) return true;
+  lastMarkerSyncAt=now;
+
+  const candidates=state.projects
+    .filter(p=>p.status==='in_progress' && p.google_doc_url && Number(p.translated_pages || 0) > 0)
+    .sort((a,b)=>String(b.translation_progress_at || '').localeCompare(String(a.translation_progress_at || '')))
+    .slice(0,3);
+
+  if (!candidates.length) return true;
+  markerSyncInFlight=true;
+  let ok=true;
+  try {
+    for (const project of candidates) {
+      try {
+        await api(`/api/projects/${project.id}/progress-sync`,{method:'POST'});
+      } catch {
+        ok=false;
+      }
+    }
+  } finally {
+    markerSyncInFlight=false;
+  }
+  return ok;
+}
+
 async function pollLiveRevision() {
   if (document.hidden || liveRevisionInFlight) return true;
   liveRevisionInFlight=true;
   try {
+    await syncVerifiedTranslationMarkers();
     const revision=await fetchLiveRevision();
     if (state.liveRevision === null || revision !== state.liveRevision) {
       return await syncSharedData();

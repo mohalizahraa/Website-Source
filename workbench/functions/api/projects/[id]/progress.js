@@ -63,7 +63,7 @@ export async function onRequestPatch(context) {
     return json({ error: 'source_pdf_sha256 must be the 64-character SHA-256 of the authoritative source PDF.' }, 400);
   }
   if (!googleDocRevision) {
-    return json({ error: 'google_doc_revision is required so the checkpoint is tied to verified target state.' }, 400);
+    return json({ error: 'google_doc_revision is required so the checkpoint is tied to an exact verified target state (native Docs revision or public-export-sha256 identity).' }, 400);
   }
 
   const latest = await context.env.DB.prepare(
