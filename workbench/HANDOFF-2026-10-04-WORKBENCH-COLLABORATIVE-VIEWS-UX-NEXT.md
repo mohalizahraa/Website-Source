@@ -100,15 +100,11 @@ Canonical invariant is recorded in `workbench/README.md`: if an English title ex
 
 Founder reaffirmed that book deliverables must not be restricted. The live Workbench denominator is **176 projects / 12 currently linked English Google Docs**.
 
-Full Drive-permission audit:
+Fresh Drive-metadata verification on 2026-10-04 shows **12/12 PASS — Anyone with the link → Editor (`anyone / writer`)**. This includes the ten Docs that the earlier audit had recorded as restricted, plus Repentance and A Study on Imamate. The earlier **2/12 PASS / 10/12 FAIL** state is superseded.
 
-- **2/12 PASS — Anyone with the link → Editor (`anyone / writer`)**: Repentance; A Study on Imamate.
-- **10/12 FAIL — restricted/owner-only, no `anyone` permission**: Supplication: Its Illuminations and Implications; The Infallibility of the Prophets in the Noble Qurʾān; The Prophetic Measures for Preserving the Divine Message; Seeking Intercession through the Possessor of the Means; The Attributes of the Servants of the All-Merciful in the Qurʾān; Features of Jurisprudential Renewal; The Jurisprudence of Fasting: Questions and Answers; ʿAllāmah al-Ṭabāṭabāʾī: Aspects of His Biography and Scholarly Method; The Religious Marjaʿ Sayyid Kamal al-Ḥaydarī: A Sketch of His Life, Method, and Reformist Project; Rites of Ḥajj.
+The Workbench runtime guard remains an anonymous reachability/Request-access check. It cannot certify the Drive role is Editor, so the canonical project contract still uses two gates: Operator verifies `anyone + writer` in Drive metadata before linking, and the Workbench independently verifies public no-sign-in reachability.
 
-The Workbench runtime guard remains an anonymous reachability/Request-access check. It cannot certify the Drive role is Editor, so the canonical project contract uses a two-gate model: Operator must verify `anyone + writer` in Drive metadata before linking, and the Workbench independently verifies public no-sign-in reachability.
-
-Current remediation boundary: the connected Google Drive action can inspect permissions and share to a named user or Workspace domain, but it does **not** expose creation of a public `type=anyone` permission for consumer Gmail. A tested Workspace-domain share attempt correctly failed as inapplicable. Metered browser automation is not admissible under the founder's $0 boundary. Therefore the 10 permission mutations remain an explicit external-control blocker; do not report the 12-link audit as closed until all 12 show `anyone / writer`.
-
+Current sharing blocker: **closed for all 12 currently linked English Books**.
 
 ## Static asset cache regression repaired
 
@@ -117,4 +113,16 @@ Production HTML had advanced to the collaborative UX build while `/app.js?v=uxwa
 
 ## Full-corpus physical PDF page-count audit
 
-Founder requested a whole-website source-page denominator audit. The prior 176-book PDF audit proved availability only and did not count pages. The audit pipeline is now extended so the self-hosted macOS runner downloads and opens every available source PDF with native PDFKit, records the physical page count and catalogue delta, and applies verified physical counts to Workbench D1 when the audit version advances. Static acceptance requires page-count evidence for all 172 available PDFs. The four verified-missing PDFs remain explicitly outside the physically verifiable denominator until a real PDF is recovered.
+The founder-requested whole-site physical page-count audit is complete against Workbench head `7d2b29f7629229773cd5665e9f4cde53e4c1269d` on the **Nexus self-hosted runner `nexus-mac-arm64`**, preserving the $0 paid-compute boundary.
+
+Latest evidence: Nexus Actions run `37192187766`, successful rerun job `111409353320`:
+- **176** catalogue records total;
+- **172** working direct PDFs;
+- **4** verified missing PDFs;
+- **0** unchecked PDFs;
+- **172** physical page counts verified with macOS PDFKit;
+- **72** catalogue/page-count mismatches.
+
+The four verified-missing records remain `book-4`, `book-23`, `book-32`, and `book-43`. The previously unresolved `book-47`, `book-48`, and `book-49` were rechecked successfully after their source URLs were repaired; their verified physical counts are **442**, **404**, and **383** pages respectively.
+
+The generated audit payload is the runtime authority for source-PDF availability and physical page denominators. When production loads the new `PDF_AUDIT_VERSION`, `ensureCatalog` propagates the verified states and physical counts into Workbench D1.
