@@ -473,7 +473,7 @@ function renderTranslationLive() {
       if (recent) return recent;
       return TITLE_COLLATOR.compare(a.title_ar || '',b.title_ar || '');
     });
-  const latest=state.activity.filter(a=>a.action==='translation progress').slice(0,5);
+  const assignedIds=new Set(assigned.map(p=>Number(p.id)));\n  const latest=state.activity.filter(a=>a.action==='translation progress' && assignedIds.has(Number(a.project_id))).slice(0,5);
   $('live-progress-summary').textContent=`${assigned.length} assigned · updates live`;
   const assignedMarkup=assigned.length ? assigned.map(p=>{
     const done=Number(p.translated_pages || 0), total=Number(p.pages || 0);
