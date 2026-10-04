@@ -18,6 +18,7 @@ const libSource = await fs.readFile(new URL('functions/_lib.js', root), 'utf8');
 const coverProxySource = await fs.readFile(new URL('functions/api/official-cover/[id].js', root), 'utf8');
 const coverSourcesSource = await fs.readFile(new URL('functions/_cover_sources.js', root), 'utf8');
 const stylesSource = await fs.readFile(new URL('public/styles.css', root), 'utf8');
+const headersSource = await fs.readFile(new URL('public/_headers', root), 'utf8');
 const projectPatchSource = await fs.readFile(new URL('functions/api/projects/[id].js', root), 'utf8');
 
 
@@ -105,6 +106,8 @@ assert(coverSourcesSource.includes('book-1') && coverSourcesSource.includes('boo
 assert(stylesSource.includes('--type-action:11px') && stylesSource.includes('.english-book-button{font-family:"Inter"'), 'Shared action geometry contract is missing.');
 assert(!stylesSource.includes('.english-book-button{font:inherit}'), 'English Book font inheritance regression remains.');
 assert(indexSource.includes('id="timeline-jump-today"'), 'Timeline Today control is missing.');
+assert(indexSource.includes('/app.js?v=20261004-bilingual-public') && indexSource.includes('/styles.css?v=20261004-bilingual-public'), 'Workbench asset cache-busting version is stale.');
+assert(headersSource.includes('/app.js') && headersSource.includes('/styles.css') && headersSource.includes('Cache-Control: no-cache'), 'Workbench JS/CSS freshness headers are missing.');
 assert(appSource.includes('timeline-due-marker'), 'Timeline due marker is missing.');
 assert(appSource.includes('async function setProjectDeadline(id, value)'), 'Shared deadline mutation helper is missing.');
 assert(appSource.includes('function renderTranslationLive()'), 'Live translation progress renderer is missing.');

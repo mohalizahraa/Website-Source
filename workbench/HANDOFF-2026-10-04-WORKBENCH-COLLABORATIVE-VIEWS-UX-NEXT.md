@@ -104,3 +104,8 @@ Founder reaffirmed that book deliverables must not be restricted. Current live l
 - A Study on Imamate — `anyone / writer` (Anyone with the link → Editor).
 
 The Workbench runtime guard remains an anonymous reachability/Request-access check. It cannot certify the Drive role is Editor, so the canonical project contract now makes the two-gate model explicit: Operator must verify `anyone + writer` in Drive metadata before linking, and the Workbench must independently verify public no-sign-in reachability.
+
+
+## Static asset cache regression repaired
+
+Production HTML had advanced to the collaborative UX build while `/app.js?v=uxwave6` still served the older cached JavaScript, which prevented the newly committed bilingual-title projection from reaching users. The fix adds a fresh shared asset version to JS/CSS and a Cloudflare Pages `public/_headers` rule requiring cache revalidation. Production verification must check the unique current asset URL, not merely the HTML shell.
