@@ -2,7 +2,7 @@ import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalize
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url','cover_url',
-  'start_date','due_date','blocked','blocker_reason','notes'
+  'start_date','due_date','translated_pages','blocked','blocker_reason','notes'
 ]);
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
 const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
@@ -48,6 +48,13 @@ export async function onRequestPatch(context) {
   if ((body.start_date !== undefined && !validIsoDate(body.start_date)) || (body.due_date !== undefined && !validIsoDate(body.due_date))) {
     return json({ error: 'Dates must use YYYY-MM-DD.' }, 400);
   }
+  if (body.translated_pages !== undefined) {
+    const translatedPages=Number(body.translated_pages);
+    if (!Number.isInteger(translatedPages) || translatedPages < 0 || (before.pages && translatedPages > before.pages)) {
+      return json({ error: `Translated pages must be a whole number from 0 to ${before.pages || 'the source-page total'}.` }, 400);
+    }
+    body.translated_pages=translatedPages;
+  }
 
   const updates = [];
   const values = [];
@@ -74,6 +81,13 @@ export async function onRequestPatch(context) {
 
   const now = new Date().toISOString();
   const actor = actorFromRequest(context.request);
+  const progressChanged = body.translated_pages !== undefined && Number(body.translated_pages) !== Number(before.translated_pages || 0);
+  if (progressChanged) {
+    updates.push('translation_progress_at = ?'); values.push(now);
+    if (Number(body.translated_pages) > 0 && before.status === 'not_started' && body.status === undefined) {
+      updates.push("status = 'in_progress'");
+    }
+  }
   const translatedStatuses = new Set(['review','completed','published']);
   const nextStatus = body.status ?? before.status;
   const wasTranslated = translatedStatuses.has(before.status);
@@ -108,6 +122,6 @@ export async function onRequestPatch(context) {
     `UPDATE projects SET ${updates.join(', ')} WHERE id = ? RETURNING *`
   ).bind(...values).first();
 
-  await recordActivity(context.env.DB, id, actor, 'updated project', before, after);
+  await recordActivity(context.env.DB, id, actor, progressChanged ? 'translation progress' : 'updated project', before, after);
   return json({ project: normalizeProject(after) });
 }

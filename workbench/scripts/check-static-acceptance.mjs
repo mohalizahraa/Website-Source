@@ -93,6 +93,10 @@ assert(!stylesSource.includes('.english-book-button{font:inherit}'), 'English Bo
 assert(indexSource.includes('id="timeline-jump-today"'), 'Timeline Today control is missing.');
 assert(appSource.includes('timeline-due-marker'), 'Timeline due marker is missing.');
 assert(appSource.includes('async function setProjectDeadline(id, value)'), 'Shared deadline mutation helper is missing.');
+assert(appSource.includes('function renderTranslationLive()'), 'Live translation progress renderer is missing.');
+assert(indexSource.includes('id="live-translation-active"') && indexSource.includes('id="live-translation-feed"'), 'Live translation Dashboard surface is missing.');
+assert(indexSource.includes('id="translated-pages"'), 'Project source-page progress field is missing.');
+assert(appSource.includes("a.action === 'translation progress'"), 'Activity does not render translation-page events specially.');
 assert(appSource.includes('due_date:value || null'), 'Deadline clearing does not send explicit null.');
 assert(appSource.includes('data-clear-deadline'), 'Inline Remove deadline action is missing.');
 assert(indexSource.includes('id="clear-due-date"'), 'Editor Remove deadline action is missing.');

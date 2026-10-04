@@ -4,6 +4,7 @@ import { PDF_AUDIT, PDF_AUDIT_VERSION } from './_pdf_audit.js';
 const CATALOG_COLUMNS = [
   ['catalog_id','TEXT'],['translit','TEXT'],['author','TEXT'],['author_ar','TEXT'],['category','TEXT'],
   ['topic_en','TEXT'],['topic_ar','TEXT'],['package_url','TEXT'],['pages','INTEGER'],['volumes','INTEGER'],['catalog_date','TEXT'],['cover_url','TEXT'],
+  ['translated_pages','INTEGER NOT NULL DEFAULT 0'],['translation_progress_at','TEXT'],
   ['pdf_status',"TEXT NOT NULL DEFAULT 'unchecked'"],['pdf_checked_at','TEXT'],['pdf_check_note','TEXT']
 ];
 

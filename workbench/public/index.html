@@ -65,6 +65,15 @@
           <div class="panel-head"><h3>Pace & projection</h3><button class="text-button" type="button" data-jump-view="stats">See full stats</button></div>
           <div id="pace-summary" class="pace-summary"></div>
         </section>
+        <section class="panel live-translation-panel">
+          <div class="panel-head">
+            <div><span class="panel-eyebrow">Live</span><h3>Translation progress</h3></div>
+            <span class="live-indicator"><i></i> updating with the work</span>
+          </div>
+          <div id="live-translation-active" class="live-translation-active"></div>
+          <div class="live-feed-divider"><span>Recent page updates</span></div>
+          <div id="live-translation-feed" class="translation-feed"></div>
+        </section>
         <section class="panel assigned-panel">
           <div class="panel-head assigned-panel-head">
             <div><span class="panel-eyebrow">Personal workspace</span><h3 id="my-projects-title">Assigned projects</h3></div>
@@ -167,6 +176,7 @@
         <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select></label>
         <label>Priority<select id="priority"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
         <label>Start date<input id="start-date" type="date" /></label>
+        <div class="field-group"><label for="translated-pages">Translation progress</label><div class="translation-page-input"><input id="translated-pages" type="number" min="0" step="1" /><span id="translated-pages-total">source pages</span></div></div>
         <div class="field-group"><label for="due-date">Deadline</label><div class="date-input-actions"><input id="due-date" type="date" /><button id="clear-due-date" type="button" class="text-button date-clear-button">Remove deadline</button></div></div>
         <label class="full">English Book — Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/document/..." /></label>
         <label class="full">Book cover image URL <span class="field-note">optional override</span><input id="cover-url" type="url" placeholder="https://.../cover.jpg" /></label>

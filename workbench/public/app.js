@@ -266,6 +266,7 @@ function projectMarkup(p, compact=false, selectable=false) {
         ${p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : (p.pdf_unchecked ? '<span class="pill">PDF checking…</span>' : '')}
         ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
       </div>
+      ${translationProgressMarkup(p,true)}
       <div class="entry-actions compact-actions">
         ${workOnBookMarkup(p)}
         ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : ''}
@@ -289,6 +290,7 @@ function projectMarkup(p, compact=false, selectable=false) {
       ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
       ${p.translit ? `<div class="title-translit">${escapeHtml(p.translit)}</div>` : ''}
       ${p.author || p.author_ar ? `<div class="author-row">${p.author ? `<span>${escapeHtml(p.author)}</span>` : ''}${p.author_ar ? `<span class="author-ar">${escapeHtml(p.author_ar)}</span>` : ''}</div>` : ''}
+      ${translationProgressMarkup(p)}
       <div class="entry-actions">
         ${workOnBookMarkup(p)}
         ${p.pdf_available ? `<a class="mini-link pdf" href="/api/pdf/${p.id}" target="_blank" rel="noopener">Arabic PDF</a>` : (p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : '<span class="pill">PDF checking…</span>')}
@@ -425,6 +427,17 @@ function paceModel() {
   };
 }
 
+function translationProgressMarkup(p, compact=false) {
+  const done=Math.max(0,Number(p.translated_pages || 0));
+  const total=Math.max(0,Number(p.pages || 0));
+  if (!done || !total) return '';
+  const percent=Math.min(100,Math.round((done/total)*100));
+  return `<div class="book-translation-progress ${compact?'compact':''}" aria-label="${done} of ${total} source pages translated">
+    <div class="book-progress-copy"><span>${done}/${total} pages translated</span><strong>${percent}%</strong></div>
+    <div class="book-progress-track"><span style="width:${percent}%"></span></div>
+  </div>`;
+}
+
 function assignedProjectMarkup(p) {
   const due = p.due_date ? dateText(p.due_date) : 'No deadline';
   return `<article class="assigned-card" data-project-id="${p.id}">
@@ -437,6 +450,7 @@ function assignedProjectMarkup(p) {
       <div class="title-ar">${escapeHtml(p.title_ar)}</div>
       ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
       <div class="assigned-meta">${escapeHtml(due)}${p.assignee === 'Both' ? ' · Shared' : ''}</div>
+      ${translationProgressMarkup(p,true)}
       <div class="entry-actions assigned-actions">
         ${workOnBookMarkup(p)}
         ${googleDocLinkMarkup(p)}
@@ -444,6 +458,34 @@ function assignedProjectMarkup(p) {
       </div>
     </div>
   </article>`;
+}
+
+function parseActivityJson(raw) {
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+function renderTranslationLive() {
+  const active=state.projects
+    .filter(p=>Number(p.translated_pages || 0)>0 && Number(p.translated_pages || 0)<Number(p.pages || 0))
+    .sort((a,b)=>String(b.translation_progress_at || '').localeCompare(String(a.translation_progress_at || '')));
+  const latest=state.activity.filter(a=>a.action==='translation progress').slice(0,5);
+  const activeMarkup=active.length ? active.map(p=>{
+    const done=Number(p.translated_pages || 0), total=Number(p.pages || 0);
+    const percent=total ? Math.min(100,Math.round(done/total*100)) : 0;
+    return `<button type="button" class="live-translation-row" data-live-project="${p.id}">
+      <div class="live-translation-copy"><span dir="rtl">${escapeHtml(p.title_ar)}</span><strong>${done}/${total} pages</strong></div>
+      <div class="live-translation-track"><span style="width:${percent}%"></span></div>
+    </button>`;
+  }).join('') : '<div class="live-empty">No book is actively translating yet.</div>';
+  const feedMarkup=latest.length ? latest.map(a=>{
+    const after=parseActivityJson(a.after_json) || {};
+    const done=Number(after.translated_pages || 0), total=Number(after.pages || 0);
+    const when=new Date(a.created_at.replace(' ','T')+'Z');
+    return `<div class="translation-feed-item"><span class="translation-feed-dot"></span><div><strong>${done}/${total} pages</strong><span dir="rtl">${escapeHtml(a.title_ar || '')}</span></div><time>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>`;
+  }).join('') : '<div class="live-empty subtle">Page updates will appear here as translation advances.</div>';
+  $('live-translation-active').innerHTML=activeMarkup;
+  $('live-translation-feed').innerHTML=feedMarkup;
+  $('live-translation-active').querySelectorAll('[data-live-project]').forEach(button=>button.addEventListener('click',()=>openProject(Number(button.dataset.liveProject))));
 }
 
 function renderDashboard() {
@@ -488,6 +530,7 @@ function renderDashboard() {
   $('my-projects-count').textContent = `${assigned.length} book${assigned.length===1?'':'s'}`;
   $('my-projects').innerHTML = assigned.map(assignedProjectMarkup).join('') || `<div class="assigned-empty">No books are assigned to ${escapeHtml(state.actor)} yet.</div>`;
   bindProjectClicks($('my-projects'));
+  renderTranslationLive();
 }
 
 function renderBatchToolbar() {
@@ -844,7 +887,14 @@ function progressChartMarkup(model) {
 }
 
 function renderActivity() {
-  $('activity-list').innerHTML = state.activity.map(a => `<div class="activity-item"><time>${new Date(a.created_at.replace(' ','T')+'Z').toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${new Date(a.created_at.replace(' ','T')+'Z').toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`).join('') || '<p class="muted">No activity yet.</p>';
+  $('activity-list').innerHTML = state.activity.map(a => {
+    const when=new Date(a.created_at.replace(' ','T')+'Z');
+    if (a.action === 'translation progress') {
+      const after=parseActivityJson(a.after_json) || {};
+      return `<div class="activity-item activity-translation"><time>${when.toLocaleDateString()}</time><div><strong>${Number(after.translated_pages || 0)}/${Number(after.pages || 0)} pages translated</strong>${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
+    }
+    return `<div class="activity-item"><time>${when.toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
+  }).join('') || '<p class="muted">No activity yet.</p>';
 }
 
 function render() { renderDashboard(); renderProjects(); renderBoard(); renderTimeline(); renderStats(); renderActivity(); hydrateUploadedCovers(document); }
@@ -868,6 +918,9 @@ function openProject(id) {
   $('priority').value = p?.priority || 'normal';
   $('start-date').value = p?.start_date || '';
   $('due-date').value = p?.due_date || '';
+  $('translated-pages').value = p?.translated_pages || 0;
+  $('translated-pages').max = p?.pages || ''; 
+  $('translated-pages-total').textContent = p?.pages ? `/ ${p.pages} source pages` : 'source pages';
   $('google-doc-url').value = p?.google_doc_url || '';
   $('cover-url').value = p?.cover_url || '';
   $('cover-file').value = '';
@@ -901,6 +954,7 @@ async function saveProject(event) {
   const payload = {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
     status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
+    translated_pages: Number($('translated-pages').value || 0),
     google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     published: $('published').checked, blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
   };

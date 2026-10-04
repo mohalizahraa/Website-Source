@@ -128,3 +128,10 @@ A second official-site sweep recovered the seven-book **مفاهيم قرآني�
 - Equivalent action roles now share one font-size/line-height/height/padding/radius contract across Dashboard, Projects, Board, Timeline, and dialogs. The prior `English Book` button font-inheritance override is explicitly eliminated.
 - Official cover images are now requested through a same-origin `/api/official-cover/:catalogId` proxy with edge caching and a fallback that strips obsolete PageSpeed URL wrappers. This prevents brittle direct hotlink rendering from making mapped covers appear missing.
 - Timeline now uses workflow-status color on bars, explicit due-end markers for ranges, and a `Today` control that centers the current date without changing project data.
+
+
+## Live source-page translation progress — 2026-10-04
+
+Each project can store a source-PDF page counter (`translated_pages`) against its authoritative catalogue page denominator. The Dashboard exposes one compact **Live translation progress** panel with active books and the five most recent page updates; project/assigned cards show a subtle per-book bar only after translation has begun. Translation-progress changes are written to Activity as a dedicated event, so the Activity view remains an auditable chronological feed without turning every screen into a social-feed surface.
+
+Page progress is source-relative: **X/Y means X physical pages of the authoritative Arabic PDF have been processed into the English translation target**, not Google Doc pages. A positive first progress update automatically moves a Not Started book to Translating, but page count alone does not certify formatting, semantic review, or publication readiness.
