@@ -98,12 +98,16 @@ Canonical invariant is recorded in `workbench/README.md`: if an English title ex
 
 ## English Book sharing verification boundary
 
-Founder reaffirmed that book deliverables must not be restricted. Current live linked Docs were checked through Google Drive metadata:
+Founder reaffirmed that book deliverables must not be restricted. The live Workbench denominator is **176 projects / 12 currently linked English Google Docs**.
 
-- Repentance — `anyone / writer` (Anyone with the link → Editor).
-- A Study on Imamate — `anyone / writer` (Anyone with the link → Editor).
+Full Drive-permission audit:
 
-The Workbench runtime guard remains an anonymous reachability/Request-access check. It cannot certify the Drive role is Editor, so the canonical project contract now makes the two-gate model explicit: Operator must verify `anyone + writer` in Drive metadata before linking, and the Workbench must independently verify public no-sign-in reachability.
+- **2/12 PASS — Anyone with the link → Editor (`anyone / writer`)**: Repentance; A Study on Imamate.
+- **10/12 FAIL — restricted/owner-only, no `anyone` permission**: Supplication: Its Illuminations and Implications; The Infallibility of the Prophets in the Noble Qurʾān; The Prophetic Measures for Preserving the Divine Message; Seeking Intercession through the Possessor of the Means; The Attributes of the Servants of the All-Merciful in the Qurʾān; Features of Jurisprudential Renewal; The Jurisprudence of Fasting: Questions and Answers; ʿAllāmah al-Ṭabāṭabāʾī: Aspects of His Biography and Scholarly Method; The Religious Marjaʿ Sayyid Kamal al-Ḥaydarī: A Sketch of His Life, Method, and Reformist Project; Rites of Ḥajj.
+
+The Workbench runtime guard remains an anonymous reachability/Request-access check. It cannot certify the Drive role is Editor, so the canonical project contract uses a two-gate model: Operator must verify `anyone + writer` in Drive metadata before linking, and the Workbench independently verifies public no-sign-in reachability.
+
+Current remediation boundary: the connected Google Drive action can inspect permissions and share to a named user or Workspace domain, but it does **not** expose creation of a public `type=anyone` permission for consumer Gmail. A tested Workspace-domain share attempt correctly failed as inapplicable. Metered browser automation is not admissible under the founder's $0 boundary. Therefore the 10 permission mutations remain an explicit external-control blocker; do not report the 12-link audit as closed until all 12 show `anyone / writer`.
 
 
 ## Static asset cache regression repaired
