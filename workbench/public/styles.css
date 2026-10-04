@@ -266,3 +266,14 @@ input[type=file]::file-selector-button:hover{background:rgba(184,146,90,.1)}
 .book-translation-progress.zero .book-progress-copy,.live-translation-row.zero .live-translation-copy{color:var(--sage)}
 .live-translation-row.zero{background:rgba(255,248,234,.34)}
 .live-translation-row.zero:hover{background:rgba(255,248,234,.6)}
+
+
+/* Board card containment: keep compact controls inside narrow Kanban columns. */
+.project-card{min-width:0;overflow:hidden}
+.project-card .compact-quick-controls,
+.project-card .quick-field,
+.project-card .quick-date-row{min-width:0;max-width:100%}
+.project-card .quick-field select,
+.project-card .quick-field input{box-sizing:border-box;max-width:100%}
+.project-card .quick-date-row{width:100%;align-items:stretch;flex-direction:column;gap:4px}
+.project-card .quick-clear-date{align-self:flex-start;max-width:100%;white-space:normal;text-align:left;padding-left:0}
