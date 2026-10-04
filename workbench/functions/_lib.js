@@ -96,6 +96,64 @@ export async function ensureCatalog(db) {
     await db.prepare("INSERT INTO workbench_meta (key,value) VALUES ('catalog_version',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(CATALOG_VERSION).run();
   }
 
+  // One-time repair for the 2026-10-04 English-Book cross-link:
+  // book-123 (Repentance) was pointed at the public A Study on Imamate Doc.
+  // Move that live misplaced URL to book-122 and restore Repentance's existing
+  // translation target. Keep the repair in D1/runtime state, not catalogue data.
+  const englishBookRoutingRepair = await db.prepare(
+    "SELECT value FROM workbench_meta WHERE key='english_book_routing_repair_2026_10_04'"
+  ).first();
+  if (englishBookRoutingRepair?.value !== 'applied') {
+    const repentance = await db.prepare(
+      "SELECT * FROM projects WHERE catalog_id='book-123' OR title_ar='التوبة حقيقتها وشروطها وآثارها' LIMIT 1"
+    ).first();
+    const imamate = await db.prepare(
+      "SELECT * FROM projects WHERE catalog_id='book-122' OR title_ar='بحث حول الإمامة' LIMIT 1"
+    ).first();
+    const repentanceUrl = "https://docs.google.com/document/d/1xBIpS5TXEQT42_JuoKlu5CgW95_B2wenYSk8LN_wcRg/edit";
+    const misplacedImamateUrl = repentance?.google_doc_url && repentance.google_doc_url !== repentanceUrl
+      ? repentance.google_doc_url
+      : null;
+
+    if (repentance && imamate && misplacedImamateUrl) {
+      const now = new Date().toISOString();
+      const repentanceAfter = {
+        ...repentance,
+        google_doc_url: repentanceUrl,
+        status: Number(repentance.translated_pages || 0) < Number(repentance.pages || 0) ? 'in_progress' : repentance.status,
+        completed_at: Number(repentance.translated_pages || 0) < Number(repentance.pages || 0) ? null : repentance.completed_at,
+        published_at: Number(repentance.translated_pages || 0) < Number(repentance.pages || 0) ? null : repentance.published_at,
+        updated_at: now,
+      };
+      const imamateAfter = { ...imamate, google_doc_url: misplacedImamateUrl, updated_at: now };
+
+      await db.batch([
+        db.prepare(
+          "UPDATE projects SET google_doc_url=?, status=?, completed_at=?, published_at=?, updated_at=? WHERE id=?"
+        ).bind(
+          repentanceAfter.google_doc_url,
+          repentanceAfter.status,
+          repentanceAfter.completed_at,
+          repentanceAfter.published_at,
+          now,
+          repentance.id
+        ),
+        db.prepare(
+          "UPDATE projects SET google_doc_url=?, updated_at=? WHERE id=?"
+        ).bind(misplacedImamateUrl, now, imamate.id),
+        db.prepare(
+          "INSERT INTO activity (project_id, actor, action, before_json, after_json) VALUES (?, 'System', 'repaired English Book routing', ?, ?)"
+        ).bind(repentance.id, JSON.stringify(repentance), JSON.stringify(repentanceAfter)),
+        db.prepare(
+          "INSERT INTO activity (project_id, actor, action, before_json, after_json) VALUES (?, 'System', 'repaired English Book routing', ?, ?)"
+        ).bind(imamate.id, JSON.stringify(imamate), JSON.stringify(imamateAfter)),
+        db.prepare(
+          "INSERT INTO workbench_meta(key,value) VALUES('english_book_routing_repair_2026_10_04','applied') ON CONFLICT(key) DO UPDATE SET value=excluded.value"
+        ),
+      ]);
+    }
+  }
+
   const auditCurrent = await db.prepare("SELECT value FROM workbench_meta WHERE key = 'pdf_audit_version'").first();
   if (auditCurrent?.value !== PDF_AUDIT_VERSION) {
     const auditStatements = [];
