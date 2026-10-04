@@ -69,11 +69,13 @@ assert((counts.missing || 0) === 4, `Expected 4 missing PDFs, found ${counts.mis
 assert((counts.unchecked || 0) === 0, `Expected 0 unchecked PDFs, found ${counts.unchecked || 0}.`);
 const pageCountRows = auditRows.filter(([, evidence]) => Number.isInteger(Number(evidence.physical_pages)) && Number(evidence.physical_pages) > 0);
 assert(pageCountRows.length === 172, `Expected physical page counts for all 172 available PDFs, found ${pageCountRows.length}.`);
+const catalogById = new Map(catalog.map(book => [book.catalog_id, book]));
 for (const [id, evidence] of auditRows.filter(([, evidence]) => evidence.status === 'available')) {
   assert(Number.isInteger(Number(evidence.physical_pages)) && Number(evidence.physical_pages) > 0, `Available PDF ${id} lacks a verified physical page count.`);
+  assert(Number(catalogById.get(id)?.pages) === Number(evidence.physical_pages), `Website page count for ${id} does not match the audited physical PDF count.`);
 }
 assert(pdfAudit.page_count_verified === 172, `Expected page_count_verified=172, found ${pdfAudit.page_count_verified}.`);
-assert(Number.isInteger(pdfAudit.page_count_mismatches) && pdfAudit.page_count_mismatches >= 0, 'PDF audit mismatch accounting is missing.');
+assert(pdfAudit.page_count_mismatches === 72, `Expected 72 historical page-count mismatches, found ${pdfAudit.page_count_mismatches}.`);
 
 const expectedMissing = new Set(['book-4', 'book-23', 'book-32', 'book-43']);
 const actualMissing = new Set(auditRows.filter(([, evidence]) => evidence.status === 'missing').map(([id]) => id));
