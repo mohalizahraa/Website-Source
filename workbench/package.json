@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev public",
-    "check": "node --check public/app.js && node --check functions/_lib.js && node --check functions/api/health.js && node --check functions/api/activity.js && node --check functions/api/pdf-audit.js && node --check 'functions/api/pdf/[id].js' && node --check 'functions/api/english-book/[id].js' && node --check functions/api/projects/index.js && node --check 'functions/api/projects/[id].js' && node --check 'functions/api/projects/[id]/progress.js' && node --check scripts/audit-pdfs.mjs && node --check scripts/fetch-covers.mjs && node --check 'functions/api/cover/[id].js' && node scripts/check-progress-invariant.mjs,
+    "check": "node --check public/app.js && node --check functions/_lib.js && node --check functions/api/health.js && node --check functions/api/activity.js && node --check functions/api/pdf-audit.js && node --check 'functions/api/pdf/[id].js' && node --check 'functions/api/english-book/[id].js' && node --check functions/api/projects/index.js && node --check 'functions/api/projects/[id].js' && node --check 'functions/api/projects/[id]/progress.js' && node --check scripts/audit-pdfs.mjs && node --check scripts/fetch-covers.mjs && node --check 'functions/api/cover/[id].js' && node scripts/check-progress-invariant.mjs",
     "check:acceptance": "npm run check && node scripts/check-static-acceptance.mjs",
     "postinstall": "node scripts/fetch-tawbah-source.mjs"
   },
