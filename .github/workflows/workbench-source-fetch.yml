@@ -1,4 +1,4 @@
-name: Workbench source handoff
+name: Workbench source access bridge
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - workbench
     paths:
       - .github/workflows/workbench-source-fetch.yml
+      - workbench/source-access-request.txt
 
 permissions:
   contents: read
@@ -15,25 +16,46 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 10
     steps:
-      - name: Download and verify authoritative Tawbah PDF
+      - name: Check out request
+        uses: actions/checkout@v4
+
+      - name: Resolve requested Workbench project
+        id: request
         shell: bash
         run: |
           set -euo pipefail
-          out="$RUNNER_TEMP/tawbah-source.pdf"
-          curl -L --fail --retry 3 --retry-delay 2 \
-            'https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D9%88%D8%A8%D8%A9-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7-%D9%88%D8%B4%D8%B1%D9%88%D8%B7%D9%87%D8%A7-%D9%88%D8%A2%D8%AB%D8%A7%D8%B1%D9%87%D8%A7.pdf' \
-            -o "$out"
-          size="$(wc -c < "$out" | tr -d ' ')"
-          test "$size" -gt 100000
-          test "$size" -lt 2097152
-          test "$(head -c 4 "$out")" = '%PDF'
-          echo "Verified Tawbah PDF: $size bytes"
+          project_id="$(sed -n '1p' workbench/source-access-request.txt | tr -d '[:space:]')"
+          case "$project_id" in
+            ''|*[!0-9]*) echo "Invalid Workbench project id: $project_id" >&2; exit 1 ;;
+          esac
+          test "$project_id" -gt 0
+          echo "project_id=$project_id" >> "$GITHUB_OUTPUT"
 
-      - name: Hand off source artifact
+      - name: Download canonical PDF through Workbench
+        id: fetch
+        shell: bash
+        env:
+          PROJECT_ID: ${{ steps.request.outputs.project_id }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/workbench-source-$PROJECT_ID.pdf"
+          url="https://haydari-translation-workbench.pages.dev/api/pdf/$PROJECT_ID"
+          curl -L --fail --retry 3 --retry-delay 2 --max-time 120 "$url" -o "$out"
+          size="$(wc -c < "$out" | tr -d ' ')"
+          test "$size" -gt 1000
+          test "$size" -lt 104857600
+          test "$(head -c 4 "$out")" = '%PDF'
+          echo "file=$out" >> "$GITHUB_OUTPUT"
+          echo "Verified Workbench PDF for project $PROJECT_ID: $size bytes"
+          if command -v pdfinfo >/dev/null 2>&1; then
+            pdfinfo "$out" | grep -E '^(Pages|Page size|File size):' || true
+          fi
+
+      - name: Hand off canonical Workbench PDF
         uses: actions/upload-artifact@v4
         with:
-          name: tawbah-source
-          path: ${{ runner.temp }}/tawbah-source.pdf
+          name: workbench-source-pdf
+          path: ${{ steps.fetch.outputs.file }}
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
