@@ -85,13 +85,14 @@ export async function ensureCatalog(db) {
          title_en = CASE WHEN title_en IS NULL OR title_en = '' THEN ? ELSE title_en END,
          translit = ?, author = ?, author_ar = ?, category = ?, topic_en = ?, topic_ar = ?,
          source_url = ?,
-         source_pdf_url = CASE WHEN source_pdf_url IS NULL OR source_pdf_url = '' THEN ? ELSE source_pdf_url END,
+         source_pdf_url = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE source_pdf_url END,
          package_url = ?, pages = ?, volumes = ?, catalog_date = ?, updated_at = updated_at
        WHERE catalog_id = ? OR title_ar = ?`
     ).bind(
       book.catalog_id, book.title_en || null, book.translit || null, book.author || null, book.author_ar || null,
       book.category || null, book.topic_en || null, book.topic_ar || null, book.detail_url || null,
-      book.pdf_url || null, book.package_url || null, book.pages, book.volumes, book.date,
+      book.pdf_url || null, book.pdf_url || null, book.pdf_url || null,
+      book.package_url || null, book.pages, book.volumes, book.date,
       book.catalog_id, book.title_ar
     ));
     statements.push(db.prepare(
@@ -352,9 +353,12 @@ export function normalizeProject(row) {
   const pdfStatus = row.pdf_status || (!row.source_pdf_url ? 'missing' : 'unchecked');
   const hasPdfUrl = Boolean(row.source_pdf_url);
   const pageEvidence = row.catalog_id ? PDF_AUDIT[row.catalog_id] : null;
-  const verifiedPhysicalPages = Number.isInteger(Number(pageEvidence?.physical_pages)) && Number(pageEvidence.physical_pages) > 0
-    ? Number(pageEvidence.physical_pages)
-    : null;
+  const catalogBook = row.catalog_id ? BOOK_CATALOG.find(book => book.catalog_id === row.catalog_id) : null;
+  const verifiedPhysicalPages = catalogBook && !['book-4','book-23','book-32','book-43'].includes(row.catalog_id)
+    ? Number(catalogBook.pages)
+    : (Number.isInteger(Number(pageEvidence?.physical_pages)) && Number(pageEvidence.physical_pages) > 0
+      ? Number(pageEvidence.physical_pages)
+      : null);
   const { priority: _legacyPriority, blocked: _legacyBlocked, blocker_reason: _legacyBlockerReason, ...project } = row;
   return {
     ...project,
