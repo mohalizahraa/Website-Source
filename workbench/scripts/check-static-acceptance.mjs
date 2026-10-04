@@ -105,6 +105,8 @@ assert(indexSource.includes('id="timeline-jump-today"'), 'Timeline Today control
 assert(appSource.includes('timeline-due-marker'), 'Timeline due marker is missing.');
 assert(appSource.includes('async function setProjectDeadline(id, value)'), 'Shared deadline mutation helper is missing.');
 assert(appSource.includes('function renderTranslationLive()'), 'Live translation progress renderer is missing.');
+assert(appSource.includes('function bookTitleMarkup(project') && appSource.includes('function activityBookTitleMarkup(activity)'), 'Whole-site bilingual book-title projection helpers are missing.');
+assert(appSource.includes('live-translation-copy">\${bookTitleMarkup(p,{compact:true})}') && appSource.includes('timeline-label-title">\${bookTitleMarkup(p,{compact:true})}') && appSource.includes('activityBookTitleMarkup(a)'), 'One or more secondary surfaces regressed to Arabic-only book titles.');
 assert(appSource.includes("p.assignee===state.actor || p.assignee==='Both'"), 'Live progress is not scoped to the selected collaborator.');
 assert(appSource.includes('translationProgressMarkup(p,true,true)'), 'Assigned books do not show zero-state page progress.');
 assert(indexSource.includes('id="live-progress-summary"'), 'Assigned live-progress summary is missing.');

@@ -81,3 +81,16 @@ Re-check the newest self-hosted Workbench static-acceptance run and production H
 - GitHub combined status still exposes only the blocked Vercel status; no Cloudflare deployment status is attached.
 
 Truth boundary: the UX wave is **implemented on the workbench branch but not verified/deployed in production**. The next execution step is infrastructure/deployment recovery, not more UX design.
+
+
+## Whole-site English-title consistency correction
+
+Founder noticed that English book titles were present only on some surfaces. The catalogue/runtime already carries `title_en`; the defect was projection-level. The Workbench now has a reusable bilingual title renderer and uses it on the previously Arabic-only secondary surfaces:
+
+- live translation rows;
+- recent translation feed;
+- Timeline labels;
+- Timeline Unassigned cards;
+- Activity events.
+
+Canonical invariant is recorded in `workbench/README.md`: if an English title exists, every visible book-title surface shows it alongside Arabic. Static acceptance now guards the projection.

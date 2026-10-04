@@ -371,3 +371,21 @@ body.workspace-data-unavailable #app{display:none}
   .board .board-col{display:none;width:100%}
   .board .board-col.mobile-active{display:block}
 }
+
+
+/* Whole-site bilingual book-title projection */
+.book-title-pair{display:inline-grid;gap:1px;min-width:0;max-width:100%;vertical-align:middle}
+.book-title-ar{font-family:"Amiri",serif;direction:rtl;text-align:right;line-height:1.35;color:var(--ink)}
+.book-title-en{font-family:"EB Garamond",serif;line-height:1.2;color:var(--sage)}
+.book-title-pair.compact .book-title-ar{font-size:14px}
+.book-title-pair.compact .book-title-en{font-size:12px}
+.live-translation-copy .book-title-pair{flex:1}
+.timeline-label-title .book-title-pair{display:grid}
+.timeline-label-title .book-title-ar{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timeline-label-title .book-title-en{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timeline-unassigned-card>.book-title-pair{display:grid}
+.activity-item .book-title-pair{display:inline-grid;margin-left:7px;vertical-align:middle}
+@media(max-width:720px){
+  .activity-item .book-title-pair{display:grid;margin:4px 0 0}
+  .live-translation-copy .book-title-pair{width:100%}
+}

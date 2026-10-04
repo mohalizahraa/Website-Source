@@ -154,6 +154,17 @@ function estimatedPages(p, fallbackPages) {
   return fallbackPages;
 }
 function assigneeOptions(current) { return ASSIGNEES.map(name => `<option value="${name}" ${current===name?'selected':''}>${name}</option>`).join(''); }
+function bookTitleMarkup(project,{compact=false}={}) {
+  if (!project) return '';
+  const ar=project.title_ar ? `<span class="book-title-ar" dir="rtl">${escapeHtml(project.title_ar)}</span>` : '';
+  const en=project.title_en ? `<span class="book-title-en">${escapeHtml(project.title_en)}</span>` : '';
+  return `<span class="book-title-pair ${compact?'compact':''}">${ar}${en}</span>`;
+}
+function activityBookTitleMarkup(activity) {
+  const project=state.projects.find(p=>Number(p.id)===Number(activity.project_id));
+  if (project) return bookTitleMarkup(project,{compact:true});
+  return activity.title_ar ? `<span class="book-title-pair compact"><span class="book-title-ar" dir="rtl">${escapeHtml(activity.title_ar)}</span></span>` : '';
+}
 function statusOptions(current) { return STATUS_ORDER.map(status => `<option value="${status}" ${current===status?'selected':''}>${STATUS[status]}</option>`).join(''); }
 function assigneeLabel(value) { return value === 'Both' ? 'Shared' : value; }
 function assigneeBadgeMarkup(p) { return `<span class="pill assignee-pill assignee-${String(p.assignee || 'Unassigned').toLowerCase()}">${escapeHtml(assigneeLabel(p.assignee || 'Unassigned'))}</span>`; }
@@ -651,7 +662,7 @@ function renderTranslationLive() {
     const done=Number(p.translated_pages || 0), total=Number(p.pages || 0);
     const percent=total ? Math.min(100,Math.round(done/total*100)) : 0;
     return `<button type="button" class="live-translation-row ${done===0?'zero':''}" data-live-project="${p.id}">
-      <div class="live-translation-copy"><span dir="rtl">${escapeHtml(p.title_ar)}</span><strong>${done}/${total} pages</strong></div>
+      <div class="live-translation-copy">${bookTitleMarkup(p,{compact:true})}<strong>${done}/${total} pages</strong></div>
       <div class="live-translation-track"><span style="width:${percent}%"></span></div>
     </button>`;
   }).join('') : '<div class="live-empty">No books are assigned here yet.</div>';
@@ -659,7 +670,7 @@ function renderTranslationLive() {
     const after=parseActivityJson(a.after_json) || {};
     const done=Number(after.translated_pages || 0), total=Number(after.pages || 0);
     const when=new Date(a.created_at.replace(' ','T')+'Z');
-    return `<div class="translation-feed-item"><span class="translation-feed-dot"></span><div><strong>${done}/${total} pages</strong><span dir="rtl">${escapeHtml(a.title_ar || '')}</span></div><time>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>`;
+    return `<div class="translation-feed-item"><span class="translation-feed-dot"></span><div><strong>${done}/${total} pages</strong>${activityBookTitleMarkup(a)}</div><time>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>`;
   }).join('') : '<div class="live-empty subtle">Page updates will appear here as translation advances.</div>';
   $('live-translation-active').innerHTML=assignedMarkup;
   $('live-translation-feed').innerHTML=feedMarkup;
@@ -1001,7 +1012,7 @@ function renderTimeline() {
         : (p.due_date ? `Due ${dateText(p.due_date)}` : `Starts ${dateText(p.start_date)}`);
       return `<div class="timeline-lane" data-project-id="${p.id}">
         <div class="timeline-label">
-          <div class="timeline-label-title" dir="rtl">${escapeHtml(p.title_ar)}</div>
+          <div class="timeline-label-title">${bookTitleMarkup(p,{compact:true})}</div>
           <div class="timeline-label-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span><span>${escapeHtml(barTitle)}</span></div>
         </div>
         <div class="timeline-track" style="width:${trackWidth}px">
@@ -1023,7 +1034,7 @@ function renderTimeline() {
     $('timeline-unassigned').innerHTML=unassigned.length
       ? `<div class="timeline-unscheduled-head"><span>Unassigned schedule</span><strong>${unassigned.length}</strong></div><div class="timeline-unassigned-grid">${unassigned.map(p=>{
           const schedule=p.start_date && p.due_date ? `${dateText(p.start_date)} → ${dateText(p.due_date)}` : (p.due_date ? `Due ${dateText(p.due_date)}` : (p.start_date ? `Starts ${dateText(p.start_date)}` : 'Without dates'));
-          return `<article class="timeline-unassigned-card" data-project-id="${p.id}"><div class="title-ar" dir="rtl">${escapeHtml(p.title_ar)}</div><div class="timeline-unassigned-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span><span>${escapeHtml(schedule)}</span></div></article>`;
+          return `<article class="timeline-unassigned-card" data-project-id="${p.id}">${bookTitleMarkup(p,{compact:true})}<div class="timeline-unassigned-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span><span>${escapeHtml(schedule)}</span></div></article>`;
         }).join('')}</div>`
       : '';
   }
@@ -1160,9 +1171,9 @@ function renderActivity() {
     const when=new Date(a.created_at.replace(' ','T')+'Z');
     if (a.action === 'translation progress') {
       const after=parseActivityJson(a.after_json) || {};
-      return `<div class="activity-item activity-translation"><time>${when.toLocaleDateString()}</time><div><strong>${Number(after.translated_pages || 0)}/${Number(after.pages || 0)} pages translated</strong>${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
+      return `<div class="activity-item activity-translation"><time>${when.toLocaleDateString()}</time><div><strong>${Number(after.translated_pages || 0)}/${Number(after.pages || 0)} pages translated</strong>${activityBookTitleMarkup(a)}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
     }
-    return `<div class="activity-item"><time>${when.toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
+    return `<div class="activity-item"><time>${when.toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${activityBookTitleMarkup(a)}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
   }).join('') || '<p class="muted">No activity matches these filters.</p>';
 }
 
