@@ -922,7 +922,6 @@ function openProject(id) {
   $('title-en').value = p?.title_en || '';
   $('assignee').value = p?.assignee || 'Unassigned';
   $('status').value = p?.status || 'not_started';
-  $('priority').value = p?.priority || 'normal';
   $('start-date').value = p?.start_date || '';
   $('due-date').value = p?.due_date || '';
   $('translated-pages').value = p?.translated_pages || 0;
@@ -960,7 +959,7 @@ async function saveProject(event) {
   const id = Number($('project-id').value) || null;
   const payload = {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
-    status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
+    status: $('status').value, start_date: $('start-date').value, due_date: $('due-date').value,
     translated_pages: Number($('translated-pages').value || 0),
     google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     published: $('published').checked, blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
