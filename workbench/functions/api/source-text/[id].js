@@ -1,4 +1,4 @@
-import { getDocument } from 'pdfjs-serverless';
+import { getResolvedPDFJS } from 'unpdf';
 import { ensureCatalog, json } from '../../_lib.js';
 
 function projectId(context) {
@@ -67,7 +67,8 @@ export async function onRequestGet(context) {
   const data=new Uint8Array(await source.arrayBuffer());
   let document;
   try {
-    document=await getDocument({data,useSystemFonts:true}).promise;
+    const { getDocument }=await getResolvedPDFJS();
+    document=await getDocument({data,useSystemFonts:true,maxImageSize:16777216}).promise;
   } catch(error) {
     return json({error:'PDF parser failed.',detail:String(error?.message||error)},502);
   }
