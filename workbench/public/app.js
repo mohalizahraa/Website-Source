@@ -211,7 +211,6 @@ function filteredProjects() {
   const status = $('filter-status')?.value || '';
   const schedule = $('filter-schedule')?.value || '';
   const sort = $('sort-projects')?.value || state.projectSort || 'updated';
-  const blocked = $('filter-blocked')?.checked || false;
   const missingPdf = $('filter-missing-pdf')?.checked || false;
   const missingCover = $('filter-missing-cover')?.checked || false;
   const noEnglish = $('filter-no-english')?.checked || false;
@@ -228,7 +227,6 @@ function filteredProjects() {
       && assigneeMatch(p)
       && (!status || p.status === status)
       && scheduleMatch
-      && (!blocked || p.blocked)
       && (!missingPdf || p.pdf_missing)
       && (!missingCover || !hasCover(p))
       && (!noEnglish || !p.google_doc_url);
@@ -264,7 +262,6 @@ function projectMarkup(p, compact=false, selectable=false) {
       <div class="meta">
         <span class="pill status-${p.status}">${STATUS[p.status]}</span>\n        ${p.published ? '<span class="pill">Published</span>' : ''}
         ${p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : (p.pdf_unchecked ? '<span class="pill">PDF checking…</span>' : '')}
-        ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
       </div>
       ${translationProgressMarkup(p,true)}
       <div class="entry-actions compact-actions">
@@ -300,7 +297,6 @@ function projectMarkup(p, compact=false, selectable=false) {
     <div class="project-side">
       <span class="pill status-${p.status}">${STATUS[p.status]}</span>
       ${p.published ? '<span class="pill">Published</span>' : ''}
-      ${p.blocked ? '<span class="pill blocked">Blocked</span>' : ''}
       ${quickControlsMarkup(p)}
     </div>
   </article>`;
@@ -370,7 +366,7 @@ function bindQuickActions(root=document) {
 function clearProjectFilters() {
   els.search.value='';
   ['filter-topic','filter-assignee','filter-status','filter-schedule'].forEach(id=>{ if ($(id)) $(id).value=''; });
-  ['filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>{ if ($(id)) $(id).checked=false; });
+  ['filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>{ if ($(id)) $(id).checked=false; });
   renderProjects();
   renderBoard();
   toast('Filters cleared');
@@ -506,12 +502,11 @@ function renderDashboard() {
   $('publication-bar').style.width = `${pct(published,total)}%`;
 
   const active = state.projects.filter(p => ['in_progress','review','completed'].includes(p.status));
-  const blocked = state.projects.filter(p => p.blocked);
   const due = state.projects.filter(p => p.due_date && !isPublishReady(p));
   const missingPdf = state.projects.filter(p => p.pdf_missing).length;
   const uncheckedPdf = state.projects.filter(p => p.pdf_unchecked).length;
   $('now-list').innerHTML = [
-    ['Active', active.length], ['Needs review', state.projects.filter(p=>p.status==='completed').length], ['Blocked', blocked.length],
+    ['Active', active.length], ['Needs review', state.projects.filter(p=>p.status==='completed').length],
     ['With deadlines', due.length], ['Missing PDF', missingPdf], ['PDFs still checking', uncheckedPdf]
   ].map(([label,n])=>`<div class="summary-row"><span>${label}</span><strong>${n}</strong></div>`).join('');
 
@@ -844,7 +839,7 @@ function renderStats() {
     return `<div class="summary-row"><span>${person}</span><strong>${done}/${list.length} · ${pct(done,list.length)}%${['Zahraa','Mohammed'].includes(person) ? ` · ${recentByPerson}/30d` : ''}</strong></div>`;
   }).join('');
   $('stats-deadlines').innerHTML = [
-    ['Overdue',overdue],['Due in next 30 days',dueSoon],['Active without deadline',unscheduled],['Blocked',active.filter(p=>p.blocked).length]
+    ['Overdue',overdue],['Due in next 30 days',dueSoon],['Active without deadline',unscheduled]
   ].map(([label,n])=>`<div class="summary-row"><span>${label}</span><strong>${n}</strong></div>`).join('');
 
   $('progress-chart').innerHTML = progressChartMarkup(model);
@@ -944,8 +939,6 @@ function openProject(id) {
         : `<span>PDF awaiting verification${p.pdf_check_note ? ` · ${escapeHtml(p.pdf_check_note)}` : ''}</span>`
   ) : '';
   $('published').checked = Boolean(p?.published);
-  $('blocked').checked = Boolean(p?.blocked);
-  $('blocker-reason').value = p?.blocker_reason || '';
   $('notes').value = p?.notes || '';
   const meta = [];
   if (p?.completed_at) meta.push(`Translation finished ${new Date(p.completed_at).toLocaleDateString()}${p.completed_by ? ` by ${escapeHtml(p.completed_by)}` : ''}`);
@@ -962,7 +955,7 @@ async function saveProject(event) {
     status: $('status').value, start_date: $('start-date').value, due_date: $('due-date').value,
     translated_pages: Number($('translated-pages').value || 0),
     google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
-    published: $('published').checked, blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
+    published: $('published').checked, notes: $('notes').value.trim(),
   };
   try {
     if (id) await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify(payload)});
@@ -1208,7 +1201,7 @@ els.actor.addEventListener('change',()=>{
   renderDashboard();
   if ($('filter-assignee')?.value === '__mine__') renderProjects();
 });
-['filter-topic','filter-assignee','filter-status','filter-schedule','filter-blocked','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+['filter-topic','filter-assignee','filter-status','filter-schedule','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('sort-projects')?.addEventListener('change',()=>{state.projectSort=$('sort-projects').value;localStorage.setItem('haydariProjectSort',state.projectSort);renderProjects();});
 $('group-projects')?.addEventListener('change',()=>{state.projectGrouping=$('group-projects').value;localStorage.setItem('haydariProjectGrouping',state.projectGrouping);renderProjects();});
 $('new-project').addEventListener('click',()=>openProject(null));
