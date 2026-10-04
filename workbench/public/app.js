@@ -1011,7 +1011,6 @@ async function saveProject(event) {
   const payload = {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
     status: $('status').value, start_date: $('start-date').value, due_date: $('due-date').value,
-    translated_pages: Number($('translated-pages').value || 0),
     google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     published: $('published').checked, notes: $('notes').value.trim(),
   };
