@@ -45,8 +45,11 @@ jobs:
           test "$size" -gt 1000
           test "$size" -lt 104857600
           test "$(head -c 4 "$out")" = '%PDF'
+          sha256="$(shasum -a 256 "$out" | awk '{print $1}')"
           echo "file=$out" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
           echo "Verified Workbench PDF for project $PROJECT_ID: $size bytes"
+          echo "SHA-256: $sha256"
           if command -v pdfinfo >/dev/null 2>&1; then
             pdfinfo "$out" | grep -E '^(Pages|Page size|File size):' || true
           fi
