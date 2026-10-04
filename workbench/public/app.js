@@ -7,12 +7,14 @@ const STATUS = {
 };
 const STATUS_ORDER = Object.keys(STATUS);
 const ASSIGNEES = ['Zahraa','Mohammed','Both','Unassigned'];
+const BOARD_SCOPES = ['Zahraa','Mohammed','Shared'];
 const SORT_VALUES = ['updated','deadline','title','status','assignee','topic'];
 const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', numeric:true });
 const savedActor = localStorage.getItem('haydariActor');
 const savedProjectSort = localStorage.getItem('haydariProjectSort');
 const savedProjectGrouping = localStorage.getItem('haydariProjectGrouping');
-const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', pendingWorkOnLink: null };
+const savedBoardScope = localStorage.getItem('haydariBoardScope');
+const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', boardScope: BOARD_SCOPES.includes(savedBoardScope) ? savedBoardScope : 'Shared', pendingWorkOnLink: null };
 const LIVE_SYNC_MS = 15000;
 let liveSyncTimer = null;
 let liveSyncInFlight = false;
@@ -54,6 +56,20 @@ function syncActorSwitch() {
     button.classList.toggle('active',active);
     button.setAttribute('aria-pressed',active?'true':'false');
   });
+}
+
+function syncBoardScopeSwitch() {
+  document.querySelectorAll('[data-board-scope]').forEach(button=>{
+    const active=button.dataset.boardScope===state.boardScope;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',active?'true':'false');
+  });
+}
+
+function boardScopeMatches(project) {
+  if (state.boardScope === 'Zahraa') return project.assignee === 'Zahraa' || project.assignee === 'Both';
+  if (state.boardScope === 'Mohammed') return project.assignee === 'Mohammed' || project.assignee === 'Both';
+  return project.assignee === 'Zahraa' || project.assignee === 'Mohammed' || project.assignee === 'Both';
 }
 
 function toast(message) {
@@ -115,7 +131,7 @@ function coverMarkup(p, compact=false) {
 }
 function googleDocLinkMarkup(p) {
   return p.google_doc_url
-    ? `<a class="mini-link secondary-link english-book-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">English Book</a>`
+    ? `<button class="mini-link secondary-link english-book-link" type="button" data-open-english="${p.id}">English Book</button>`
     : `<button class="mini-link secondary-link english-book-button" type="button" data-link-english="${p.id}">English Book · link</button>`;
 }
 async function setProjectDeadline(id, value) {
@@ -320,7 +336,26 @@ function bindProjectClicks(root=document) {
   bindQuickActions(root);
 }
 
-function startWorkOnBook(id) {
+async function resolveEnglishBookUrl(id) {
+  const result = await api(`/api/english-book/${id}`);
+  if (!result?.url) throw new Error('English Book could not be resolved.');
+  return result.url;
+}
+
+async function openEnglishBook(id) {
+  const reservedWindow=window.open('about:blank','_blank');
+  if (reservedWindow) reservedWindow.opener=null;
+  try {
+    const url=await resolveEnglishBookUrl(id);
+    if (reservedWindow) reservedWindow.location.replace(url);
+    else window.location.assign(url);
+  } catch (error) {
+    if (reservedWindow) reservedWindow.close();
+    toast(error.message);
+  }
+}
+
+async function startWorkOnBook(id) {
   const project=state.projects.find(p=>p.id===id);
   if (!project) return;
   if (!project.google_doc_url) {
@@ -328,11 +363,16 @@ function startWorkOnBook(id) {
     toast('Link the English Book first');
     return;
   }
-  if (project.pdf_available) {
-    const pdfWindow=window.open(`/api/pdf/${project.id}`,'_blank');
-    if (pdfWindow) pdfWindow.opener=null;
+  const reservedPdfWindow = project.pdf_available ? window.open('about:blank','_blank') : null;
+  if (reservedPdfWindow) reservedPdfWindow.opener=null;
+  try {
+    const url=await resolveEnglishBookUrl(id);
+    if (reservedPdfWindow) reservedPdfWindow.location.replace(`/api/pdf/${project.id}`);
+    window.location.assign(url);
+  } catch (error) {
+    if (reservedPdfWindow) reservedPdfWindow.close();
+    toast(error.message);
   }
-  window.location.assign(project.google_doc_url);
 }
 
 function bindQuickActions(root=document) {
@@ -359,6 +399,10 @@ function bindQuickActions(root=document) {
     event.stopPropagation();
     try { await setProjectDeadline(Number(button.dataset.clearDeadline),null); }
     catch (error) { toast(error.message); }
+  }));
+  root.querySelectorAll('[data-open-english]').forEach(button => button.addEventListener('click', event => {
+    event.stopPropagation();
+    openEnglishBook(Number(button.dataset.openEnglish));
   }));
   root.querySelectorAll('[data-link-english]').forEach(button => button.addEventListener('click', event => {
     event.stopPropagation();
@@ -717,7 +761,22 @@ async function applyBatch() {
 
 function renderBoard() {
   const q = els.search.value.trim().toLowerCase();
-  const base = state.projects.filter(p=>!q || `${p.title_ar} ${p.title_en||''} ${p.translit||''} ${p.author||''} ${p.category||''}`.toLowerCase().includes(q));
+  const matching = state.projects.filter(p=>!q || `${p.title_ar} ${p.title_en||''} ${p.translit||''} ${p.author||''} ${p.category||''}`.toLowerCase().includes(q));
+  const base = matching.filter(boardScopeMatches);
+  const unassigned = state.boardScope === 'Shared' ? matching.filter(p=>p.assignee === 'Unassigned') : [];
+  syncBoardScopeSwitch();
+  if ($('board-scope-summary')) {
+    $('board-scope-summary').textContent = state.boardScope === 'Shared'
+      ? `${base.length} team books · ${unassigned.length} unassigned`
+      : `${base.length} books · Shared assignments included`;
+  }
+  if ($('board-unassigned')) {
+    $('board-unassigned').hidden = state.boardScope !== 'Shared' || !unassigned.length;
+    $('board-unassigned').innerHTML = unassigned.length
+      ? `<section class="board-unassigned-panel"><div class="board-unassigned-head"><div><span class="panel-eyebrow">Team inbox</span><strong>Unassigned</strong></div><span class="pill">${unassigned.length}</span></div><div class="board-unassigned-grid">${unassigned.map(p=>projectMarkup(p,true)).join('')}</div></section>`
+      : '';
+    if (!$('board-unassigned').hidden) bindProjectClicks($('board-unassigned'));
+  }
   $('board').innerHTML = STATUS_ORDER.map(status => {
     const list = base.filter(p=>p.status===status);
     return `<section class="board-col" data-status="${status}"><div class="board-head"><strong>${STATUS[status]}</strong><span class="pill">${list.length}</span></div><div class="board-list" data-status="${status}">${list.map(p=>projectMarkup(p,true)).join('') || '<p class="muted">Empty</p>'}</div></section>`;
@@ -1177,12 +1236,13 @@ async function saveEnglishBook(event) {
   if (reservedPdfWindow) reservedPdfWindow.opener=null;
   try {
     await api(`/api/projects/${id}`, {method:'PATCH',body:JSON.stringify({google_doc_url:url})});
+    const verifiedUrl = continueWork ? await resolveEnglishBookUrl(id) : null;
     $('english-book-dialog').close();
     state.pendingWorkOnLink=null;
     await loadData();
     if (continueWork) {
       if (reservedPdfWindow) reservedPdfWindow.location.replace(`/api/pdf/${id}`);
-      window.location.assign(url);
+      window.location.assign(verifiedUrl);
       return;
     }
     if (reservedPdfWindow) reservedPdfWindow.close();
@@ -1278,6 +1338,7 @@ async function init() {
   clearLegacyAccessKey();
   els.actor.value = state.actor;
   syncActorSwitch();
+  syncBoardScopeSwitch();
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
   if ($('group-projects')) $('group-projects').value = state.projectGrouping;
   try {
@@ -1297,6 +1358,13 @@ document.querySelectorAll('[data-actor-choice]').forEach(button=>button.addEvent
   if (button.dataset.actorChoice===state.actor) return;
   els.actor.value=button.dataset.actorChoice;
   els.actor.dispatchEvent(new Event('change',{bubbles:true}));
+}));
+document.querySelectorAll('[data-board-scope]').forEach(button=>button.addEventListener('click',()=>{
+  const scope=button.dataset.boardScope;
+  if (!BOARD_SCOPES.includes(scope) || scope===state.boardScope) return;
+  state.boardScope=scope;
+  localStorage.setItem('haydariBoardScope',state.boardScope);
+  renderBoard();
 }));
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
 $('view-my-projects')?.addEventListener('click',()=>{
