@@ -293,3 +293,28 @@ input[type=file]::file-selector-button:hover{background:rgba(184,146,90,.1)}
 .workspace-error p{margin:0;max-width:680px;font-size:12px;line-height:1.5;color:var(--ink)}
 body.workspace-data-unavailable #app{display:none}
 @media (max-width:640px){.workspace-error{align-items:stretch;flex-direction:column}.workspace-error .primary{align-self:flex-start}}
+
+
+/* Collaborative Board viewing scope */
+.board-scope-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--surface-line);border-radius:var(--radius-md);background:rgba(255,248,234,.52)}
+.board-scope-control{display:grid;gap:6px}
+.board-scope-switch{display:flex;gap:3px;padding:3px;border-radius:11px;background:rgba(184,146,90,.1)}
+.board-scope-switch button{border:0;border-radius:8px;background:transparent;color:var(--sage);font:600 11px "Inter",sans-serif;min-height:34px;padding:7px 12px;cursor:pointer}
+.board-scope-switch button:hover{background:rgba(255,248,234,.58);color:var(--ink)}
+.board-scope-switch button.active{background:var(--paper);color:var(--oxblood);box-shadow:0 2px 8px rgba(31,46,40,.08)}
+#board-scope-summary{font-size:10px;line-height:1.3;text-align:right}
+.board-unassigned{margin-bottom:12px}
+.board-unassigned[hidden]{display:none}
+.board-unassigned-panel{border:1px solid rgba(184,146,90,.34);border-radius:var(--radius-md);background:rgba(255,248,234,.38);padding:10px}
+.board-unassigned-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 9px}
+.board-unassigned-head>div{display:grid;gap:2px}
+.board-unassigned-head strong{font-family:"EB Garamond",serif;font-size:18px;color:var(--oxblood)}
+.board-unassigned-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.board-unassigned-grid .project-card{height:100%}
+@media(max-width:720px){
+  .board-scope-toolbar{align-items:stretch;flex-direction:column}
+  .board-scope-switch{width:100%}
+  .board-scope-switch button{flex:1;min-width:0;min-height:42px;padding:8px 7px}
+  #board-scope-summary{text-align:left}
+  .board-unassigned-grid{grid-template-columns:1fr}
+}
