@@ -76,6 +76,19 @@ The normal Workbench URL opens the workspace directly.
 `npm run check` syntax-checks the browser application and Pages Functions. Apply `schema.sql` to D1 before the first production launch, then seed the authorized project data directly into D1 without committing it to Git.
 
 
+## Translation-agent PDF access bridge
+
+The canonical Arabic source for translation remains the Workbench PDF route, not a separately chosen archive URL.
+
+For environments that cannot resolve the Cloudflare Pages hostname directly, the repository exposes a zero-cost handoff path:
+
+- set the desired Workbench project id on the first line of `workbench/source-access-request.txt`;
+- `.github/workflows/workbench-source-fetch.yml` runs only on a **self-hosted** runner;
+- the runner downloads `https://haydari-translation-workbench.pages.dev/api/pdf/<project-id>`, verifies that the response is a real PDF, and uploads it as the short-lived `workbench-source-pdf` Actions artifact;
+- translation tooling can then download/materialize that artifact without switching source authority or mirroring the book into the repository.
+
+This bridge exists only to cross runtime/network boundaries. It does not change the book's canonical source, page denominator, D1 state, or Workbench PDF behavior.
+
 ## PDF availability contract
 
 A URL that merely ends in `.pdf` is not considered available. Candidate URLs are validated server-side in small batches and persisted in D1 as `unchecked`, `available`, or `missing`.
