@@ -53,7 +53,7 @@ Private work state — assignments, deadlines, progress, notes, working Google D
 
 Cover recovery now contains **176/176 cover mappings** from the original Haydari book pages. Books without an imported image keep the archive fallback and can receive a per-book cover override in the Workbench.
 
-Current catalogue denominator: **176 books**. The fresh full byte-level audit completed on the founder's self-hosted Mac/ARM64 runner on 2026-10-03 and verified **172 working direct PDFs**, **4 missing**, and **0 unchecked**. Evidence is preserved in `public/pdf-audit.json` and in GitHub Actions run `37112926137` / job `111174193227`. The Workbench runtime audit owner is `functions/_pdf_audit.js`.
+Current catalogue denominator: **176 books**. The latest full physical-PDF audit completed on 2026-10-04 on the founder's **Nexus self-hosted Mac/ARM64 runner (`nexus-mac-arm64`)** against Workbench head `7d2b29f7629229773cd5665e9f4cde53e4c1269d`. It verified **172 working direct PDFs**, **4 missing**, **0 unchecked**, **172 physical page counts**, and **72 catalogue/page-count mismatches**. Evidence is preserved in `public/pdf-audit.json` and Nexus GitHub Actions run `37192187766` / job `111409353320`. The audit remained on self-hosted compute ($0 paid GitHub Actions compute). The Workbench runtime audit owner is `functions/_pdf_audit.js`.
 
 The four verified-missing records are:
 - `book-4` — *موسوعة الإمامة في الفكر الشيعي*: the official archive exposes a RAR package for the 12-volume collection rather than one direct PDF.
