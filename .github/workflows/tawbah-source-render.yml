@@ -1,0 +1,59 @@
+name: Temporary Tawbah Source Render
+
+on:
+  push:
+    branches:
+      - workbench
+    paths:
+      - .github/workflows/tawbah-source-render.yml
+
+jobs:
+  render:
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - name: Render authoritative source pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/tawbah-source-pages"
+          PDF="$RUNNER_TEMP/tawbah-source.pdf"
+          VENV="$RUNNER_TEMP/tawbah-render-venv"
+          rm -rf "$OUT" "$PDF" "$VENV"
+          mkdir -p "$OUT"
+          curl --fail --location --retry 3 --retry-delay 2 \
+            'https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D9%88%D8%A8%D8%A9-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7-%D9%88%D8%B4%D8%B1%D9%88%D8%B7%D9%87%D8%A7-%D9%88%D8%A2%D8%AB%D8%A7%D8%B1%D9%87%D8%A7.pdf' \
+            --output "$PDF"
+          python3 -m venv "$VENV"
+          "$VENV/bin/python" -m pip install --quiet --disable-pip-version-check pymupdf
+          "$VENV/bin/python" - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          import fitz
+          pdf = Path(os.environ['RUNNER_TEMP']) / 'tawbah-source.pdf'
+          out = Path(os.environ['RUNNER_TEMP']) / 'tawbah-source-pages'
+          data = pdf.read_bytes()
+          doc = fitz.open(pdf)
+          if len(doc) != 132:
+              raise SystemExit(f'Expected 132 physical PDF pages, got {len(doc)}')
+          rendered=[]
+          for zero_index in range(5,10):
+              page=doc[zero_index]
+              pix=page.get_pixmap(matrix=fitz.Matrix(3,3),alpha=False)
+              path=out / f'source-page-{zero_index+1:03d}.png'
+              pix.save(path)
+              rendered.append({'physical_pdf_page':zero_index+1,'file':path.name})
+          (out/'metadata.json').write_text(json.dumps({
+              'pdf_physical_pages':len(doc),
+              'sha256':hashlib.sha256(data).hexdigest(),
+              'rendered':rendered,
+              'source':'official alhaydari.com archive PDF'
+          },ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+      - name: Upload rendered source pages
+        uses: actions/upload-artifact@v4
+        with:
+          name: tawbah-source-pages-006-010
+          path: ${{ runner.temp }}/tawbah-source-pages
+          retention-days: 1
+          if-no-files-found: error
