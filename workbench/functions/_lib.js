@@ -77,9 +77,9 @@ export async function ensureCatalog(db) {
     statements.push(db.prepare(
       `INSERT INTO projects (
          title_ar,title_en,catalog_id,translit,author,author_ar,category,topic_en,topic_ar,source_url,source_pdf_url,package_url,pages,volumes,catalog_date,
-         assignee,status,priority,blocked,pdf_status,pdf_check_note
+         assignee,status,blocked,pdf_status,pdf_check_note
        )
-       SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'Unassigned','not_started','normal',0,
+       SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'Unassigned','not_started',0,
               CASE WHEN ? IS NULL OR ? = '' THEN 'missing' ELSE 'unchecked' END,
               CASE WHEN ? IS NULL OR ? = '' THEN 'No direct PDF candidate in catalog' ELSE NULL END
        WHERE NOT EXISTS (SELECT 1 FROM projects WHERE catalog_id = ? OR title_ar = ?)`
@@ -223,8 +223,9 @@ export async function recordActivity(db, projectId, actor, action, before, after
 export function normalizeProject(row) {
   const pdfStatus = row.pdf_status || (!row.source_pdf_url ? 'missing' : 'unchecked');
   const hasPdfUrl = Boolean(row.source_pdf_url);
+  const { priority: _legacyPriority, ...project } = row;
   return {
-    ...row,
+    ...project,
     assignee: row.assignee === 'Brother' ? 'Mohammed' : row.assignee,
     blocked: Boolean(row.blocked),
     has_uploaded_cover: Boolean(row.has_uploaded_cover),
