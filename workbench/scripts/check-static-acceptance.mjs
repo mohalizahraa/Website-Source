@@ -92,6 +92,12 @@ assert(stylesSource.includes('--type-action:11px') && stylesSource.includes('.en
 assert(!stylesSource.includes('.english-book-button{font:inherit}'), 'English Book font inheritance regression remains.');
 assert(indexSource.includes('id="timeline-jump-today"'), 'Timeline Today control is missing.');
 assert(appSource.includes('timeline-due-marker'), 'Timeline due marker is missing.');
+assert(appSource.includes('async function setProjectDeadline(id, value)'), 'Shared deadline mutation helper is missing.');
+assert(appSource.includes('due_date:value || null'), 'Deadline clearing does not send explicit null.');
+assert(appSource.includes('data-clear-deadline'), 'Inline Remove deadline action is missing.');
+assert(indexSource.includes('id="clear-due-date"'), 'Editor Remove deadline action is missing.');
+assert(indexSource.includes('id="clear-batch-deadlines"'), 'Batch Remove deadlines action is missing.');
+assert(appSource.includes('async function clearBatchDeadlines()'), 'Batch deadline clearing behavior is missing.');
 assert(indexSource.includes('id="filter-toggle"') && indexSource.includes('id="filter-content"'), 'Collapsible filter surface is missing.');
 assert(appSource.includes("querySelectorAll('.timeline-bar').forEach"), 'Timeline bars are not directly interactive.');
 assert(appSource.includes("p.assignee === state.actor || p.assignee === 'Both'"), 'Actor-scoped assignment logic is missing.');

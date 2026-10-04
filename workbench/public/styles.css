@@ -208,3 +208,23 @@ input[type=file]::file-selector-button:hover{background:rgba(184,146,90,.1)}
   .timeline-heading-tools{align-items:flex-start;justify-content:flex-start}
   .action-link,.details-btn,.mini-link,.english-book-button,.english-book-link{min-height:40px;font-size:12px}
 }
+
+
+/* Explicit deadline removal */
+.quick-date-row,.date-input-actions{display:flex;align-items:center;gap:7px;min-width:0}
+.quick-date-row input,.date-input-actions input{min-width:0;flex:1}
+.quick-clear-date,.date-clear-button{
+  border:0;background:transparent;color:var(--oxblood);
+  font-family:"Inter",sans-serif;font-size:var(--type-meta);line-height:1.2;font-weight:600;
+  white-space:nowrap;cursor:pointer;border-radius:8px;padding:6px 7px
+}
+.quick-clear-date:hover,.date-clear-button:hover{background:rgba(122,46,46,.07)}
+.field-group{display:grid;gap:6px;font-size:12px;font-weight:600}
+.field-group .date-input-actions input{
+  font:inherit;border:1px solid var(--surface-line);background:rgba(255,248,234,.86);
+  border-radius:var(--control-radius);padding:10px 12px;color:var(--ink);min-height:42px
+}
+@media(max-width:720px){
+  .quick-date-row,.date-input-actions{align-items:stretch;flex-direction:column}
+  .quick-clear-date,.date-clear-button{min-height:38px;text-align:left}
+}

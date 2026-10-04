@@ -115,13 +115,19 @@ function googleDocLinkMarkup(p) {
     ? `<a class="mini-link secondary-link english-book-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">English Book</a>`
     : `<button class="mini-link secondary-link english-book-button" type="button" data-link-english="${p.id}">English Book · link</button>`;
 }
+async function setProjectDeadline(id, value) {
+  await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify({due_date:value || null})});
+  await loadData();
+  toast(value ? `Deadline set: ${dateText(value)}` : 'Deadline removed');
+}
+
 function workOnBookMarkup(p) {
   return `<button class="mini-link work-on-book" type="button" data-work-on-book="${p.id}">Work on Book</button>`;
 }
 function quickControlsMarkup(p, compact=false) {
   return `<div class="quick-controls ${compact ? 'compact-quick-controls' : ''}">
     <label class="quick-field"><span>Assigned</span><select class="quick-assignee" data-project-id="${p.id}" draggable="false" aria-label="Assign ${escapeHtml(p.title_ar)}">${assigneeOptions(p.assignee)}</select></label>
-    <label class="quick-field"><span>Deadline</span><input class="quick-deadline" data-project-id="${p.id}" draggable="false" type="date" value="${escapeHtml(p.due_date || '')}" aria-label="Deadline for ${escapeHtml(p.title_ar)}"></label>
+    <div class="quick-field quick-deadline-field"><span>Deadline</span><div class="quick-date-row"><input class="quick-deadline" data-project-id="${p.id}" draggable="false" type="date" value="${escapeHtml(p.due_date || '')}" aria-label="Deadline for ${escapeHtml(p.title_ar)}">${p.due_date ? `<button class="quick-clear-date" type="button" data-clear-deadline="${p.id}" aria-label="Remove deadline for ${escapeHtml(p.title_ar)}">Remove</button>` : ''}</div></div>
   </div>`;
 }
 
@@ -345,11 +351,13 @@ function bindQuickActions(root=document) {
   root.querySelectorAll('.quick-deadline').forEach(input => input.addEventListener('change', async event => {
     event.stopPropagation();
     const id = Number(input.dataset.projectId);
-    try {
-      await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify({due_date:input.value})});
-      await loadData();
-      toast(input.value ? `Deadline set: ${dateText(input.value)}` : 'Deadline removed');
-    } catch (error) { toast(error.message); }
+    try { await setProjectDeadline(id,input.value); }
+    catch (error) { toast(error.message); }
+  }));
+  root.querySelectorAll('[data-clear-deadline]').forEach(button => button.addEventListener('click', async event => {
+    event.stopPropagation();
+    try { await setProjectDeadline(Number(button.dataset.clearDeadline),null); }
+    catch (error) { toast(error.message); }
   }));
   root.querySelectorAll('[data-link-english]').forEach(button => button.addEventListener('click', event => {
     event.stopPropagation();
@@ -566,6 +574,23 @@ async function runWithConcurrency(items, limit, worker) {
     }
   });
   await Promise.all(runners);
+}
+
+async function clearBatchDeadlines() {
+  const ids=[...state.selectedIds];
+  if (!ids.length) { toast('Select books first'); return; }
+  $('clear-batch-deadlines').disabled=true;
+  let failures=0;
+  try {
+    await runWithConcurrency(ids,5,async id=>{
+      try { await api(`/api/projects/${id}`,{method:'PATCH',body:JSON.stringify({due_date:null})}); }
+      catch { failures+=1; }
+    });
+    await loadData();
+    toast(failures ? `Removed ${ids.length-failures} deadlines; ${failures} failed` : `Removed deadlines from ${ids.length} books`);
+  } finally {
+    $('clear-batch-deadlines').disabled=false;
+  }
 }
 
 async function applyBatch() {
@@ -1127,6 +1152,14 @@ els.actor.addEventListener('change',()=>{
 $('sort-projects')?.addEventListener('change',()=>{state.projectSort=$('sort-projects').value;localStorage.setItem('haydariProjectSort',state.projectSort);renderProjects();});
 $('group-projects')?.addEventListener('change',()=>{state.projectGrouping=$('group-projects').value;localStorage.setItem('haydariProjectGrouping',state.projectGrouping);renderProjects();});
 $('new-project').addEventListener('click',()=>openProject(null));
+$('clear-due-date')?.addEventListener('click',async ()=>{
+  const id=Number($('project-id').value) || null;
+  if (!id) { $('due-date').value=''; return; }
+  try {
+    await setProjectDeadline(id,null);
+    $('due-date').value='';
+  } catch (error) { toast(error.message); }
+});
 $('published').addEventListener('change',()=>{ if ($('published').checked) $('status').value='published'; });
 $('status').addEventListener('change',()=>{ if ($('status').value!=='published') $('published').checked=false; });
 $('clear-project-filters')?.addEventListener('click',clearProjectFilters);
@@ -1149,6 +1182,7 @@ $('select-visible').addEventListener('change',()=>{
   renderProjects();
 });
 $('clear-batch').addEventListener('click',()=>{state.selectedIds.clear();renderProjects();});
+$('clear-batch-deadlines')?.addEventListener('click',clearBatchDeadlines);
 $('apply-batch').addEventListener('click',applyBatch);
 $('cover-url').addEventListener('input',()=>renderCoverPreview(state.projects.find(p=>p.id===Number($('project-id').value))));
 $('upload-cover').addEventListener('click',uploadCoverPhoto);

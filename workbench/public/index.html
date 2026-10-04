@@ -108,6 +108,7 @@
           <select id="batch-status"><option value="">Set status…</option><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select>
           <input id="batch-deadline" type="date" aria-label="Batch deadline" />
           <button id="apply-batch" type="button" class="secondary">Apply</button>
+          <button id="clear-batch-deadlines" type="button" class="text-button">Remove deadlines</button>
           <button id="clear-batch" type="button" class="text-button">Clear selection</button>
         </div>
         <div class="count" id="project-count"></div>
@@ -166,7 +167,7 @@
         <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select></label>
         <label>Priority<select id="priority"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
         <label>Start date<input id="start-date" type="date" /></label>
-        <label>Deadline<input id="due-date" type="date" /></label>
+        <div class="field-group"><label for="due-date">Deadline</label><div class="date-input-actions"><input id="due-date" type="date" /><button id="clear-due-date" type="button" class="text-button date-clear-button">Remove deadline</button></div></div>
         <label class="full">English Book — Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/document/..." /></label>
         <label class="full">Book cover image URL <span class="field-note">optional override</span><input id="cover-url" type="url" placeholder="https://.../cover.jpg" /></label>
         <label class="full">Import cover photo from device <span class="field-note">JPEG, PNG, or WebP</span><input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
