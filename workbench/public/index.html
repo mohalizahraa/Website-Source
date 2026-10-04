@@ -26,8 +26,8 @@
 
     <div class="workspace-toolbar">
       <div class="identity">
-        <span class="identity-label">Using as</span>
-        <div class="actor-switch" role="group" aria-label="Using as">
+        <span class="identity-label">Editing as</span>
+        <div class="actor-switch" role="group" aria-label="Editing as">
           <button type="button" data-actor-choice="Zahraa" aria-pressed="false">Zahraa</button>
           <button type="button" data-actor-choice="Mohammed" aria-pressed="false">Mohammed</button>
         </div>
@@ -98,8 +98,8 @@
           <div id="filter-content" class="filter-content active filters">
             <select id="filter-topic"><option value="">All topics</option></select>
             <select id="filter-assignee"><option value="">All people</option><option value="__mine__">My assignments</option><option>Zahraa</option><option>Mohammed</option><option>Both</option><option>Unassigned</option></select>
-            <select id="filter-status"><option value="">All statuses</option><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select>
-            <select id="filter-schedule"><option value="">Any schedule</option><option value="overdue">Overdue</option><option value="due_month">Due this month</option><option value="no_deadline">No deadline</option></select>
+            <select id="filter-status"><option value="">All statuses</option><option value="__active__">Active work</option><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select>
+            <select id="filter-schedule"><option value="">Any schedule</option><option value="with_deadline">Has deadline</option><option value="overdue">Overdue</option><option value="due_month">Due this month</option><option value="no_deadline">No deadline</option></select>
             <select id="sort-projects" aria-label="Sort projects">
               <option value="updated">Sort: Recently updated</option>
               <option value="deadline">Sort: Deadline (soonest)</option>
@@ -113,6 +113,7 @@
               <option value="series">Group: Series / standalone</option>
             </select>
             <label class="check"><input id="filter-missing-pdf" type="checkbox" /> Missing PDF only</label>
+            <label class="check"><input id="filter-checking-pdf" type="checkbox" /> Checking PDF only</label>
             <label class="check"><input id="filter-missing-cover" type="checkbox" /> Missing cover only</label>
             <label class="check"><input id="filter-no-english" type="checkbox" /> No English Book</label>
             <button id="clear-project-filters" type="button" class="text-button">Clear filters</button>
@@ -136,15 +137,16 @@
         <div class="board-scope-toolbar">
           <div class="board-scope-control">
             <span class="panel-eyebrow">Board view</span>
-            <div class="board-scope-switch" role="group" aria-label="Board viewing scope">
-              <button type="button" data-board-scope="Zahraa" aria-pressed="false">Zahraa</button>
-              <button type="button" data-board-scope="Mohammed" aria-pressed="false">Mohammed</button>
-              <button type="button" data-board-scope="Shared" aria-pressed="true">Shared</button>
+            <div class="view-scope-switch" role="group" aria-label="Board viewing scope">
+              <button type="button" data-view-scope="Zahraa" aria-pressed="false">Zahraa</button>
+              <button type="button" data-view-scope="Mohammed" aria-pressed="false">Mohammed</button>
+              <button type="button" data-view-scope="Shared" aria-pressed="true">Shared</button>
             </div>
           </div>
           <span id="board-scope-summary" class="muted"></span>
         </div>
         <div id="board-unassigned" class="board-unassigned" hidden></div>
+        <div id="board-status-tabs" class="board-status-tabs" aria-label="Board status view"></div>
         <div id="board" class="board"></div>
       </section>
 
@@ -154,8 +156,20 @@
             <div><span class="panel-eyebrow">Schedule</span><h3>Project timeline</h3><p>Start dates, deadlines, and work spans on a real time axis.</p></div>
             <div class="timeline-heading-tools"><button id="timeline-jump-today" type="button" class="secondary timeline-today-button">Today</button><div class="timeline-legend"><span><i class="legend-range"></i>Date range</span><span><i class="legend-milestone"></i>Milestone</span><span><i class="legend-overdue"></i>Overdue</span></div></div>
           </div>
+          <div class="timeline-scope-toolbar">
+            <div class="board-scope-control">
+              <span class="panel-eyebrow">Timeline view</span>
+              <div class="view-scope-switch" role="group" aria-label="Timeline viewing scope">
+                <button type="button" data-view-scope="Zahraa" aria-pressed="false">Zahraa</button>
+                <button type="button" data-view-scope="Mohammed" aria-pressed="false">Mohammed</button>
+                <button type="button" data-view-scope="Shared" aria-pressed="true">Shared</button>
+              </div>
+            </div>
+            <span id="timeline-scope-summary" class="muted"></span>
+          </div>
           <div id="timeline-visual" class="timeline-visual"></div>
           <div id="timeline-unscheduled" class="timeline-unscheduled"></div>
+          <div id="timeline-unassigned" class="timeline-unassigned" hidden></div>
         </section>
       </section>
 
@@ -179,6 +193,19 @@
       </section>
 
       <section id="activity-view" class="view">
+        <div class="activity-filter-toolbar">
+          <div>
+            <span class="panel-eyebrow">Activity by</span>
+            <div class="activity-actor-switch" role="group" aria-label="Activity actor filter">
+              <button type="button" data-activity-actor="all" aria-pressed="true">All</button>
+              <button type="button" data-activity-actor="Zahraa" aria-pressed="false">Zahraa</button>
+              <button type="button" data-activity-actor="Mohammed" aria-pressed="false">Mohammed</button>
+              <button type="button" data-activity-actor="System" aria-pressed="false">System</button>
+            </div>
+          </div>
+          <label class="activity-type-filter"><span>Event type</span><select id="activity-type"><option value="all">All events</option><option value="translation">Translation progress</option><option value="project">Project changes</option></select></label>
+          <span id="activity-filter-summary" class="muted"></span>
+        </div>
         <div class="panel"><div id="activity-list" class="activity-list"></div></div>
       </section>
     </div>
@@ -199,7 +226,7 @@
         
         <label>Start date<input id="start-date" type="date" /></label>
         <div class="field-group"><label for="translated-pages">Verified translation progress <span class="field-note">synced from source→Doc checkpoints</span></label><div class="translation-page-input"><input id="translated-pages" type="number" min="0" step="1" readonly aria-readonly="true" /><span id="translated-pages-total">source pages</span></div></div>
-        <div class="field-group"><label for="due-date">Deadline</label><div class="date-input-actions"><input id="due-date" type="date" /><button id="clear-due-date" type="button" class="text-button date-clear-button">Remove deadline</button></div></div>
+        <div class="field-group"><label for="due-date">Deadline</label><div class="date-input-actions"><input id="due-date" type="date" /><button id="clear-due-date" type="button" class="text-button date-clear-button">Remove deadline</button></div><span id="due-date-warning" class="date-warning" role="status" aria-live="polite" hidden></span></div>
         <label class="full">English Book — Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/document/..." /></label>
         <label class="full">Book cover image URL <span class="field-note">optional override</span><input id="cover-url" type="url" placeholder="https://.../cover.jpg" /></label>
         <label class="full">Import cover photo from device <span class="field-note">JPEG, PNG, or WebP</span><input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
@@ -244,6 +271,6 @@
   </svg>
 
   <div id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="/app.js?v=1573056"></script>
+  <script type="module" src="/app.js?v=uxwave6"></script>
 </body>
 </html>

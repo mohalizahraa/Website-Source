@@ -85,6 +85,17 @@ assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters contro
 assert(indexSource.includes('id="my-projects"') && indexSource.includes('id="my-projects-count"'), 'Personal assigned-project dashboard is missing.');
 assert(indexSource.includes('data-actor-choice="Zahraa"') && indexSource.includes('data-actor-choice="Mohammed"'), 'Segmented actor switch is missing.');
 assert(appSource.includes('function syncActorSwitch()'), 'Segmented actor switch synchronization is missing.');
+assert(indexSource.includes('Editing as') && !indexSource.includes('>Using as<'), 'Identity/view-scope wording is ambiguous.');
+assert(indexSource.match(/data-view-scope="Zahraa"/g)?.length === 2 && indexSource.match(/data-view-scope="Mohammed"/g)?.length === 2 && indexSource.match(/data-view-scope="Shared"/g)?.length === 2, 'Board and Timeline do not expose the shared collaboration scope.');
+assert(appSource.includes("localStorage.setItem('haydariViewScope'") && appSource.includes('function viewScopeMatches(project)'), 'Shared Board/Timeline scope persistence is missing.');
+assert(indexSource.includes('id="timeline-unassigned"') && appSource.includes('Unassigned schedule'), 'Timeline does not retain Unassigned work distinctly in Shared view.');
+assert(indexSource.includes('id="board-status-tabs"') && appSource.includes('data-board-status'), 'Mobile Board status tabs are missing.');
+assert(appSource.includes("root.querySelectorAll('.quick-status')"), 'Tap-friendly Board status mutation is missing.');
+assert(appSource.includes('assigneeBadgeMarkup(p)') && appSource.includes("value === 'Both' ? 'Shared'"), 'Scan-speed Shared assignee badge behavior is missing.');
+assert(indexSource.includes('data-dashboard-preset') === false, 'Dashboard drill-down controls must be rendered from live state, not hard-coded stale counts.');
+assert(appSource.includes('data-dashboard-preset=') && appSource.includes('function openProjectsPreset(preset)') && appSource.includes('function openPersonWork(person)'), 'Dashboard summaries are not navigational.');
+assert(indexSource.includes('data-activity-actor="System"') && indexSource.includes('id="activity-type"') && appSource.includes('function activityActorGroup(activity)'), 'Activity filtering controls/logic are missing.');
+assert(indexSource.includes('id="due-date-warning"') && appSource.includes('function confirmSuspiciousDeadline(value,currentValue=') && appSource.includes('deadlineDaysAgo(value) > 90'), 'Suspicious-past-deadline warning/confirmation is missing.');
 assert(appSource.includes('/api/official-cover/'), 'Official covers are not routed through the same-origin proxy.');
 assert(coverProxySource.includes('sourceCandidates') && coverProxySource.includes('pagespeed'), 'Official cover proxy PageSpeed fallback is missing.');
 assert(coverSourcesSource.includes('book-1') && coverSourcesSource.includes('book-176'), 'Generated official cover source projection is incomplete.');

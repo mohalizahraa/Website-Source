@@ -7,14 +7,19 @@ const STATUS = {
 };
 const STATUS_ORDER = Object.keys(STATUS);
 const ASSIGNEES = ['Zahraa','Mohammed','Both','Unassigned'];
-const BOARD_SCOPES = ['Zahraa','Mohammed','Shared'];
+const VIEW_SCOPES = ['Zahraa','Mohammed','Shared'];
+const ACTIVITY_ACTORS = ['all','Zahraa','Mohammed','System'];
+const ACTIVITY_TYPES = ['all','translation','project'];
 const SORT_VALUES = ['updated','deadline','title','status','assignee','topic'];
 const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', numeric:true });
 const savedActor = localStorage.getItem('haydariActor');
 const savedProjectSort = localStorage.getItem('haydariProjectSort');
 const savedProjectGrouping = localStorage.getItem('haydariProjectGrouping');
-const savedBoardScope = localStorage.getItem('haydariBoardScope');
-const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', boardScope: BOARD_SCOPES.includes(savedBoardScope) ? savedBoardScope : 'Shared', pendingWorkOnLink: null };
+const savedViewScope = localStorage.getItem('haydariViewScope') || localStorage.getItem('haydariBoardScope');
+const savedMobileBoardStatus = localStorage.getItem('haydariBoardStatus');
+const savedActivityActor = localStorage.getItem('haydariActivityActor');
+const savedActivityType = localStorage.getItem('haydariActivityType');
+const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', viewScope: VIEW_SCOPES.includes(savedViewScope) ? savedViewScope : 'Shared', mobileBoardStatus: STATUS_ORDER.includes(savedMobileBoardStatus) ? savedMobileBoardStatus : 'in_progress', activityActorFilter: ACTIVITY_ACTORS.includes(savedActivityActor) ? savedActivityActor : 'all', activityTypeFilter: ACTIVITY_TYPES.includes(savedActivityType) ? savedActivityType : 'all', pendingWorkOnLink: null };
 const LIVE_SYNC_MS = 15000;
 let liveSyncTimer = null;
 let liveSyncInFlight = false;
@@ -58,18 +63,26 @@ function syncActorSwitch() {
   });
 }
 
-function syncBoardScopeSwitch() {
-  document.querySelectorAll('[data-board-scope]').forEach(button=>{
-    const active=button.dataset.boardScope===state.boardScope;
+function syncViewScopeSwitch() {
+  document.querySelectorAll('[data-view-scope]').forEach(button=>{
+    const active=button.dataset.viewScope===state.viewScope;
     button.classList.toggle('active',active);
     button.setAttribute('aria-pressed',active?'true':'false');
   });
 }
 
-function boardScopeMatches(project) {
-  if (state.boardScope === 'Zahraa') return project.assignee === 'Zahraa' || project.assignee === 'Both';
-  if (state.boardScope === 'Mohammed') return project.assignee === 'Mohammed' || project.assignee === 'Both';
+function viewScopeMatches(project) {
+  if (state.viewScope === 'Zahraa') return project.assignee === 'Zahraa' || project.assignee === 'Both';
+  if (state.viewScope === 'Mohammed') return project.assignee === 'Mohammed' || project.assignee === 'Both';
   return project.assignee === 'Zahraa' || project.assignee === 'Mohammed' || project.assignee === 'Both';
+}
+
+function setViewScope(scope) {
+  if (!VIEW_SCOPES.includes(scope)) return;
+  state.viewScope=scope;
+  localStorage.setItem('haydariViewScope',scope);
+  localStorage.removeItem('haydariBoardScope');
+  syncViewScopeSwitch();
 }
 
 function toast(message) {
@@ -79,6 +92,27 @@ function toast(message) {
 
 function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 function dateText(value) { return value ? new Date(`${value}T12:00:00Z`).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : 'No deadline'; }
+function deadlineDaysAgo(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return 0;
+  const [year,month,day]=String(value).split('-').map(Number);
+  const now=new Date();
+  const today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
+  const deadline=Date.UTC(year,month-1,day);
+  return Math.floor((today-deadline)/86400000);
+}
+function isSuspiciousPastDeadline(value) { return deadlineDaysAgo(value) > 90; }
+function confirmSuspiciousDeadline(value,currentValue='') {
+  if (!value || value === currentValue || !isSuspiciousPastDeadline(value)) return true;
+  const days=deadlineDaysAgo(value);
+  return window.confirm(`This deadline is ${days.toLocaleString()} days in the past — keep it?`);
+}
+function updateDeadlineWarning(value,currentValue='') {
+  const warning=$('due-date-warning');
+  if (!warning) return;
+  const show=Boolean(value && value !== currentValue && isSuspiciousPastDeadline(value));
+  warning.hidden=!show;
+  warning.textContent=show ? 'This deadline is unusually far in the past. Saving it will ask for confirmation.' : '';
+}
 function escapeHtml(s='') { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function parseDateTime(value) {
   if (!value) return null;
@@ -120,6 +154,9 @@ function estimatedPages(p, fallbackPages) {
   return fallbackPages;
 }
 function assigneeOptions(current) { return ASSIGNEES.map(name => `<option value="${name}" ${current===name?'selected':''}>${name}</option>`).join(''); }
+function statusOptions(current) { return STATUS_ORDER.map(status => `<option value="${status}" ${current===status?'selected':''}>${STATUS[status]}</option>`).join(''); }
+function assigneeLabel(value) { return value === 'Both' ? 'Shared' : value; }
+function assigneeBadgeMarkup(p) { return `<span class="pill assignee-pill assignee-${String(p.assignee || 'Unassigned').toLowerCase()}">${escapeHtml(assigneeLabel(p.assignee || 'Unassigned'))}</span>`; }
 function coverMarkup(p, compact=false) {
   const cached = state.coverObjectUrls.get(p.id) || '';
   const fallback = coverFor(p);
@@ -135,9 +172,13 @@ function googleDocLinkMarkup(p) {
     : `<button class="mini-link secondary-link english-book-button" type="button" data-link-english="${p.id}">English Book · link</button>`;
 }
 async function setProjectDeadline(id, value) {
+  const project=state.projects.find(p=>p.id===id);
+  const current=project?.due_date || '';
+  if (value && !confirmSuspiciousDeadline(value,current)) return false;
   await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify({due_date:value || null})});
   await loadData();
   toast(value ? `Deadline set: ${dateText(value)}` : 'Deadline removed');
+  return true;
 }
 
 function workOnBookMarkup(p) {
@@ -146,6 +187,7 @@ function workOnBookMarkup(p) {
 function quickControlsMarkup(p, compact=false) {
   return `<div class="quick-controls ${compact ? 'compact-quick-controls' : ''}">
     <label class="quick-field"><span>Assigned</span><select class="quick-assignee" data-project-id="${p.id}" draggable="false" aria-label="Assign ${escapeHtml(p.title_ar)}">${assigneeOptions(p.assignee)}</select></label>
+    ${compact ? `<label class="quick-field quick-status-field"><span>Status</span><select class="quick-status" data-project-id="${p.id}" draggable="false" aria-label="Status for ${escapeHtml(p.title_ar)}">${statusOptions(p.status)}</select></label>` : ''}
     <div class="quick-field quick-deadline-field"><span>Deadline</span><div class="quick-date-row"><input class="quick-deadline" data-project-id="${p.id}" draggable="false" type="date" value="${escapeHtml(p.due_date || '')}" aria-label="Deadline for ${escapeHtml(p.title_ar)}">${p.due_date ? `<button class="quick-clear-date" type="button" data-clear-deadline="${p.id}" aria-label="Remove deadline for ${escapeHtml(p.title_ar)}">Remove</button>` : ''}</div></div>
   </div>`;
 }
@@ -231,6 +273,7 @@ function filteredProjects() {
   const schedule = $('filter-schedule')?.value || '';
   const sort = $('sort-projects')?.value || state.projectSort || 'updated';
   const missingPdf = $('filter-missing-pdf')?.checked || false;
+  const checkingPdf = $('filter-checking-pdf')?.checked || false;
   const missingCover = $('filter-missing-cover')?.checked || false;
   const noEnglish = $('filter-no-english')?.checked || false;
   const today = localDateKey();
@@ -240,13 +283,17 @@ function filteredProjects() {
     const scheduleMatch = !schedule
       || (schedule === 'overdue' && p.due_date && p.due_date < today && !isPublishReady(p))
       || (schedule === 'due_month' && p.due_date && monthKey(p.due_date) === thisMonth && !isPublishReady(p))
+      || (schedule === 'with_deadline' && p.due_date && !isPublishReady(p))
       || (schedule === 'no_deadline' && !p.due_date && !isPublishReady(p));
+    const statusMatch = !status
+      || (status === '__active__' ? ['in_progress','review','completed'].includes(p.status) : p.status === status);
     return (!q || text.includes(q))
       && (!topic || p.topic_en === topic)
       && assigneeMatch(p)
-      && (!status || p.status === status)
+      && statusMatch
       && scheduleMatch
       && (!missingPdf || p.pdf_missing)
+      && (!checkingPdf || p.pdf_unchecked)
       && (!missingCover || !hasCover(p))
       && (!noEnglish || !p.google_doc_url);
   });
@@ -279,7 +326,8 @@ function projectMarkup(p, compact=false, selectable=false) {
         ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
       </div></div>
       <div class="meta">
-        <span class="pill status-${p.status}">${STATUS[p.status]}</span>\n        ${p.published ? '<span class="pill">Published</span>' : ''}
+        <span class="pill status-${p.status}">${STATUS[p.status]}</span>
+        ${assigneeBadgeMarkup(p)}\n        ${p.published ? '<span class="pill">Published</span>' : ''}
         ${p.pdf_missing ? '<span class="pill pdf-missing">PDF missing</span>' : (p.pdf_unchecked ? '<span class="pill">PDF checking…</span>' : '')}
       </div>
       ${translationProgressMarkup(p,true)}
@@ -386,14 +434,26 @@ function bindQuickActions(root=document) {
     try {
       await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify({assignee:select.value})});
       await loadData();
-      toast(select.value === 'Unassigned' ? 'Book unassigned' : `Assigned to ${select.value}`);
+      toast(select.value === 'Unassigned' ? 'Book unassigned' : `Assigned to ${assigneeLabel(select.value)}`);
+    } catch (error) { toast(error.message); }
+  }));
+  root.querySelectorAll('.quick-status').forEach(select => select.addEventListener('change', async event => {
+    event.stopPropagation();
+    const id=Number(select.dataset.projectId);
+    try {
+      await api(`/api/projects/${id}`, {method:'PATCH',body:JSON.stringify({status:select.value})});
+      await loadData();
+      toast(`Moved to ${STATUS[select.value]}`);
     } catch (error) { toast(error.message); }
   }));
   root.querySelectorAll('.quick-deadline').forEach(input => input.addEventListener('change', async event => {
     event.stopPropagation();
     const id = Number(input.dataset.projectId);
-    try { await setProjectDeadline(id,input.value); }
-    catch (error) { toast(error.message); }
+    const current=state.projects.find(p=>p.id===id)?.due_date || '';
+    try {
+      const changed=await setProjectDeadline(id,input.value);
+      if (changed === false) input.value=current;
+    } catch (error) { input.value=current; toast(error.message); }
   }));
   root.querySelectorAll('[data-clear-deadline]').forEach(button => button.addEventListener('click', async event => {
     event.stopPropagation();
@@ -410,13 +470,42 @@ function bindQuickActions(root=document) {
   }));
 }
 
-function clearProjectFilters() {
+function resetProjectFilters() {
   els.search.value='';
   ['filter-topic','filter-assignee','filter-status','filter-schedule'].forEach(id=>{ if ($(id)) $(id).value=''; });
-  ['filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>{ if ($(id)) $(id).checked=false; });
+  ['filter-missing-pdf','filter-checking-pdf','filter-missing-cover','filter-no-english'].forEach(id=>{ if ($(id)) $(id).checked=false; });
+}
+
+function clearProjectFilters() {
+  resetProjectFilters();
   renderProjects();
   renderBoard();
   toast('Filters cleared');
+}
+
+function openProjectsPreset(preset) {
+  resetProjectFilters();
+  if (preset === 'active') $('filter-status').value='__active__';
+  if (preset === 'needs_review') $('filter-status').value='completed';
+  if (preset === 'deadlines') $('filter-schedule').value='with_deadline';
+  if (preset === 'missing_pdf') $('filter-missing-pdf').checked=true;
+  if (preset === 'checking_pdf') $('filter-checking-pdf').checked=true;
+  setView('projects');
+  renderProjects();
+}
+
+function openPersonWork(person) {
+  if (person === 'Zahraa' || person === 'Mohammed') {
+    setViewScope(person);
+    setView('board');
+    renderBoard();
+    renderTimeline();
+    return;
+  }
+  resetProjectFilters();
+  $('filter-assignee').value=person;
+  setView('projects');
+  renderProjects();
 }
 
 function paceModel() {
@@ -591,16 +680,18 @@ function renderDashboard() {
   const missingPdf = state.projects.filter(p => p.pdf_missing).length;
   const uncheckedPdf = state.projects.filter(p => p.pdf_unchecked).length;
   $('now-list').innerHTML = [
-    ['Active', active.length], ['Needs review', state.projects.filter(p=>p.status==='completed').length],
-    ['With deadlines', due.length], ['Missing PDF', missingPdf], ['PDFs still checking', uncheckedPdf]
-  ].map(([label,n])=>`<div class="summary-row"><span>${label}</span><strong>${n}</strong></div>`).join('');
+    ['active','Active', active.length], ['needs_review','Needs review', state.projects.filter(p=>p.status==='completed').length],
+    ['deadlines','With deadlines', due.length], ['missing_pdf','Missing PDF', missingPdf], ['checking_pdf','PDFs still checking', uncheckedPdf]
+  ].map(([preset,label,n])=>`<button type="button" class="summary-row summary-link" data-dashboard-preset="${preset}"><span>${label}</span><strong>${n}</strong></button>`).join('');
 
   const people = ['Zahraa','Mohammed','Both','Unassigned'];
   $('people-summary').innerHTML = people.map(person => {
     const list = state.projects.filter(p=>p.assignee===person);
     const done = list.filter(isTranslated).length;
-    return `<div class="summary-row"><span>${person}</span><strong>${done}/${list.length} translated</strong></div>`;
+    return `<button type="button" class="summary-row summary-link" data-dashboard-person="${person}"><span>${escapeHtml(assigneeLabel(person))}</span><strong>${done}/${list.length} translated</strong></button>`;
   }).join('');
+  $('now-list').querySelectorAll('[data-dashboard-preset]').forEach(button=>button.addEventListener('click',()=>openProjectsPreset(button.dataset.dashboardPreset)));
+  $('people-summary').querySelectorAll('[data-dashboard-person]').forEach(button=>button.addEventListener('click',()=>openPersonWork(button.dataset.dashboardPerson)));
 
   const paceValue=model.pagesPerDay>0 ? (model.pagesPerDay>=10 ? model.pagesPerDay.toFixed(0) : model.pagesPerDay.toFixed(1)) : '—';
   const forecast = model.remainingWork===0
@@ -741,6 +832,7 @@ async function applyBatch() {
   if ($('batch-status').value) patch.status=$('batch-status').value;
   if ($('batch-deadline').value) patch.due_date=$('batch-deadline').value;
   if (!Object.keys(patch).length) { toast('Choose a batch change first'); return; }
+  if (patch.due_date && !confirmSuspiciousDeadline(patch.due_date,'')) return;
   $('apply-batch').disabled=true;
   let failures=0;
   try {
@@ -762,16 +854,29 @@ async function applyBatch() {
 function renderBoard() {
   const q = els.search.value.trim().toLowerCase();
   const matching = state.projects.filter(p=>!q || `${p.title_ar} ${p.title_en||''} ${p.translit||''} ${p.author||''} ${p.category||''}`.toLowerCase().includes(q));
-  const base = matching.filter(boardScopeMatches);
-  const unassigned = state.boardScope === 'Shared' ? matching.filter(p=>p.assignee === 'Unassigned') : [];
-  syncBoardScopeSwitch();
+  const base = matching.filter(viewScopeMatches);
+  const unassigned = state.viewScope === 'Shared' ? matching.filter(p=>p.assignee === 'Unassigned') : [];
+  syncViewScopeSwitch();
   if ($('board-scope-summary')) {
-    $('board-scope-summary').textContent = state.boardScope === 'Shared'
+    $('board-scope-summary').textContent = state.viewScope === 'Shared'
       ? `${base.length} team books · ${unassigned.length} unassigned`
       : `${base.length} books · Shared assignments included`;
   }
+  const statusTabs=$('board-status-tabs');
+  if (statusTabs) {
+    statusTabs.innerHTML=STATUS_ORDER.map(status=>{
+      const count=base.filter(p=>p.status===status).length;
+      const active=state.mobileBoardStatus===status;
+      return `<button type="button" data-board-status="${status}" class="${active?'active':''}" aria-pressed="${active?'true':'false'}"><span>${STATUS[status]}</span><strong>${count}</strong></button>`;
+    }).join('');
+    statusTabs.querySelectorAll('[data-board-status]').forEach(button=>button.addEventListener('click',()=>{
+      state.mobileBoardStatus=button.dataset.boardStatus;
+      localStorage.setItem('haydariBoardStatus',state.mobileBoardStatus);
+      renderBoard();
+    }));
+  }
   if ($('board-unassigned')) {
-    $('board-unassigned').hidden = state.boardScope !== 'Shared' || !unassigned.length;
+    $('board-unassigned').hidden = state.viewScope !== 'Shared' || !unassigned.length;
     $('board-unassigned').innerHTML = unassigned.length
       ? `<section class="board-unassigned-panel"><div class="board-unassigned-head"><div><span class="panel-eyebrow">Team inbox</span><strong>Unassigned</strong></div><span class="pill">${unassigned.length}</span></div><div class="board-unassigned-grid">${unassigned.map(p=>projectMarkup(p,true)).join('')}</div></section>`
       : '';
@@ -779,7 +884,8 @@ function renderBoard() {
   }
   $('board').innerHTML = STATUS_ORDER.map(status => {
     const list = base.filter(p=>p.status===status);
-    return `<section class="board-col" data-status="${status}"><div class="board-head"><strong>${STATUS[status]}</strong><span class="pill">${list.length}</span></div><div class="board-list" data-status="${status}">${list.map(p=>projectMarkup(p,true)).join('') || '<p class="muted">Empty</p>'}</div></section>`;
+    const mobileActive=state.mobileBoardStatus===status ? ' mobile-active' : '';
+    return `<section class="board-col${mobileActive}" data-status="${status}"><div class="board-head"><strong>${STATUS[status]}</strong><span class="pill">${list.length}</span></div><div class="board-list" data-status="${status}">${list.map(p=>projectMarkup(p,true)).join('') || '<p class="muted">Empty</p>'}</div></section>`;
   }).join('');
   bindProjectClicks($('board'));
   bindBoardDrag();
@@ -848,8 +954,18 @@ function timelineMonths(minDay,maxDay) {
   return segments;
 }
 function renderTimeline() {
-  const dated=state.projects.filter(p=>p.start_date || p.due_date);
-  const unscheduled=state.projects.filter(p=>!p.start_date && !p.due_date && !isPublishReady(p));
+  const scoped=state.projects.filter(viewScopeMatches);
+  const dated=scoped.filter(p=>p.start_date || p.due_date);
+  const unscheduled=scoped.filter(p=>!p.start_date && !p.due_date && !isPublishReady(p));
+  const unassigned=state.viewScope === 'Shared'
+    ? state.projects.filter(p=>p.assignee === 'Unassigned' && (p.start_date || p.due_date || !isPublishReady(p)))
+    : [];
+  syncViewScopeSwitch();
+  if ($('timeline-scope-summary')) {
+    $('timeline-scope-summary').textContent=state.viewScope === 'Shared'
+      ? `${scoped.length} team books · ${unassigned.length} unassigned`
+      : `${scoped.length} books · Shared assignments included`;
+  }
   const todayKey=localDateKey();
   const today=timelineDay(todayKey);
   if (!dated.length) {
@@ -901,12 +1017,22 @@ function renderTimeline() {
   $('timeline-unscheduled').innerHTML=unscheduled.length
     ? `<div class="timeline-unscheduled-head"><span>Without dates</span><strong>${unscheduled.length}</strong></div><div class="timeline-unscheduled-grid">${unscheduled.map(assignedProjectMarkup).join('')}</div>`
     : '';
+  if ($('timeline-unassigned')) {
+    $('timeline-unassigned').hidden=state.viewScope !== 'Shared' || !unassigned.length;
+    $('timeline-unassigned').innerHTML=unassigned.length
+      ? `<div class="timeline-unscheduled-head"><span>Unassigned schedule</span><strong>${unassigned.length}</strong></div><div class="timeline-unassigned-grid">${unassigned.map(p=>{
+          const schedule=p.start_date && p.due_date ? `${dateText(p.start_date)} → ${dateText(p.due_date)}` : (p.due_date ? `Due ${dateText(p.due_date)}` : (p.start_date ? `Starts ${dateText(p.start_date)}` : 'Without dates'));
+          return `<article class="timeline-unassigned-card" data-project-id="${p.id}"><div class="title-ar" dir="rtl">${escapeHtml(p.title_ar)}</div><div class="timeline-unassigned-meta"><span class="pill status-${p.status}">${STATUS[p.status]}</span><span>${escapeHtml(schedule)}</span></div></article>`;
+        }).join('')}</div>`
+      : '';
+  }
   bindProjectClicks($('timeline-visual'));
   $('timeline-visual').querySelectorAll('.timeline-bar').forEach(button=>button.addEventListener('click',event=>{
     event.stopPropagation();
     openProject(Number(button.dataset.projectId));
   }));
   bindProjectClicks($('timeline-unscheduled'));
+  if ($('timeline-unassigned') && !$('timeline-unassigned').hidden) bindProjectClicks($('timeline-unassigned'));
 }
 
 function renderStats() {
@@ -1005,15 +1131,38 @@ function progressChartMarkup(model) {
   </svg>`;
 }
 
+function activityActorGroup(activity) {
+  if (activity.actor === 'Zahraa') return 'Zahraa';
+  if (activity.actor === 'Mohammed' || activity.actor === 'Brother') return 'Mohammed';
+  return 'System';
+}
+
+function syncActivityFilters() {
+  document.querySelectorAll('[data-activity-actor]').forEach(button=>{
+    const active=button.dataset.activityActor===state.activityActorFilter;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',active?'true':'false');
+  });
+  if ($('activity-type')) $('activity-type').value=state.activityTypeFilter;
+}
+
 function renderActivity() {
-  $('activity-list').innerHTML = state.activity.map(a => {
+  syncActivityFilters();
+  const filtered=state.activity.filter(a=>{
+    const actorMatch=state.activityActorFilter === 'all' || activityActorGroup(a) === state.activityActorFilter;
+    const type= a.action === 'translation progress' ? 'translation' : 'project';
+    const typeMatch=state.activityTypeFilter === 'all' || type === state.activityTypeFilter;
+    return actorMatch && typeMatch;
+  });
+  if ($('activity-filter-summary')) $('activity-filter-summary').textContent=`${filtered.length} of ${state.activity.length} events`;
+  $('activity-list').innerHTML = filtered.map(a => {
     const when=new Date(a.created_at.replace(' ','T')+'Z');
     if (a.action === 'translation progress') {
       const after=parseActivityJson(a.after_json) || {};
       return `<div class="activity-item activity-translation"><time>${when.toLocaleDateString()}</time><div><strong>${Number(after.translated_pages || 0)}/${Number(after.pages || 0)} pages translated</strong>${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
     }
     return `<div class="activity-item"><time>${when.toLocaleDateString()}</time><div><strong>${escapeHtml(a.actor)}</strong> ${escapeHtml(a.action)}${a.title_ar ? ` — <span dir="rtl">${escapeHtml(a.title_ar)}</span>` : ''}</div><small>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</small></div>`;
-  }).join('') || '<p class="muted">No activity yet.</p>';
+  }).join('') || '<p class="muted">No activity matches these filters.</p>';
 }
 
 function render() { renderDashboard(); renderProjects(); renderBoard(); renderTimeline(); renderStats(); renderActivity(); hydrateUploadedCovers(document); }
@@ -1036,6 +1185,7 @@ function openProject(id) {
   $('status').value = p?.status || 'not_started';
   $('start-date').value = p?.start_date || '';
   $('due-date').value = p?.due_date || '';
+  updateDeadlineWarning($('due-date').value,p?.due_date || '');
   $('translated-pages').value = p?.translated_pages || 0;
   $('translated-pages').max = p?.pages || ''; 
   $('translated-pages-total').textContent = p?.pages ? `/ ${p.pages} source pages` : 'source pages';
@@ -1073,6 +1223,8 @@ async function saveProject(event) {
     google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     published: $('published').checked, notes: $('notes').value.trim(),
   };
+  const currentProject=id ? state.projects.find(p=>p.id===id) : null;
+  if (payload.due_date && !confirmSuspiciousDeadline(payload.due_date,currentProject?.due_date || '')) return;
   try {
     if (id) await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify(payload)});
     else await api('/api/projects', {method:'POST', body:JSON.stringify(payload)});
@@ -1338,7 +1490,8 @@ async function init() {
   clearLegacyAccessKey();
   els.actor.value = state.actor;
   syncActorSwitch();
-  syncBoardScopeSwitch();
+  syncViewScopeSwitch();
+  syncActivityFilters();
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
   if ($('group-projects')) $('group-projects').value = state.projectGrouping;
   try {
@@ -1359,13 +1512,25 @@ document.querySelectorAll('[data-actor-choice]').forEach(button=>button.addEvent
   els.actor.value=button.dataset.actorChoice;
   els.actor.dispatchEvent(new Event('change',{bubbles:true}));
 }));
-document.querySelectorAll('[data-board-scope]').forEach(button=>button.addEventListener('click',()=>{
-  const scope=button.dataset.boardScope;
-  if (!BOARD_SCOPES.includes(scope) || scope===state.boardScope) return;
-  state.boardScope=scope;
-  localStorage.setItem('haydariBoardScope',state.boardScope);
+document.querySelectorAll('[data-view-scope]').forEach(button=>button.addEventListener('click',()=>{
+  const scope=button.dataset.viewScope;
+  if (!VIEW_SCOPES.includes(scope) || scope===state.viewScope) return;
+  setViewScope(scope);
   renderBoard();
+  renderTimeline();
 }));
+document.querySelectorAll('[data-activity-actor]').forEach(button=>button.addEventListener('click',()=>{
+  const actor=button.dataset.activityActor;
+  if (!ACTIVITY_ACTORS.includes(actor)) return;
+  state.activityActorFilter=actor;
+  localStorage.setItem('haydariActivityActor',actor);
+  renderActivity();
+}));
+$('activity-type')?.addEventListener('change',()=>{
+  state.activityTypeFilter=$('activity-type').value;
+  localStorage.setItem('haydariActivityType',state.activityTypeFilter);
+  renderActivity();
+});
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
 $('view-my-projects')?.addEventListener('click',()=>{
   $('filter-assignee').value='__mine__';
@@ -1380,16 +1545,22 @@ els.actor.addEventListener('change',()=>{
   renderDashboard();
   if ($('filter-assignee')?.value === '__mine__') renderProjects();
 });
-['filter-topic','filter-assignee','filter-status','filter-schedule','filter-missing-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
+['filter-topic','filter-assignee','filter-status','filter-schedule','filter-missing-pdf','filter-checking-pdf','filter-missing-cover','filter-no-english'].forEach(id=>$(id)?.addEventListener('change',renderProjects));
 $('sort-projects')?.addEventListener('change',()=>{state.projectSort=$('sort-projects').value;localStorage.setItem('haydariProjectSort',state.projectSort);renderProjects();});
 $('group-projects')?.addEventListener('change',()=>{state.projectGrouping=$('group-projects').value;localStorage.setItem('haydariProjectGrouping',state.projectGrouping);renderProjects();});
 $('new-project').addEventListener('click',()=>openProject(null));
+$('due-date')?.addEventListener('input',()=>{
+  const id=Number($('project-id').value) || null;
+  const current=id ? state.projects.find(p=>p.id===id)?.due_date || '' : '';
+  updateDeadlineWarning($('due-date').value,current);
+});
 $('clear-due-date')?.addEventListener('click',async ()=>{
   const id=Number($('project-id').value) || null;
   if (!id) { $('due-date').value=''; return; }
   try {
     await setProjectDeadline(id,null);
     $('due-date').value='';
+    updateDeadlineWarning('','');
   } catch (error) { toast(error.message); }
 });
 $('published').addEventListener('change',()=>{ if ($('published').checked) $('status').value='published'; });
