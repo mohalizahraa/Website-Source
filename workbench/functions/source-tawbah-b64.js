@@ -31,12 +31,21 @@ export async function onRequestGet(context) {
   if(!type.includes('application/pdf')) return json({error:'Source is not a PDF.'},502);
   const bytes=new Uint8Array(await source.arrayBuffer());
   if(bytes.byteLength>2*1024*1024) return json({error:'Source exceeds temporary bridge limit.'},413);
-  return new Response(bytesToBase64(bytes),{
+  const url=new URL(context.request.url);
+  const offset=Math.max(0,Number.parseInt(url.searchParams.get('offset') || '0',10) || 0);
+  const requested=Math.max(1,Number.parseInt(url.searchParams.get('length') || '32768',10) || 32768);
+  const length=Math.min(65536,requested);
+  if(offset>=bytes.byteLength) return json({error:'Offset beyond source.',total_bytes:bytes.byteLength},416);
+  const end=Math.min(bytes.byteLength,offset+length);
+  const slice=bytes.subarray(offset,end);
+  return new Response(`${offset} ${slice.byteLength} ${bytes.byteLength}\n${bytesToBase64(slice)}`,{
     status:200,
     headers:{
       'content-type':'text/plain; charset=utf-8',
       'cache-control':'no-store',
-      'x-source-bytes':String(bytes.byteLength)
+      'x-source-bytes':String(bytes.byteLength),
+      'x-chunk-offset':String(offset),
+      'x-chunk-bytes':String(slice.byteLength)
     }
   });
 }
