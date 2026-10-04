@@ -13,9 +13,10 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - The Workbench preserves the archive's parchment / paper / oxblood / gold / sage visual language and Amiri + EB Garamond typography.
 - The primary Arabic-source action must open the direct PDF file. A catalogue detail/download page is never labeled as the Arabic PDF.
 - Projects without a direct PDF are visibly labeled **PDF missing** and can be filtered as a group.
-- **Needs Formatting** means translation is finished but formatting is not.
-- **Needs Review** means translation and formatting are finished but the book is not yet publish-ready.
-- **Publish Ready** means translation, formatting, and thorough review are finished.
+- **Translating** means the English translation is still in progress.
+- **Needs Formatting** means translation is finished and the formatting pass is still pending.
+- **Needs Review** means translation and formatting are finished and the book is waiting for Zahraa's human review. This is a human-review gate, not an automated completion state.
+- **Publish Ready** means translation, formatting, and Zahraa's human review are finished.
 - Translation progress numerator = `Needs Formatting + Needs Review + Publish Ready`.
 - Publication progress numerator = books independently marked **Published**.
 - `blocked` is a separate flag, not a status.
