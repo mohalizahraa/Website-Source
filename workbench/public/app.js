@@ -12,7 +12,7 @@ const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', nume
 const savedActor = localStorage.getItem('haydariActor');
 const savedProjectSort = localStorage.getItem('haydariProjectSort');
 const savedProjectGrouping = localStorage.getItem('haydariProjectGrouping');
-const state = { projects: [], activity: [], pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', pendingWorkOnLink: null };
+const state = { projects: [], activity: [], paceEvents: [], pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', pendingWorkOnLink: null };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -381,48 +381,86 @@ function paceModel() {
     .filter(x=>x.date)
     .sort((a,b)=>a.date-b.date);
   const events=completedProjects.map(x=>x.date);
-  const now = new Date();
-  const cutoff30 = new Date(now.getTime() - 30*86400000);
-  const cutoff90 = new Date(now.getTime() - 90*86400000);
-  const recent30 = completedProjects.filter(x => x.date >= cutoff30);
-  const recent90 = completedProjects.filter(x => x.date >= cutoff90);
-  let pace30 = recent30.length;
-  let basis = 'last 30 days';
-  if (pace30 < 2 && completedProjects.length >= 2) {
-    const spanDays = Math.max(7, (now - completedProjects[0].date) / 86400000);
-    pace30 = completedProjects.length / spanDays * 30;
-    basis = 'all completion history';
-  }
-  const pace90 = recent90.length / 3;
-  const remaining = Math.max(0,total-translated);
-  let forecastDate = null;
-  if (remaining === 0) forecastDate = now;
-  else if (pace30 > 0.05) forecastDate = new Date(now.getTime() + (remaining / (pace30/30))*86400000);
 
   const knownPages=state.projects.map(p=>Number(p.pages)).filter(n=>Number.isFinite(n)&&n>0);
   const fallbackPages=Math.round(median(knownPages));
   const workloadOf=p=>estimatedPages(p,fallbackPages);
-  const totalWork=state.projects.reduce((sum,p)=>sum+workloadOf(p),0);
-  const completedWork=state.projects.filter(isTranslated).reduce((sum,p)=>sum+workloadOf(p),0);
-  const remainingWork=Math.max(0,totalWork-completedWork);
-  let workloadPace30=recent30.reduce((sum,x)=>sum+workloadOf(x.project),0);
-  let workloadBasis='last 30 days';
-  if (recent30.length < 2 && completedProjects.length >= 2) {
-    const spanDays=Math.max(7,(now-completedProjects[0].date)/86400000);
-    const allWork=completedProjects.reduce((sum,x)=>sum+workloadOf(x.project),0);
-    workloadPace30=allWork/spanDays*30;
-    workloadBasis='all completion history';
+
+  const representedSeries=new Set();
+  for (const p of state.projects) {
+    const info=seriesInfo(p);
+    if (info && info.item.role !== 'umbrella') representedSeries.add(info.key);
   }
-  let workloadForecastDate=null;
-  if (remainingWork===0) workloadForecastDate=now;
-  else if (workloadPace30>1) workloadForecastDate=new Date(now.getTime()+(remainingWork/(workloadPace30/30))*86400000);
+  const workloadProjects=state.projects.filter(p=>{
+    const info=seriesInfo(p);
+    return !(info?.item?.role === 'umbrella' && representedSeries.has(info.key));
+  });
+
+  const totalWork=workloadProjects.reduce((sum,p)=>sum+workloadOf(p),0);
+  const completedWork=workloadProjects.reduce((sum,p)=>{
+    const work=workloadOf(p);
+    if (isTranslated(p)) return sum+work;
+    const logged=Math.max(0,Number(p.translated_pages || 0));
+    return sum+Math.min(work,logged);
+  },0);
+  const remainingWork=Math.max(0,totalWork-completedWork);
+
+  const pageEvents=(state.paceEvents?.length ? state.paceEvents : state.activity.filter(a=>a.action==='translation progress'));
+  const dailyPages=new Map();
+  for (const event of pageEvents) {
+    const before=parseActivityJson(event.before_json) || {};
+    const after=parseActivityJson(event.after_json) || {};
+    const delta=Number(after.translated_pages || 0)-Number(before.translated_pages || 0);
+    const when=parseDateTime(event.created_at);
+    if (!(delta > 0) || !when) continue;
+    const key=localDateKey(when);
+    dailyPages.set(key,(dailyPages.get(key)||0)+delta);
+  }
+
+  let pagesPerDay=0;
+  let observedDays=0;
+  let progressDays=0;
+  let loggedPages=0;
+  const now=new Date();
+  const today=new Date(now); today.setHours(12,0,0,0);
+  const positiveKeys=[...dailyPages.keys()].sort();
+  if (positiveKeys.length) {
+    const firstParts=positiveKeys[0].split('-').map(Number);
+    const first=new Date(firstParts[0],firstParts[1]-1,firstParts[2],12,0,0,0);
+    const cap=new Date(today); cap.setDate(cap.getDate()-89);
+    const windowStart=first>cap ? first : cap;
+    const weightedHalfLifeDays=14;
+    let weightedPages=0;
+    let weightTotal=0;
+    for (let cursor=new Date(windowStart); cursor<=today; cursor.setDate(cursor.getDate()+1)) {
+      const key=localDateKey(cursor);
+      const pages=dailyPages.get(key)||0;
+      const ageDays=Math.max(0,Math.round((today-cursor)/86400000));
+      const weight=Math.pow(0.5,ageDays/weightedHalfLifeDays);
+      weightedPages+=pages*weight;
+      weightTotal+=weight;
+      observedDays+=1;
+      if (pages>0) {
+        progressDays+=1;
+        loggedPages+=pages;
+      }
+    }
+    pagesPerDay=weightTotal ? weightedPages/weightTotal : 0;
+  }
+
+  const paceReady=remainingWork===0 || (observedDays>=7 && progressDays>=3 && pagesPerDay>0.05);
+  const forecastDate=remainingWork===0
+    ? now
+    : (paceReady ? new Date(now.getTime()+(remainingWork/pagesPerDay)*86400000) : null);
+  const workloadPercent=totalWork ? Math.round((completedWork/totalWork)*100) : 0;
 
   return {
-    total,translated,published,events,completedProjects,pace30,pace90,basis,remaining,forecastDate,
-    fallbackPages,totalWork,completedWork,remainingWork,workloadPace30,workloadBasis,workloadForecastDate
+    total,translated,published,events,completedProjects,
+    fallbackPages,totalWork,completedWork,remainingWork,workloadPercent,
+    pagesPerDay,pagesPer30:pagesPerDay*30,observedDays,progressDays,loggedPages,
+    paceReady,forecastDate,paceHalfLifeDays:14,paceWindowDays:90
   };
 }
-
 function translationProgressMarkup(p, compact=false, showZero=false) {
   const done=Math.max(0,Number(p.translated_pages || 0));
   const total=Math.max(0,Number(p.pages || 0));
@@ -517,12 +555,22 @@ function renderDashboard() {
     return `<div class="summary-row"><span>${person}</span><strong>${done}/${list.length} translated</strong></div>`;
   }).join('');
 
-  const forecast = model.forecastDate
-    ? (model.remaining === 0 ? 'Translation corpus complete' : `At this rate: ${model.forecastDate.toLocaleDateString(undefined,{month:'long',year:'numeric'})}`)
-    : 'Complete two books to unlock a useful finish forecast';
+  const paceValue=model.pagesPerDay>0 ? (model.pagesPerDay>=10 ? model.pagesPerDay.toFixed(0) : model.pagesPerDay.toFixed(1)) : '—';
+  const forecast = model.remainingWork===0
+    ? 'Translation workload complete'
+    : (model.forecastDate
+      ? `Projected finish: ${model.forecastDate.toLocaleDateString(undefined,{month:'long',year:'numeric'})}`
+      : (model.loggedPages ? 'Learning your translation pace' : 'No page-pace history yet'));
+  const paceDetail = model.remainingWork===0
+    ? 'No source-page workload remains.'
+    : (model.paceReady
+      ? `${Math.round(model.remainingWork).toLocaleString()} page-equivalents remain · recent work is weighted more heavily.`
+      : (model.loggedPages
+        ? `${model.loggedPages.toLocaleString()} pages logged across ${model.progressDays} progress day${model.progressDays===1?'':'s'}; a finish date starts after 7 observed days and 3 progress days.`
+        : 'Update translated-page counters to start the forecast.'));
   $('pace-summary').innerHTML = `
-    <div class="pace-number"><strong>${model.pace30 >= 2 ? model.pace30.toFixed(model.pace30>=10?0:1) : '—'}</strong><span>books / 30 days</span></div>
-    <div class="pace-copy"><strong>${escapeHtml(forecast)}</strong><span>${model.pace30 >= 2 ? `Based on ${model.basis}; ${model.remaining} books remain.` : `${model.remaining} books remain.`}</span></div>`;
+    <div class="pace-number"><strong>${paceValue}</strong><span>source pages / day</span></div>
+    <div class="pace-copy"><strong>${escapeHtml(forecast)}</strong><span>${escapeHtml(paceDetail)}</span></div>`;
 
   const assigned = sortProjects(
     state.projects.filter(p => p.assignee === state.actor || p.assignee === 'Both'),
@@ -812,25 +860,32 @@ function renderStats() {
   $('stat-translated-sub').textContent = `of ${model.total} books · ${pct(model.translated,model.total)}%`;
   $('stat-published').textContent = model.published;
   $('stat-published-sub').textContent = `of ${model.total} books · ${pct(model.published,model.total)}%`;
-  $('stat-pace').textContent = model.pace30 >= 2 ? model.pace30.toFixed(model.pace30>=10?0:1) : '—';
+  const paceText=model.pagesPerDay>0 ? (model.pagesPerDay>=10 ? model.pagesPerDay.toFixed(0) : model.pagesPerDay.toFixed(1)) : '—';
+  $('stat-pace').textContent = paceText;
   const paceSub=$('stat-pace-sub');
-  if (paceSub) paceSub.textContent = model.pace30 >= 2 ? `books / 30 days · 90d pace ${model.pace90.toFixed(1)}` : 'books per 30 days';
-  $('stat-forecast').textContent = model.forecastDate
-    ? (model.remaining === 0 ? 'Done' : model.forecastDate.toLocaleDateString(undefined,{month:'short',year:'numeric'}))
-    : '—';
-  $('stat-forecast-sub').textContent = model.forecastDate
-    ? (model.remaining === 0 ? 'Translation complete' : `${model.remaining} remaining · ${model.basis}`)
-    : 'Need at least two completions for a stable pace';
+  if (paceSub) {
+    paceSub.textContent = model.loggedPages
+      ? `source pages/day · ${model.paceHalfLifeDays}-day half-life · ${model.observedDays} observed day${model.observedDays===1?'':'s'}`
+      : 'source pages/day · waiting for page progress';
+  }
+  $('stat-forecast').textContent = model.remainingWork===0
+    ? 'Done'
+    : (model.forecastDate ? model.forecastDate.toLocaleDateString(undefined,{month:'short',year:'numeric'}) : 'Learning');
+  $('stat-forecast-sub').textContent = model.remainingWork===0
+    ? 'Translation workload complete'
+    : (model.forecastDate
+      ? `${Math.round(model.remainingWork).toLocaleString()} page-equivalents remain · 90-day maximum history`
+      : (model.loggedPages
+        ? `Forecast unlocks after 7 observed days + 3 progress days; currently ${model.observedDays} + ${model.progressDays}.`
+        : 'Log source-page progress to start forecasting'));
 
-  $('stat-workload-pace').textContent = model.workloadPace30 > 1 ? Math.round(model.workloadPace30).toLocaleString() : '—';
-  $('stat-workload-forecast').textContent = model.workloadForecastDate
-    ? (model.remainingWork === 0 ? 'Done' : model.workloadForecastDate.toLocaleDateString(undefined,{month:'short',year:'numeric'}))
-    : '—';
-  $('stat-workload-forecast-sub').textContent = model.workloadForecastDate
-    ? (model.remainingWork === 0
-      ? 'Estimated workload complete'
-      : `${Math.round(model.remainingWork).toLocaleString()} page-equivalents remain · ${model.workloadBasis}`)
-    : `Uses known pages; missing counts use ~${model.fallbackPages} pages/book`;
+  $('stat-workload-pace').textContent = `${model.workloadPercent}%`;
+  const workloadPaceSub=$('stat-workload-pace-sub');
+  if (workloadPaceSub) workloadPaceSub.textContent = `${Math.round(model.completedWork).toLocaleString()} of ${Math.round(model.totalWork).toLocaleString()} page-equivalents`;
+  $('stat-workload-forecast').textContent = Math.round(model.remainingWork).toLocaleString();
+  $('stat-workload-forecast-sub').textContent = model.remainingWork===0
+    ? 'No translation workload remains'
+    : `page-equivalents remain · unknown counts use ~${model.fallbackPages} pages; duplicate series umbrellas excluded`;
 
   $('stats-by-person').innerHTML = ASSIGNEES.map(person => {
     const list=state.projects.filter(p=>p.assignee===person);
@@ -1140,6 +1195,7 @@ async function loadData() {
   const [projects, activity] = await Promise.all([api('/api/projects'), api('/api/activity')]);
   state.projects = projects.projects || [];
   state.activity = activity.activity || [];
+  state.paceEvents = activity.pace_events || state.activity.filter(a=>a.action==='translation progress');
   render();
 }
 
