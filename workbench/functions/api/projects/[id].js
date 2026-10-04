@@ -1,12 +1,11 @@
 import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate, verifyGoogleDocLinkAccess } from '../../_lib.js';
 
 const fields = new Set([
-  'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url','cover_url',
+  'title_ar','title_en','assignee','status','source_url','source_pdf_url','google_doc_url','cover_url',
   'start_date','due_date','translated_pages','blocked','blocker_reason','notes'
 ]);
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
 const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
-const validPriorities = new Set(['low','normal','high','urgent']);
 
 function idFrom(context) {
   const n = Number(context.params.id);
@@ -33,7 +32,6 @@ export async function onRequestPatch(context) {
   if (body.published === true) body.status = 'published';
   if (body.status !== undefined && !validStatuses.has(body.status)) return json({ error: 'Invalid status.' }, 400);
   if (body.assignee !== undefined && !validAssignees.has(body.assignee)) return json({ error: 'Invalid assignee.' }, 400);
-  if (body.priority !== undefined && !validPriorities.has(body.priority)) return json({ error: 'Invalid priority.' }, 400);
 
   if (body.google_doc_url !== undefined) {
     const normalized = normalizeGoogleDocUrl(body.google_doc_url);
