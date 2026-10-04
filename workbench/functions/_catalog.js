@@ -1,6 +1,6 @@
 // Public catalogue metadata derived from the canonical archive on main.
 // Work-management state is NOT stored here.
-export const CATALOG_VERSION = "main-945208b4-176";
+export const CATALOG_VERSION = "main-945208b4-176+physical-page-fix-v1";
 export const BOOK_CATALOG = [
   {
     "catalog_id": "book-1",
@@ -2089,7 +2089,7 @@ export const BOOK_CATALOG = [
     "detail_url": "https://alhaydari.com/ar/2013/02/46108/",
     "pdf_url": "https://archive.alhaydari.com/ebook/ar/tawbah.pdf",
     "package_url": null,
-    "pages": 131,
+    "pages": 132,
     "volumes": 1,
     "date": "2013-02-03"
   },
