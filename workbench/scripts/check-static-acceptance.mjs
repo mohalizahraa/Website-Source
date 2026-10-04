@@ -18,6 +18,7 @@ const libSource = await fs.readFile(new URL('functions/_lib.js', root), 'utf8');
 const coverProxySource = await fs.readFile(new URL('functions/api/official-cover/[id].js', root), 'utf8');
 const coverSourcesSource = await fs.readFile(new URL('functions/_cover_sources.js', root), 'utf8');
 const stylesSource = await fs.readFile(new URL('public/styles.css', root), 'utf8');
+const projectPatchSource = await fs.readFile(new URL('functions/api/projects/[id].js', root), 'utf8');
 
 
 const marker = 'export const BOOK_CATALOG = ';
@@ -80,6 +81,8 @@ assert(indexSource.includes('id="sort-projects"'), 'Projects sort control is mis
 assert(appSource.includes("localStorage.setItem('haydariProjectSort'"), 'Projects sort persistence is missing.');
 assert(appSource.includes('openEnglishBookDialog(id,true)'), 'Work on Book auto-continue into English Book linking is missing.');
 assert(appSource.includes('reservedPdfWindow'), 'Work on Book post-link popup-safe continuation is missing.');
+assert(indexSource.includes('Anyone with the link → Editor') && indexSource.includes('public Editor links'), 'English Book sharing requirement/boundary is missing from the UI.');
+assert(projectPatchSource.includes('publicly accessible without sign-in') && projectPatchSource.includes('Anyone with the link → Editor'), 'English Book public-access guard messaging is missing or misleading.');
 assert(appSource.includes('function clearProjectFilters()'), 'Clear filters behavior is missing.');
 assert(indexSource.includes('id="clear-project-filters"'), 'Clear filters control is missing.');
 assert(indexSource.includes('id="my-projects"') && indexSource.includes('id="my-projects-count"'), 'Personal assigned-project dashboard is missing.');

@@ -94,3 +94,13 @@ Founder noticed that English book titles were present only on some surfaces. The
 - Activity events.
 
 Canonical invariant is recorded in `workbench/README.md`: if an English title exists, every visible book-title surface shows it alongside Arabic. Static acceptance now guards the projection.
+
+
+## English Book sharing verification boundary
+
+Founder reaffirmed that book deliverables must not be restricted. Current live linked Docs were checked through Google Drive metadata:
+
+- Repentance — `anyone / writer` (Anyone with the link → Editor).
+- A Study on Imamate — `anyone / writer` (Anyone with the link → Editor).
+
+The Workbench runtime guard remains an anonymous reachability/Request-access check. It cannot certify the Drive role is Editor, so the canonical project contract now makes the two-gate model explicit: Operator must verify `anyone + writer` in Drive metadata before linking, and the Workbench must independently verify public no-sign-in reachability.

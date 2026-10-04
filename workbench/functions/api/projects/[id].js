@@ -39,7 +39,7 @@ export async function onRequestPatch(context) {
     if (normalized) {
       const access = await verifyGoogleDocLinkAccess(normalized);
       if (!access.accessible) {
-        return json({ error: 'English Book must be shared as Anyone with the link → Editor before it can be linked.' }, 400);
+        return json({ error: 'English Book must be publicly accessible without sign-in before it can be linked. Set sharing to Anyone with the link → Editor.' }, 400);
       }
     }
     body.google_doc_url = normalized || '';
