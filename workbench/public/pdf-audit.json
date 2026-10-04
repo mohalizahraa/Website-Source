@@ -1,5 +1,5 @@
 {
-  "version": "audit-2026-10-03T09:24:31.074Z-172ok-4missing-0unchecked",
+  "version": "audit-2026-10-04T09:35:58.738Z-172ok-4missing-0unchecked-172pagecounts-72mismatches",
   "available": 172,
   "missing": 4,
   "unchecked": 0,
@@ -16,1408 +16,2111 @@
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%B5%D9%81%D8%A7%D8%AA-%D8%B9%D8%A8%D8%A7%D8%AF-%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%B5%D9%81%D8%A7%D8%AA-%D8%B9%D8%A8%D8%A7%D8%AF-%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 487 pages.",
+      "physical_pages": 487,
+      "catalog_pages": 487,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-2": {
       "title_ar": "التوسّل بصاحب الوسيلة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D9%88%D8%B3%D9%84-%D8%A8%D8%B5%D8%A7%D8%AD%D8%A8-%D8%A7%D9%84%D9%88%D8%B3%DB%8C%D9%84%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D9%88%D8%B3%D9%84-%D8%A8%D8%B5%D8%A7%D8%AD%D8%A8-%D8%A7%D9%84%D9%88%D8%B3%DB%8C%D9%84%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 375 pages.",
+      "physical_pages": 375,
+      "catalog_pages": 375,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-3": {
       "title_ar": "أخلاقیات الحج والزیارة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%94%D8%AE%D9%84%D8%A7%D9%82%D9%8A%D8%A7%D8%AA-%D8%A7%D9%84%D8%AD%D8%AC-%D9%88%D8%A7%D9%84%D8%B2%D9%8A%D8%A7%D8%B1%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%94%D8%AE%D9%84%D8%A7%D9%82%D9%8A%D8%A7%D8%AA-%D8%A7%D9%84%D8%AD%D8%AC-%D9%88%D8%A7%D9%84%D8%B2%D9%8A%D8%A7%D8%B1%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 486 pages.",
+      "physical_pages": 486,
+      "catalog_pages": 486,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-4": {
       "title_ar": "موسوعة الإمامة في الفكر الشيعي",
       "candidate_url": null,
       "status": "missing",
       "url": null,
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "No direct single-PDF candidate; official archive provides a RAR package for the 12-volume umbrella collection."
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "No direct single-PDF candidate; official archive provides a RAR package for the 12-volume umbrella collection.",
+      "physical_pages": null,
+      "page_count_match": null,
+      "page_count_delta": null
     },
     "book-5": {
       "title_ar": "كتاب المعاد، شرح الأسفار الأربعة لصدر الدين الشيرازي ج6",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almead%2006.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almead%2006.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 474 pages.",
+      "physical_pages": 474,
+      "catalog_pages": 0,
+      "page_count_match": false,
+      "page_count_delta": 474
     },
     "book-6": {
       "title_ar": "كتاب المعاد، شرح الأسفار الأربعة لصدر الدين الشيرازي ج5",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almead%2005.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almead%2005.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 434 pages.",
+      "physical_pages": 434,
+      "catalog_pages": 0,
+      "page_count_match": false,
+      "page_count_delta": 434
     },
     "book-7": {
       "title_ar": "كتاب المعاد، شرح الأسفار الأربعة لصدر الدين الشيرازي ج4",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almead%2004.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almead%2004.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 490 pages.",
+      "physical_pages": 490,
+      "catalog_pages": 0,
+      "page_count_match": false,
+      "page_count_delta": 490
     },
     "book-8": {
       "title_ar": "كتاب المعاد، شرح الأسفار الأربعة لصدر الدين الشيرازي ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almead%2003.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almead%2003.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 494 pages.",
+      "physical_pages": 494,
+      "catalog_pages": 0,
+      "page_count_match": false,
+      "page_count_delta": 494
     },
     "book-9": {
       "title_ar": "كتاب المعاد، شرح الأسفار الأربعة لصدر الدين الشيرازي ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almead%2002.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almead%2002.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 461 pages.",
+      "physical_pages": 461,
+      "catalog_pages": 0,
+      "page_count_match": false,
+      "page_count_delta": 461
     },
     "book-10": {
       "title_ar": "كتاب المعاد، شرح الأسفار الأربعة لصدر الدين الشيرازي ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almead%2001.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almead%2001.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 486 pages.",
+      "physical_pages": 486,
+      "catalog_pages": 0,
+      "page_count_match": false,
+      "page_count_delta": 486
     },
     "book-11": {
       "title_ar": "شرح نهاية الحكمة ج12",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC12.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC12.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 474 pages.",
+      "physical_pages": 474,
+      "catalog_pages": 474,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-12": {
       "title_ar": "شرح نهاية الحكمة ج11",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC11.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC11.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 458 pages.",
+      "physical_pages": 458,
+      "catalog_pages": 458,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-13": {
       "title_ar": "شرح نهاية الحكمة ج10",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC10.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC10.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 500 pages.",
+      "physical_pages": 500,
+      "catalog_pages": 500,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-14": {
       "title_ar": "شرح نهاية الحكمة ج9",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 334 pages.",
+      "physical_pages": 334,
+      "catalog_pages": 334,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-15": {
       "title_ar": "شرح نهاية الحكمة ج8",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC8.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC8.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 361 pages.",
+      "physical_pages": 361,
+      "catalog_pages": 361,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-16": {
       "title_ar": "شرح نهاية الحكمة ج7",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC7.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC7.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 414 pages.",
+      "physical_pages": 414,
+      "catalog_pages": 414,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-17": {
       "title_ar": "شرح نهاية الحكمة ج6",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC6.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC6.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 444 pages.",
+      "physical_pages": 444,
+      "catalog_pages": 444,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-18": {
       "title_ar": "شرح نهاية الحكمة ج5",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC5.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC5.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 445 pages.",
+      "physical_pages": 445,
+      "catalog_pages": 445,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-19": {
       "title_ar": "شرح نهاية الحكمة ج4",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC4.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC4.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 458 pages.",
+      "physical_pages": 458,
+      "catalog_pages": 458,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-20": {
       "title_ar": "شرح نهاية الحكمة ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 503 pages.",
+      "physical_pages": 503,
+      "catalog_pages": 503,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-21": {
       "title_ar": "شرح نهاية الحكمة ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 504 pages.",
+      "physical_pages": 504,
+      "catalog_pages": 504,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-22": {
       "title_ar": "شرح نهاية الحكمة ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 483 pages.",
+      "physical_pages": 483,
+      "catalog_pages": 483,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-23": {
       "title_ar": "موسوعة شرح نهاية الحكمة",
       "candidate_url": null,
       "status": "missing",
       "url": null,
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "No direct single-PDF candidate; official archive provides a ZIP package for the umbrella collection; individual volumes are separate catalogue records."
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "No direct single-PDF candidate; official archive provides a ZIP package for the umbrella collection; individual volumes are separate catalogue records.",
+      "physical_pages": null,
+      "page_count_match": null,
+      "page_count_delta": null
     },
     "book-24": {
       "title_ar": "دروس عرفانية في تحرير تمهيد القواعد",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%AF%D8%B1%D9%88%D8%B3-%D8%B9%D8%B1%D9%81%D8%A7%D9%86%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%AF%D8%B1%D9%88%D8%B3-%D8%B9%D8%B1%D9%81%D8%A7%D9%86%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 276 pages.",
+      "physical_pages": 276,
+      "catalog_pages": 276,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-25": {
       "title_ar": "بحوث في فقه المعاطاة – ج 3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 506 pages.",
+      "physical_pages": 506,
+      "catalog_pages": 506,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-26": {
       "title_ar": "بحوث في فقه المعاطاة – ج 2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 474 pages.",
+      "physical_pages": 474,
+      "catalog_pages": 474,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-27": {
       "title_ar": "بحوث في فقه المعاطاة – ج 1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%B7%D8%A7%D8%A9-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 471 pages.",
+      "physical_pages": 471,
+      "catalog_pages": 471,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-28": {
       "title_ar": "الوسطية في القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/wasat.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/wasat.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 334 pages.",
+      "physical_pages": 334,
+      "catalog_pages": 334,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-29": {
       "title_ar": "قراءات في المنظومة المعرفية للسيد كمال الحيدري – ج 5",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/mandooma%205.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/mandooma%205.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 525 pages.",
+      "physical_pages": 525,
+      "catalog_pages": 525,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-30": {
       "title_ar": "قراءات في المنظومة المعرفية للسيد كمال الحيدري – ج 4",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/mandooma%204.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/mandooma%204.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 530 pages.",
+      "physical_pages": 530,
+      "catalog_pages": 530,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-31": {
       "title_ar": "قراءات في المنظومة المعرفية للسيد كمال الحيدري – ج 3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/mandooma%203.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/mandooma%203.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 535 pages.",
+      "physical_pages": 535,
+      "catalog_pages": 535,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-32": {
       "title_ar": "قراءات في المنظومة المعرفية للسيد كمال الحيدري – ج 2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/mandooma%202.pdf",
       "status": "missing",
       "url": null,
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Official direct-PDF target returned HTTP 404; no verified alternate direct PDF recovered."
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Official direct-PDF target returned HTTP 404; no verified alternate direct PDF recovered.",
+      "physical_pages": null,
+      "page_count_match": null,
+      "page_count_delta": null
     },
     "book-33": {
       "title_ar": "قراءات في المنظومة المعرفية للسيد كمال الحيدري – ج 1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/mandooma%201.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/mandooma%201.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 526 pages.",
+      "physical_pages": 526,
+      "catalog_pages": 526,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-34": {
       "title_ar": "مفاصل اصلاح الفكر الشيعي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%81%D8%A7%D8%B5%D9%84-%D8%A7%D8%B5%D9%84%D8%A7%D8%AD-%D8%A7%D9%84%D9%81%D9%83%D8%B1-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%81%D8%A7%D8%B5%D9%84-%D8%A7%D8%B5%D9%84%D8%A7%D8%AD-%D8%A7%D9%84%D9%81%D9%83%D8%B1-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 382 pages.",
+      "physical_pages": 382,
+      "catalog_pages": 382,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-35": {
       "title_ar": "الإيمان، حقيقته، درجاته، آثاره",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A7%D9%8A%D9%85%D8%A7%D9%86-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87-%D8%AF%D8%B1%D8%AC%D8%A7%D8%AA%D9%87-%D8%A2%D8%AB%D8%A7%D8%B1%D9%87.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A7%D9%8A%D9%85%D8%A7%D9%86-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87-%D8%AF%D8%B1%D8%AC%D8%A7%D8%AA%D9%87-%D8%A2%D8%AB%D8%A7%D8%B1%D9%87.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 475 pages.",
+      "physical_pages": 475,
+      "catalog_pages": 475,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-36": {
       "title_ar": "مشروع المرجعية الدينية وآفاق المستقبل",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D8%A7%D9%84%D9%85%D8%B1%D8%AC%D8%B9%D9%8A%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D8%A7%D9%84%D9%85%D8%B1%D8%AC%D8%B9%D9%8A%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 154 pages.",
+      "physical_pages": 154,
+      "catalog_pages": 154,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-37": {
       "title_ar": "الاسم الأعظم حقيقته ومظاهره",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%A5%D8%B3%D9%85-%D8%A7%D9%84%D8%A3%D8%B9%D8%B8%D9%85.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%A5%D8%B3%D9%85-%D8%A7%D9%84%D8%A3%D8%B9%D8%B8%D9%85.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 165 pages.",
+      "physical_pages": 165,
+      "catalog_pages": 158,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-38": {
       "title_ar": "من اسلام محورية الحديث إلى اسلام محورية القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%86-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A5%D9%84%D9%89-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%86-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A5%D9%84%D9%89-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 124 pages.",
+      "physical_pages": 124,
+      "catalog_pages": 124,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-39": {
       "title_ar": "الرمزية والمثل في النص القرآني",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%B1%D9%85%D8%B2%D9%8A%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D8%AB%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D9%86%D8%B5-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%B1%D9%85%D8%B2%D9%8A%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D8%AB%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D9%86%D8%B5-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 215 pages.",
+      "physical_pages": 215,
+      "catalog_pages": 202,
+      "page_count_match": false,
+      "page_count_delta": 13
     },
     "book-40": {
       "title_ar": "المنهج التفسيري عند العلامة الحيدري",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC%20%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1%D9%8A%20%D8%B9%D9%86%D8%AF%20%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC%20%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1%D9%8A%20%D8%B9%D9%86%D8%AF%20%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 264 pages.",
+      "physical_pages": 264,
+      "catalog_pages": 264,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-41": {
       "title_ar": "الصدق، رؤى في مفهومه ومجالاته ومعطياته",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%B5%D8%AF%D9%82-%D8%B1%D8%A4%D9%89-%D9%81%D9%8A-%D9%85%D9%81%D9%87%D9%88%D9%85%D9%87-%D9%88%D9%85%D8%AC%D8%A7%D9%84%D8%A7%D8%AA%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%B5%D8%AF%D9%82-%D8%B1%D8%A4%D9%89-%D9%81%D9%8A-%D9%85%D9%81%D9%87%D9%88%D9%85%D9%87-%D9%88%D9%85%D8%AC%D8%A7%D9%84%D8%A7%D8%AA%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 411 pages.",
+      "physical_pages": 411,
+      "catalog_pages": 411,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-42": {
       "title_ar": "مطارحات في الإمامة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%B7%D8%A7%D8%B1%D8%AD%D8%A7%D8%AA-%D9%81%D9%8A-%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%B7%D8%A7%D8%B1%D8%AD%D8%A7%D8%AA-%D9%81%D9%8A-%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 534 pages.",
+      "physical_pages": 534,
+      "catalog_pages": 534,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-43": {
       "title_ar": "موسوعة شرح حلقات الأصول",
       "candidate_url": null,
       "status": "missing",
       "url": null,
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "No direct single-PDF candidate; official archive provides a ZIP package for the umbrella collection; constituent works are separate catalogue records."
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "No direct single-PDF candidate; official archive provides a ZIP package for the umbrella collection; constituent works are separate catalogue records.",
+      "physical_pages": null,
+      "page_count_match": null,
+      "page_count_delta": null
     },
     "book-44": {
       "title_ar": "مقدمات منهجية في علم أصول الفقه",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%A7%D9%88%D9%84%D9%89/%D9%85%D9%82%D8%AF%D9%85%D8%A7%D8%AA-%D9%85%D9%86%D9%87%D8%AC%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%A7%D9%88%D9%84%D9%89/%D9%85%D9%82%D8%AF%D9%85%D8%A7%D8%AA-%D9%85%D9%86%D9%87%D8%AC%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 470 pages.",
+      "physical_pages": 470,
+      "catalog_pages": 470,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-45": {
       "title_ar": "شرح الحلقة الأولى",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1087.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1087.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 370 pages.",
+      "physical_pages": 370,
+      "catalog_pages": 366,
+      "page_count_match": false,
+      "page_count_delta": 4
     },
     "book-46": {
       "title_ar": "شرح الحلقة الثانية (1)",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1088.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1088.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 411 pages.",
+      "physical_pages": 411,
+      "catalog_pages": 414,
+      "page_count_match": false,
+      "page_count_delta": -3
     },
     "book-47": {
       "title_ar": "شرح الحلقة الثانية (2)",
-      "candidate_url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_2.pdf",
+      "candidate_url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج2.pdf",
       "status": "available",
-      "url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج2.pdf",
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 442 pages.",
+      "physical_pages": 442,
+      "catalog_pages": 439,
+      "page_count_match": false,
+      "page_count_delta": 3
     },
     "book-48": {
       "title_ar": "شرح الحلقة الثانية (3)",
-      "candidate_url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_3.pdf",
+      "candidate_url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج3.pdf",
       "status": "available",
-      "url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج3.pdf",
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 404 pages.",
+      "physical_pages": 404,
+      "catalog_pages": 399,
+      "page_count_match": false,
+      "page_count_delta": 5
     },
     "book-49": {
       "title_ar": "شرح الحلقة الثانية (ج4)",
-      "candidate_url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_4.pdf",
+      "candidate_url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج4.pdf",
       "status": "available",
-      "url": "https://archive.alhaydari.com/ebook/ar/sharih_halqh2_4.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "url": "https://archive.alhaydari.com/ebook/ar/اصول-فقه/الحلقة-الثانية/شرح-الحلقة-الثانية-ج4.pdf",
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 383 pages.",
+      "physical_pages": 383,
+      "catalog_pages": 367,
+      "page_count_match": false,
+      "page_count_delta": 16
     },
     "book-50": {
       "title_ar": "شرح الحلقة الثالثة، الدليل الشرعي ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 505 pages.",
+      "physical_pages": 505,
+      "catalog_pages": 505,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-51": {
       "title_ar": "شرح الحلقة الثالثة، الدليل الشرعي ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 511 pages.",
+      "physical_pages": 511,
+      "catalog_pages": 511,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-52": {
       "title_ar": "شرح الحلقة الثالثة، الدليل الشرعي ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 514 pages.",
+      "physical_pages": 514,
+      "catalog_pages": 514,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-53": {
       "title_ar": "شرح الحلقة الثالثة، الدليل الشرعي ج4",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC4.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC4.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 451 pages.",
+      "physical_pages": 451,
+      "catalog_pages": 541,
+      "page_count_match": false,
+      "page_count_delta": -90
     },
     "book-54": {
       "title_ar": "شرح الحلقة الثالثة، الدليل الشرعي ج5",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC5.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B4%D8%B1%D8%B9%D9%8A-%D8%AC5.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 511 pages.",
+      "physical_pages": 511,
+      "catalog_pages": 497,
+      "page_count_match": false,
+      "page_count_delta": 14
     },
     "book-55": {
       "title_ar": "شرح الحلقة الثالثة (الدليل العقلي) ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 502 pages.",
+      "physical_pages": 502,
+      "catalog_pages": 502,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-56": {
       "title_ar": "شرح الحلقة الثالثة (الدليل العقلي) ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 470 pages.",
+      "physical_pages": 470,
+      "catalog_pages": 470,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-57": {
       "title_ar": "شرح الحلقة الثالثة (الدليل العقلي) ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A9-%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB%D8%A9/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A/%D8%A7%D9%84%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 500 pages.",
+      "physical_pages": 500,
+      "catalog_pages": 500,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-58": {
       "title_ar": "شرح الحلقة الثالثة, الأصول العملية ج1",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1079.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1079.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 452 pages.",
+      "physical_pages": 452,
+      "catalog_pages": 452,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-59": {
       "title_ar": "شرح الحلقة الثالثة, الأصول العملية ج2",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1080.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1080.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 445 pages.",
+      "physical_pages": 445,
+      "catalog_pages": 445,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-60": {
       "title_ar": "شرح الحلقة الثالثة, الأصول العملية ج3",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1081.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1081.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 440 pages.",
+      "physical_pages": 440,
+      "catalog_pages": 440,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-61": {
       "title_ar": "شرح الحلقة الثالثة, الأصول العملية ج4",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1082.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1082.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 425 pages.",
+      "physical_pages": 425,
+      "catalog_pages": 425,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-62": {
       "title_ar": "شرح الحلقة الثالثة, الأصول العملية ج5",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1083.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1083.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 450 pages.",
+      "physical_pages": 450,
+      "catalog_pages": 450,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-63": {
       "title_ar": "شرح الحلقة الثالثة, الأصول العملية ج6",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B9%D9%85%D9%84%D9%8A%D8%A9/%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B9%D9%85%D9%84%D9%8A%D8%A9-%D8%AC6.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B9%D9%85%D9%84%D9%8A%D8%A9/%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B9%D9%85%D9%84%D9%8A%D8%A9-%D8%AC6.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 443 pages.",
+      "physical_pages": 443,
+      "catalog_pages": 430,
+      "page_count_match": false,
+      "page_count_delta": 13
     },
     "book-64": {
       "title_ar": "موسوعة العدل الإلهي ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 532 pages.",
+      "physical_pages": 532,
+      "catalog_pages": 532,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-65": {
       "title_ar": "موسوعة العدل الإلهي ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 520 pages.",
+      "physical_pages": 520,
+      "catalog_pages": 520,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-66": {
       "title_ar": "موسوعة العدل الإلهي ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A/%D9%85%D9%88%D8%B3%D9%88%D8%B9%D8%A9-%D8%A7%D9%84%D8%B9%D8%AF%D9%84-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 500 pages.",
+      "physical_pages": 500,
+      "catalog_pages": 500,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-67": {
       "title_ar": "التدابير النبوية لحفظ الرسالة الإلهية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D8%A8%D9%8A%D8%B1-%D8%A7%D9%84%D9%86%D8%A8%D9%88%D9%8A%D8%A9-%D9%84%D8%AD%D9%81%D8%B8-%D8%A7%D9%84%D8%B1%D8%B3%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D8%A8%D9%8A%D8%B1-%D8%A7%D9%84%D9%86%D8%A8%D9%88%D9%8A%D8%A9-%D9%84%D8%AD%D9%81%D8%B8-%D8%A7%D9%84%D8%B1%D8%B3%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 584 pages.",
+      "physical_pages": 584,
+      "catalog_pages": 584,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-68": {
       "title_ar": "العلم الإلهی؛ شرح الأسفار الأربعة لصدر الدين الشيرازي ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 496 pages.",
+      "physical_pages": 496,
+      "catalog_pages": 496,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-69": {
       "title_ar": "العلم الإلهی؛ شرح الأسفار الأربعة لصدر الدين الشيرازي ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A/%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 540 pages.",
+      "physical_pages": 540,
+      "catalog_pages": 540,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-70": {
       "title_ar": "ميزان تصحيح الموروث الروائي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%8A%D8%B2%D8%A7%D9%86-%D8%AA%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D9%85%D9%88%D8%B1%D9%88%D8%AB-%D8%A7%D9%84%D8%B1%D9%88%D8%A7%D8%A6%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%8A%D8%B2%D8%A7%D9%86-%D8%AA%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D9%85%D9%88%D8%B1%D9%88%D8%AB-%D8%A7%D9%84%D8%B1%D9%88%D8%A7%D8%A6%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 294 pages.",
+      "physical_pages": 294,
+      "catalog_pages": 294,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-71": {
       "title_ar": "إصلاح النفس",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A5%D8%B5%D9%84%D8%A7%D8%AD-%D8%A7%D9%84%D9%86%D9%81%D8%B3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A5%D8%B5%D9%84%D8%A7%D8%AD-%D8%A7%D9%84%D9%86%D9%81%D8%B3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 352 pages.",
+      "physical_pages": 352,
+      "catalog_pages": 352,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-72": {
       "title_ar": "أخلاقنا",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A3%D8%AE%D9%84%D8%A7%D9%82%D9%86%D8%A7.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A3%D8%AE%D9%84%D8%A7%D9%82%D9%86%D8%A7.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 289 pages.",
+      "physical_pages": 289,
+      "catalog_pages": 289,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-73": {
       "title_ar": "الدلالة القرآنية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%AF%D9%84%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%AF%D9%84%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 532 pages.",
+      "physical_pages": 532,
+      "catalog_pages": 532,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-74": {
       "title_ar": "الرؤية الكونية في العرفان النظري",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%B1%D8%A4%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D9%88%D9%86%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%B1%D8%A4%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D9%88%D9%86%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 386 pages.",
+      "physical_pages": 386,
+      "catalog_pages": 386,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-75": {
       "title_ar": "شرح الباب الحادي عشر ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 418 pages.",
+      "physical_pages": 418,
+      "catalog_pages": 418,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-76": {
       "title_ar": "شرح الباب الحادي عشر ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A8%D8%A7%D8%A8-%D8%A7%D9%84%D8%AD%D8%A7%D8%AF%D9%8A-%D8%B9%D8%B4%D8%B1-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 412 pages.",
+      "physical_pages": 412,
+      "catalog_pages": 412,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-77": {
       "title_ar": "شرح كتاب المنطق ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 568 pages.",
+      "physical_pages": 568,
+      "catalog_pages": 568,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-78": {
       "title_ar": "شرح كتاب المنطق ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 486 pages.",
+      "physical_pages": 486,
+      "catalog_pages": 486,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-79": {
       "title_ar": "شرح كتاب المنطق ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%85%D9%86%D8%B7%D9%82/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D8%B7%D9%82-%D8%A7%D9%84%D9%85%D8%B8%D9%81%D8%B1-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 486 pages.",
+      "physical_pages": 486,
+      "catalog_pages": 486,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-80": {
       "title_ar": "عصمة الأنبياء في القرآن الكريم",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B9%D8%B5%D9%85%D8%A9-%D8%A7%D9%84%D8%A3%D9%86%D8%A8%D9%8A%D8%A7%D8%A1-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%A7%D9%84%D9%83%D8%B1%D9%8A%D9%85.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B9%D8%B5%D9%85%D8%A9-%D8%A7%D9%84%D8%A3%D9%86%D8%A8%D9%8A%D8%A7%D8%A1-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%A7%D9%84%D9%83%D8%B1%D9%8A%D9%85.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 209 pages.",
+      "physical_pages": 209,
+      "catalog_pages": 209,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-81": {
       "title_ar": "الـتـوحـيـد بحوث تحليلية في مراتبه ومعطياته ج(2)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A8%D8%AD%D9%88%D8%AB-%D8%AA%D8%AD%D9%84%D9%8A%D9%84%D9%8A%D8%A9-%D9%81%D9%8A-%D9%85%D8%B1%D8%A7%D8%AA%D8%A8%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A8%D8%AD%D9%88%D8%AB-%D8%AA%D8%AD%D9%84%D9%8A%D9%84%D9%8A%D8%A9-%D9%81%D9%8A-%D9%85%D8%B1%D8%A7%D8%AA%D8%A8%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A8%D8%AD%D9%88%D8%AB-%D8%AA%D8%AD%D9%84%D9%8A%D9%84%D9%8A%D8%A9-%D9%81%D9%8A-%D9%85%D8%B1%D8%A7%D8%AA%D8%A8%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A8%D8%AD%D9%88%D8%AB-%D8%AA%D8%AD%D9%84%D9%8A%D9%84%D9%8A%D8%A9-%D9%81%D9%8A-%D9%85%D8%B1%D8%A7%D8%AA%D8%A8%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 559 pages.",
+      "physical_pages": 559,
+      "catalog_pages": 560,
+      "page_count_match": false,
+      "page_count_delta": -1
     },
     "book-82": {
       "title_ar": "الـتـوحـيـد بحوث تحليلية في مراتبه ومعطياته ج(1)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/altohid.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/altohid.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 528 pages.",
+      "physical_pages": 528,
+      "catalog_pages": 526,
+      "page_count_match": false,
+      "page_count_delta": 2
     },
     "book-83": {
       "title_ar": "الموروث الروائي، بين النشأة والتأثير",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D9%88%D8%B1%D9%88%D8%AB-%D8%A7%D9%84%D8%B1%D9%88%D8%A7%D8%A6%D9%8A-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D9%86%D8%B4%D8%A3%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D8%AB%D9%8A%D8%B1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D9%88%D8%B1%D9%88%D8%AB-%D8%A7%D9%84%D8%B1%D9%88%D8%A7%D8%A6%D9%8A-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D9%86%D8%B4%D8%A3%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D8%AB%D9%8A%D8%B1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 324 pages.",
+      "physical_pages": 324,
+      "catalog_pages": 324,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-84": {
       "title_ar": "شرح بداية الحكمة ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 424 pages.",
+      "physical_pages": 424,
+      "catalog_pages": 419,
+      "page_count_match": false,
+      "page_count_delta": 5
     },
     "book-85": {
       "title_ar": "شرح بداية الحكمة ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%AD%D9%83%D9%85%D8%A9-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9-%D8%AD%D9%83%D9%85%D8%A9-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 460 pages.",
+      "physical_pages": 460,
+      "catalog_pages": 460,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-86": {
       "title_ar": "شرح تمهيد القواعد، في علم العرفان النظري ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 620 pages.",
+      "physical_pages": 620,
+      "catalog_pages": 620,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-87": {
       "title_ar": "شرح تمهيد القواعد، في علم العرفان النظري ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF/%D8%B4%D8%B1%D8%AD-%D8%AA%D9%85%D9%87%D9%8A%D8%AF-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 636 pages.",
+      "physical_pages": 636,
+      "catalog_pages": 636,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-88": {
       "title_ar": "فقه العقيدة، بحوث في أصول الإيمان وفروعه",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%82%D9%87-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%82%D9%87-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 408 pages.",
+      "physical_pages": 408,
+      "catalog_pages": 408,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-89": {
       "title_ar": "نظرية اصالة الوجود، محاولة لعرض رؤية جديدة ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 454 pages.",
+      "physical_pages": 454,
+      "catalog_pages": 454,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-90": {
       "title_ar": "نظرية اصالة الوجود، محاولة لعرض رؤية جديدة ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D8%B5%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D9%88%D8%AC%D9%88%D8%AF-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 442 pages.",
+      "physical_pages": 442,
+      "catalog_pages": 442,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-91": {
       "title_ar": "معالم الاسلام الأموي ـ من القدح في العترة النبوية الطاهرة إلى استباحتها",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/almaalem.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/almaalem.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 360 pages.",
+      "physical_pages": 360,
+      "catalog_pages": 361,
+      "page_count_match": false,
+      "page_count_delta": -1
     },
     "book-92": {
       "title_ar": "المعاد ـ رؤية قرآنية ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 467 pages.",
+      "physical_pages": 467,
+      "catalog_pages": 467,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-93": {
       "title_ar": "المعاد ـ رؤية قرآنية ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF-%D8%B1%D8%A4%D9%8A%D8%A9-%D9%82%D8%B1%D8%A2%D9%86%D9%8A%D8%A9-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 476 pages.",
+      "physical_pages": 476,
+      "catalog_pages": 478,
+      "page_count_match": false,
+      "page_count_delta": -2
     },
     "book-94": {
       "title_ar": "الفلسفة (الإلهيّات بالمعنى الأعمّ) ج (3)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 496 pages.",
+      "physical_pages": 496,
+      "catalog_pages": 496,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-95": {
       "title_ar": "الفلسفة (الإلهيّات بالمعنى الأعمّ) ج (2)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 509 pages.",
+      "physical_pages": 509,
+      "catalog_pages": 509,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-96": {
       "title_ar": "الفلسفة ج (1)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B3%D9%81%D8%A7%D8%B1/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91/%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A%D9%91%D8%A7%D8%AA-%D8%A8%D8%A7%D9%84%D9%85%D8%B9%D9%86%D9%89-%D8%A7%D9%84%D8%A3%D8%B9%D9%85%D9%91-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 478 pages.",
+      "physical_pages": 478,
+      "catalog_pages": 478,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-97": {
       "title_ar": "معالم التجديد الفقهي",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1073.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1073.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 219 pages.",
+      "physical_pages": 219,
+      "catalog_pages": 214,
+      "page_count_match": false,
+      "page_count_delta": 5
     },
     "book-98": {
       "title_ar": "آية الكرسي تفسيراً وتأويلاً",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A2%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D8%B1%D8%B3%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A2%D9%8A%D8%A9-%D8%A7%D9%84%D9%83%D8%B1%D8%B3%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 231 pages.",
+      "physical_pages": 231,
+      "catalog_pages": 218,
+      "page_count_match": false,
+      "page_count_delta": 13
     },
     "book-99": {
       "title_ar": "فقه الصيام ـ أسئلة وردود",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%81%D9%82%D9%87-%D8%A7%D9%84%D8%B5%D9%8A%D8%A7%D9%85.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%81%D9%82%D9%87-%D8%A7%D9%84%D8%B5%D9%8A%D8%A7%D9%85.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 258 pages.",
+      "physical_pages": 258,
+      "catalog_pages": 258,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-100": {
       "title_ar": "التربية الروحية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9-%D8%A7%D9%84%D8%B1%D9%88%D8%AD%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9-%D8%A7%D9%84%D8%B1%D9%88%D8%AD%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 315 pages.",
+      "physical_pages": 315,
+      "catalog_pages": 315,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-101": {
       "title_ar": "روحانية العبادات",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%B1%D9%88%D8%AD%D8%A7%D9%86%D9%8A%D8%A9-%D8%A7%D9%84%D8%B9%D8%A8%D8%A7%D8%AF%D8%A7%D8%AA.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%B1%D9%88%D8%AD%D8%A7%D9%86%D9%8A%D8%A9-%D8%A7%D9%84%D8%B9%D8%A8%D8%A7%D8%AF%D8%A7%D8%AA.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 231 pages.",
+      "physical_pages": 231,
+      "catalog_pages": 231,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-102": {
       "title_ar": "منهاج الصالحين ـ فتاوى سماحة المرجع الديني السيد كمال الحيدري",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%85%D9%86%D9%87%D8%A7%D8%AC-%D8%A7%D9%84%D8%B5%D8%A7%D9%84%D8%AD%D9%8A%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%85%D9%86%D9%87%D8%A7%D8%AC-%D8%A7%D9%84%D8%B5%D8%A7%D9%84%D8%AD%D9%8A%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 574 pages.",
+      "physical_pages": 574,
+      "catalog_pages": 559,
+      "page_count_match": false,
+      "page_count_delta": 15
     },
     "book-103": {
       "title_ar": "حديث الثقلين سنداً ودلالة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A7%D9%84%D8%AB%D9%82%D9%84%D9%8A%D9%86-%D8%B3%D9%86%D8%AF%D8%A7%D9%8B-%D9%88%D8%AF%D9%84%D8%A7%D9%84%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A7%D9%84%D8%AB%D9%82%D9%84%D9%8A%D9%86-%D8%B3%D9%86%D8%AF%D8%A7%D9%8B-%D9%88%D8%AF%D9%84%D8%A7%D9%84%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 464 pages.",
+      "physical_pages": 464,
+      "catalog_pages": 464,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-104": {
       "title_ar": "مقامات ومسؤوليات أئمة أهل البيت عليهم السلام",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%82%D8%A7%D9%85%D8%A7%D8%AA-%D9%88%D9%85%D8%B3%D8%A4%D9%88%D9%84%D9%8A%D8%A7%D8%AA-%D8%A3%D8%A6%D9%85%D8%A9-%D8%A3%D9%87%D9%84-%D8%A7%D9%84%D8%A8%D9%8A%D8%AA.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%82%D8%A7%D9%85%D8%A7%D8%AA-%D9%88%D9%85%D8%B3%D8%A4%D9%88%D9%84%D9%8A%D8%A7%D8%AA-%D8%A3%D8%A6%D9%85%D8%A9-%D8%A3%D9%87%D9%84-%D8%A7%D9%84%D8%A8%D9%8A%D8%AA.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 147 pages.",
+      "physical_pages": 147,
+      "catalog_pages": 147,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-105": {
       "title_ar": "الانسان بين الجبر والتفويض ـ مدخل لدراسة نظرية الأمر بين الأمرين",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A7%D9%86%D8%B3%D8%A7%D9%86-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D8%AC%D8%A8%D8%B1-%D9%88%D8%A7%D9%84%D8%AA%D9%81%D9%88%D9%8A%D8%B6.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A7%D9%86%D8%B3%D8%A7%D9%86-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D8%AC%D8%A8%D8%B1-%D9%88%D8%A7%D9%84%D8%AA%D9%81%D9%88%D9%8A%D8%B6.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 192 pages.",
+      "physical_pages": 192,
+      "catalog_pages": 192,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-106": {
       "title_ar": "من محورية إسلام الحديث إلى محورية إسلام القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%85%D9%86-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A5%D9%84%D9%89-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%85%D9%86-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A5%D9%84%D9%89-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 132 pages.",
+      "physical_pages": 132,
+      "catalog_pages": 124,
+      "page_count_match": false,
+      "page_count_delta": 8
     },
     "book-107": {
       "title_ar": "المرجع الديني السيد كمال الحيدري نبذة عن حياته، منهجه، مشروعه الاصلاحي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%86%D8%A8%D8%B0%D8%A9-%D8%B9%D9%86-%D8%AD%D9%8A%D8%A7%D8%AA%D9%87-%D9%85%D9%86%D9%87%D8%AC%D9%87-%D9%85%D8%B4%D8%B1%D9%88%D8%B9%D9%87%20%D8%A7%D9%84%D8%A7%D8%B5%D9%84%D8%A7%D8%AD%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%86%D8%A8%D8%B0%D8%A9-%D8%B9%D9%86-%D8%AD%D9%8A%D8%A7%D8%AA%D9%87-%D9%85%D9%86%D9%87%D8%AC%D9%87-%D9%85%D8%B4%D8%B1%D9%88%D8%B9%D9%87%20%D8%A7%D9%84%D8%A7%D8%B5%D9%84%D8%A7%D8%AD%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 296 pages.",
+      "physical_pages": 296,
+      "catalog_pages": 298,
+      "page_count_match": false,
+      "page_count_delta": -2
     },
     "book-108": {
       "title_ar": "الشفاعة، بحوث في حقيقتها وأقسامها ومعطياتها",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%B9%D8%A9-%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7%D9%88%D8%A3%D9%82%D8%B3%D8%A7%D9%85%D9%87%D8%A7%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87%D8%A7.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%B9%D8%A9-%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7%D9%88%D8%A3%D9%82%D8%B3%D8%A7%D9%85%D9%87%D8%A7%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87%D8%A7.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 438 pages.",
+      "physical_pages": 438,
+      "catalog_pages": 438,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-109": {
       "title_ar": "معرفة الله ج (2)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 374 pages.",
+      "physical_pages": 374,
+      "catalog_pages": 374,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-110": {
       "title_ar": "معرفة الله ج (1)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87/%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D9%84%D9%87-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 430 pages.",
+      "physical_pages": 430,
+      "catalog_pages": 430,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-111": {
       "title_ar": "مدخل إلى النظام المعرفي لآلية فهم القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D8%AF%D8%AE%D9%84-%D8%A5%D9%84%D9%89-%D8%A7%D9%84%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D8%AF%D8%AE%D9%84-%D8%A5%D9%84%D9%89-%D8%A7%D9%84%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 415 pages.",
+      "physical_pages": 415,
+      "catalog_pages": 415,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-112": {
       "title_ar": "العلامة الحيدري ـ إعادة قراءة الفكر الشيعي حفر في التراث واستنطاق المقدس",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%B9%D8%A7%D8%AF%D8%A9-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D8%A7%D9%84%D9%81%D9%83%D8%B1-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%B9%D8%A7%D8%AF%D8%A9-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D8%A7%D9%84%D9%81%D9%83%D8%B1-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 97 pages.",
+      "physical_pages": 97,
+      "catalog_pages": 97,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-113": {
       "title_ar": "المدارس الفلسفية في العصر الإسلامي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D8%AF%D8%A7%D8%B1%D8%B3-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D8%B5%D8%B1-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D8%AF%D8%A7%D8%B1%D8%B3-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D8%B5%D8%B1-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 152 pages.",
+      "physical_pages": 152,
+      "catalog_pages": 152,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-114": {
       "title_ar": "مدخل إلى الإمامة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%AF%D8%AE%D9%84-%D8%A7%D9%84%D9%89-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D8%AF%D8%AE%D9%84-%D8%A7%D9%84%D9%89-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 117 pages.",
+      "physical_pages": 117,
+      "catalog_pages": 117,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-115": {
       "title_ar": "مناهج بحث الإمامة ـ بين النظرية والتطبيق",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%86%D8%A7%D9%87%D8%AC-%D8%A8%D8%AD%D8%AB-%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%86%D8%A7%D9%87%D8%AC-%D8%A8%D8%AD%D8%AB-%D8%A7%D9%84%D8%A7%D9%85%D8%A7%D9%85%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 134 pages.",
+      "physical_pages": 134,
+      "catalog_pages": 134,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-116": {
       "title_ar": "رسائل فقهية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%B1%D8%B3%D8%A7%D8%A6%D9%84-%D9%81%D9%82%D9%87%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%B1%D8%B3%D8%A7%D8%A6%D9%84-%D9%81%D9%82%D9%87%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 510 pages.",
+      "physical_pages": 510,
+      "catalog_pages": 510,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-117": {
       "title_ar": "العلامة الطباطبائي ملامح من سيرته الذاتية ومنهجه العلمي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9-%D8%A7%D9%84%D8%B7%D8%A8%D8%A7%D8%B7%D8%A8%D8%A7%D8%A6%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9-%D8%A7%D9%84%D8%B7%D8%A8%D8%A7%D8%B7%D8%A8%D8%A7%D8%A6%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 207 pages.",
+      "physical_pages": 207,
+      "catalog_pages": 194,
+      "page_count_match": false,
+      "page_count_delta": 13
     },
     "book-118": {
       "title_ar": "مناهج تفسير القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%A7%D9%87%D8%AC-%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%A7%D9%87%D8%AC-%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 215 pages.",
+      "physical_pages": 215,
+      "catalog_pages": 202,
+      "page_count_match": false,
+      "page_count_delta": 13
     },
     "book-119": {
       "title_ar": "مفاتيح فهم القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%81%D8%A7%D8%AA%D9%8A%D8%AD-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%81%D8%A7%D8%AA%D9%8A%D8%AD-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 209 pages.",
+      "physical_pages": 209,
+      "catalog_pages": 195,
+      "page_count_match": false,
+      "page_count_delta": 14
     },
     "book-120": {
       "title_ar": "كليات فقه المكاسب المحرمة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%83%D9%84%D9%8A%D8%A7%D8%AA-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D9%83%D8%A7%D8%B3%D8%A8-%D8%A7%D9%84%D9%85%D8%AD%D8%B1%D9%85%D9%87.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%83%D9%84%D9%8A%D8%A7%D8%AA-%D9%81%D9%82%D9%87-%D8%A7%D9%84%D9%85%D9%83%D8%A7%D8%B3%D8%A8-%D8%A7%D9%84%D9%85%D8%AD%D8%B1%D9%85%D9%87.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 352 pages.",
+      "physical_pages": 352,
+      "catalog_pages": 343,
+      "page_count_match": false,
+      "page_count_delta": 9
     },
     "book-121": {
       "title_ar": "بحوث في فقه عقد البيع",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1062.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1062.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 470 pages.",
+      "physical_pages": 470,
+      "catalog_pages": 461,
+      "page_count_match": false,
+      "page_count_delta": 9
     },
     "book-122": {
       "title_ar": "بحث حول الإمامة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A8%D8%AD%D8%AB-%D8%AD%D9%88%D9%84-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A8%D8%AD%D8%AB-%D8%AD%D9%88%D9%84-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 389 pages.",
+      "physical_pages": 389,
+      "catalog_pages": 424,
+      "page_count_match": false,
+      "page_count_delta": -35
     },
     "book-123": {
       "title_ar": "التوبة حقيقتها وشروطها وآثارها",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D9%88%D8%A8%D8%A9-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7-%D9%88%D8%B4%D8%B1%D9%88%D8%B7%D9%87%D8%A7-%D9%88%D8%A2%D8%AB%D8%A7%D8%B1%D9%87%D8%A7.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AA%D9%88%D8%A8%D8%A9-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7-%D9%88%D8%B4%D8%B1%D9%88%D8%B7%D9%87%D8%A7-%D9%88%D8%A2%D8%AB%D8%A7%D8%B1%D9%87%D8%A7.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 132 pages.",
+      "physical_pages": 132,
+      "catalog_pages": 132,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-124": {
       "title_ar": "الثابت والمتغيّر في المعرفة الدينيّة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9/%D8%A7%D9%84%D8%AB%D8%A7%D8%A8%D8%AA-%D9%88%D8%A7%D9%84%D9%85%D8%AA%D8%BA%D9%8A%D8%B1-%D9%81%D9%8A-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9/%D8%A7%D9%84%D8%AB%D8%A7%D8%A8%D8%AA-%D9%88%D8%A7%D9%84%D9%85%D8%AA%D8%BA%D9%8A%D8%B1-%D9%81%D9%8A-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 176 pages.",
+      "physical_pages": 176,
+      "catalog_pages": 178,
+      "page_count_match": false,
+      "page_count_delta": -2
     },
     "book-125": {
       "title_ar": "نظرية التأويل في القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 351 pages.",
+      "physical_pages": 351,
+      "catalog_pages": 238,
+      "page_count_match": false,
+      "page_count_delta": 113
     },
     "book-126": {
       "title_ar": "التوحيد عند الشيخ إبن تيمية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%B9%D9%86%D8%AF-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A5%D8%A8%D9%86-%D8%AA%D9%8A%D9%85%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%B9%D9%86%D8%AF-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A5%D8%A8%D9%86-%D8%AA%D9%8A%D9%85%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 529 pages.",
+      "physical_pages": 529,
+      "catalog_pages": 522,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-127": {
       "title_ar": "الفتاوى الفقهية ج3 المعاملات",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A7%D9%84%D9%81%D8%AA%D8%A7%D9%88%D9%89-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A%D8%A9/%D8%A7%D9%84%D9%81%D8%AA%D8%A7%D9%88%D9%89-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A%D8%A9-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D8%A7%D9%84%D9%81%D8%AA%D8%A7%D9%88%D9%89-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A%D8%A9/%D8%A7%D9%84%D9%81%D8%AA%D8%A7%D9%88%D9%89-%D8%A7%D9%84%D9%81%D9%82%D9%87%D9%8A%D8%A9-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 480 pages.",
+      "physical_pages": 480,
+      "catalog_pages": 480,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-128": {
       "title_ar": "الفتاوى الفقهية ج1 العبادات",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1063.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1063.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 500 pages.",
+      "physical_pages": 500,
+      "catalog_pages": 500,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-129": {
       "title_ar": "الفتاوى الفقهية ج2 العبادات",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1064.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1064.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 459 pages.",
+      "physical_pages": 459,
+      "catalog_pages": 452,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-130": {
       "title_ar": "السلطة وصناعة الوضع والتأويل",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B3%D9%84%D8%B7%D8%A9-%D9%88%D8%B5%D9%86%D8%A7%D8%B9%D8%A9-%D8%A7%D9%84%D9%88%D8%B6%D8%B9-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B3%D9%84%D8%B7%D8%A9-%D9%88%D8%B5%D9%86%D8%A7%D8%B9%D8%A9-%D8%A7%D9%84%D9%88%D8%B6%D8%B9-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 335 pages.",
+      "physical_pages": 335,
+      "catalog_pages": 330,
+      "page_count_match": false,
+      "page_count_delta": 5
     },
     "book-131": {
       "title_ar": "مناسك الحج",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%84%D8%AD%D8%AC.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%84%D8%AD%D8%AC.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 298 pages.",
+      "physical_pages": 298,
+      "catalog_pages": 291,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-132": {
       "title_ar": "الدعاء إشراقاته ومعطياته",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AF%D8%B9%D8%A7%D8%A1-%D8%A5%D8%B4%D8%B1%D8%A7%D9%82%D8%A7%D8%AA%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A7%D9%84%D8%AF%D8%B9%D8%A7%D8%A1-%D8%A5%D8%B4%D8%B1%D8%A7%D9%82%D8%A7%D8%AA%D9%87-%D9%88%D9%85%D8%B9%D8%B7%D9%8A%D8%A7%D8%AA%D9%87.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 280 pages.",
+      "physical_pages": 280,
+      "catalog_pages": 280,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-133": {
       "title_ar": "أولويات منهجية في فهم المعارف الدينية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A3%D9%88%D9%84%D9%88%D9%8A%D8%A7%D8%AA-%D9%85%D9%86%D9%87%D8%AC%D9%8A%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D8%A3%D9%88%D9%84%D9%88%D9%8A%D8%A7%D8%AA-%D9%85%D9%86%D9%87%D8%AC%D9%8A%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 111 pages.",
+      "physical_pages": 111,
+      "catalog_pages": 104,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-134": {
       "title_ar": "صيانة القرآن من التحريف",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%B5%D9%8A%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D9%85%D9%86-%D8%A7%D9%84%D8%AA%D8%AD%D8%B1%D9%8A%D9%81.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%B5%D9%8A%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D9%85%D9%86-%D8%A7%D9%84%D8%AA%D8%AD%D8%B1%D9%8A%D9%81.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 151 pages.",
+      "physical_pages": 151,
+      "catalog_pages": 144,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-135": {
       "title_ar": "إبداعات العلامة الحيدري في المنهج والتوحيد والإمامة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%81%D9%8A-%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D9%88%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D9%88%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%81%D9%8A-%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D9%88%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D9%88%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 105 pages.",
+      "physical_pages": 105,
+      "catalog_pages": 98,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-136": {
       "title_ar": "القضاء والقدر وإشكالية تعطيل الفعل الإنساني",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%82%D8%B6%D8%A7%D8%A1-%D9%88%D8%A7%D9%84%D9%82%D8%AF%D8%B1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%82%D8%B6%D8%A7%D8%A1-%D9%88%D8%A7%D9%84%D9%82%D8%AF%D8%B1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 181 pages.",
+      "physical_pages": 181,
+      "catalog_pages": 174,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-137": {
       "title_ar": "البداء وكيفية وقوعه في العلم الإلهي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D8%A1-%D9%88%D9%83%D9%8A%D9%81%D9%8A%D8%A9%D9%88%D9%82%D9%88%D8%B9%D9%87-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D8%A1-%D9%88%D9%83%D9%8A%D9%81%D9%8A%D8%A9%D9%88%D9%82%D9%88%D8%B9%D9%87-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%84%D9%87%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 122 pages.",
+      "physical_pages": 122,
+      "catalog_pages": 115,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-138": {
       "title_ar": "الغلوّ حقيقته وأقسامه",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%BA%D9%84%D9%88%D9%91-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87-%D9%88%D8%A3%D9%82%D8%B3%D8%A7%D9%85%D9%87.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%BA%D9%84%D9%88%D9%91-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87-%D9%88%D8%A3%D9%82%D8%B3%D8%A7%D9%85%D9%87.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 117 pages.",
+      "physical_pages": 117,
+      "catalog_pages": 110,
+      "page_count_match": false,
+      "page_count_delta": 7
     },
     "book-139": {
       "title_ar": "منتخب مناسك الحج والعمرة",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1067.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1067.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 125 pages.",
+      "physical_pages": 125,
+      "catalog_pages": 125,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-140": {
       "title_ar": "منطق فهم القرآن ـ الأسس المنهجية للتفسير والتأويل في ضوء آية الكرسي ج3",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%AC3.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%AC3.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 524 pages.",
+      "physical_pages": 524,
+      "catalog_pages": 519,
+      "page_count_match": false,
+      "page_count_delta": 5
     },
     "book-141": {
       "title_ar": "منطق فهم القرآن ـ الأسس المنهجية للتفسير والتأويل في ضوء آية الكرسي ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 492 pages.",
+      "physical_pages": 492,
+      "catalog_pages": 492,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-142": {
       "title_ar": "منطق فهم القرآن ـ الأسس المنهجية للتفسير والتأويل في ضوء آية الكرسي ج1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%85%D9%86%D8%B7%D9%82-%D9%81%D9%87%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 567 pages.",
+      "physical_pages": 567,
+      "catalog_pages": 567,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-143": {
       "title_ar": "خمس أرباح المكاسب فتاوى فقهية 2 ـ",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1068.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1068.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 115 pages.",
+      "physical_pages": 115,
+      "catalog_pages": 115,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-144": {
       "title_ar": "مختارات من أحكام النساء",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1069.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1069.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 148 pages.",
+      "physical_pages": 148,
+      "catalog_pages": 148,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-145": {
       "title_ar": "دروس في الحكمة المتعالية (1)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 592 pages.",
+      "physical_pages": 592,
+      "catalog_pages": 592,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-146": {
       "title_ar": "دروس في الحكمة المتعالية (2)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%AA%D8%B9%D8%A7%D9%84%D9%8A%D8%A9-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 511 pages.",
+      "physical_pages": 511,
+      "catalog_pages": 511,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-147": {
       "title_ar": "بحوث في علم النفس الفلسفي",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D9%86%D9%81%D8%B3-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A8%D8%AD%D9%88%D8%AB-%D9%81%D9%8A-%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D9%86%D9%81%D8%B3-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 397 pages.",
+      "physical_pages": 397,
+      "catalog_pages": 397,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-148": {
       "title_ar": "الـمـذهـب الـذاتي فـي نـظـريـة الـمـعـرفـة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D8%B0%D9%87%D8%A8-%D8%A7%D9%84%D8%B0%D8%A7%D8%AA%D9%8A-%D9%81%D9%8A-%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D8%B0%D9%87%D8%A8-%D8%A7%D9%84%D8%B0%D8%A7%D8%AA%D9%8A-%D9%81%D9%8A-%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 578 pages.",
+      "physical_pages": 578,
+      "catalog_pages": 574,
+      "page_count_match": false,
+      "page_count_delta": 4
     },
     "book-149": {
       "title_ar": "مدخل إلى مناهج المعرفة عند الإسلاميين",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9/%D9%85%D8%AF%D8%AE%D9%84-%D8%A7%D9%84%D9%89-%D9%85%D9%86%D8%A7%D9%87%D8%AC-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%B9%D9%86%D8%AF-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D9%8A%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9/%D9%85%D8%AF%D8%AE%D9%84-%D8%A7%D9%84%D9%89-%D9%85%D9%86%D8%A7%D9%87%D8%AC-%D8%A7%D9%84%D9%85%D8%B9%D8%B1%D9%81%D8%A9-%D8%B9%D9%86%D8%AF-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D9%8A%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 448 pages.",
+      "physical_pages": 448,
+      "catalog_pages": 445,
+      "page_count_match": false,
+      "page_count_delta": 3
     },
     "book-150": {
       "title_ar": "العصمة",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B9%D8%B5%D9%85%D8%A9.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B9%D8%B5%D9%85%D8%A9.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 312 pages.",
+      "physical_pages": 312,
+      "catalog_pages": 320,
+      "page_count_match": false,
+      "page_count_delta": -8
     },
     "book-151": {
       "title_ar": "التفقه في الدين",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%81%D9%82%D9%87-%D9%81%D9%8A-%D8%A7%D9%84%D8%AF%D9%8A%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%AA%D9%81%D9%82%D9%87-%D9%81%D9%8A-%D8%A7%D9%84%D8%AF%D9%8A%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 221 pages.",
+      "physical_pages": 221,
+      "catalog_pages": 222,
+      "page_count_match": false,
+      "page_count_delta": -1
     },
     "book-152": {
       "title_ar": "في ظلال العقيدة والأخلاق",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%8A-%D8%B8%D9%84%D8%A7%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9%D9%88%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%8A-%D8%B8%D9%84%D8%A7%D9%84-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9%D9%88%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 492 pages.",
+      "physical_pages": 492,
+      "catalog_pages": 496,
+      "page_count_match": false,
+      "page_count_delta": -4
     },
     "book-153": {
       "title_ar": "مفهوم الشفاعة في القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%81%D9%87%D9%88%D9%85-%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%B9%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%85%D9%81%D9%87%D9%88%D9%85-%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%B9%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 186 pages.",
+      "physical_pages": 186,
+      "catalog_pages": 189,
+      "page_count_match": false,
+      "page_count_delta": -3
     },
     "book-154": {
       "title_ar": "مراتب السير والسلوك إلى الله (من الخلق إلى الحقّ)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D9%85%D8%B1%D8%A7%D8%AA%D8%A8-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1-%D9%88%D8%A7%D9%84%D8%B3%D9%84%D9%88%D9%83-%D8%A7%D9%84%D9%8A-%D8%A7%D9%84%D9%84%D9%87.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D9%85%D8%B1%D8%A7%D8%AA%D8%A8-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1-%D9%88%D8%A7%D9%84%D8%B3%D9%84%D9%88%D9%83-%D8%A7%D9%84%D9%8A-%D8%A7%D9%84%D9%84%D9%87.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 262 pages.",
+      "physical_pages": 262,
+      "catalog_pages": 260,
+      "page_count_match": false,
+      "page_count_delta": 2
     },
     "book-155": {
       "title_ar": "العرفان الشيعي؛ رؤى في مرتكزاته النظرية ومسالكه العملية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86/%D8%A7%D9%84%D8%B9%D8%B1%D9%81%D8%A7%D9%86-%D8%A7%D9%84%D8%B4%D9%8A%D8%B9%D9%8A.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 464 pages.",
+      "physical_pages": 464,
+      "catalog_pages": 396,
+      "page_count_match": false,
+      "page_count_delta": 68
     },
     "book-156": {
       "title_ar": "مقدمة في علم الأخلاق",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D9%85%D9%82%D8%AF%D9%85%D8%A9-%D9%81%D9%8A-%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82/%D9%85%D9%82%D8%AF%D9%85%D8%A9-%D9%81%D9%8A-%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A3%D8%AE%D9%84%D8%A7%D9%82.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 151 pages.",
+      "physical_pages": 151,
+      "catalog_pages": 153,
+      "page_count_match": false,
+      "page_count_delta": -2
     },
     "book-157": {
       "title_ar": "الظنّ، دراسة في حجيته وأقسامه وأحكامه",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%B8%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D8%B5%D9%88%D9%84-%D9%81%D9%82%D9%87/%D8%A7%D9%84%D8%B8%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 432 pages.",
+      "physical_pages": 432,
+      "catalog_pages": 433,
+      "page_count_match": false,
+      "page_count_delta": -1
     },
     "book-158": {
       "title_ar": "القطع",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1092.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1092.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 543 pages.",
+      "physical_pages": 543,
+      "catalog_pages": 542,
+      "page_count_match": false,
+      "page_count_delta": 1
     },
     "book-159": {
       "title_ar": "لا ضرر ولا ضرار",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%84%D8%A7-%D8%B6%D8%B1%D8%B1-%D9%88%D9%84%D8%A7%D8%B6%D8%B1%D8%A7%D8%B1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%84%D8%A7-%D8%B6%D8%B1%D8%B1-%D9%88%D9%84%D8%A7%D8%B6%D8%B1%D8%A7%D8%B1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 419 pages.",
+      "physical_pages": 419,
+      "catalog_pages": 432,
+      "page_count_match": false,
+      "page_count_delta": -13
     },
     "book-160": {
       "title_ar": "المنهج الفقهي عند العلامة الحيدري ـ فقه المسائل المحرمة نموذجاً ـ",
       "candidate_url": "https://download.almohsinlibrary.com/FQH/FQH1072.pdf",
       "status": "available",
       "url": "https://download.almohsinlibrary.com/FQH/FQH1072.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 184 pages.",
+      "physical_pages": 184,
+      "catalog_pages": 184,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-161": {
       "title_ar": "فلسفة صدر المتألهين, قراءة في مرتكزات الحكمة المتعالية",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%81%D9%84%D8%B3%D9%81%D8%A9-%D8%B5%D8%AF%D8%B1-%D8%A7%D9%84%D9%85%D8%AA%D8%A3%D9%84%D9%87%D9%8A%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D9%81%D9%84%D8%B3%D9%81%D8%A9-%D8%B5%D8%AF%D8%B1-%D8%A7%D9%84%D9%85%D8%AA%D8%A3%D9%84%D9%87%D9%8A%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 368 pages.",
+      "physical_pages": 368,
+      "catalog_pages": 367,
+      "page_count_match": false,
+      "page_count_delta": 1
     },
     "book-162": {
       "title_ar": "المُثلُ الالهيّة, بحوث تحليلة في نظرية افلاطون",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D9%8F%D8%AB%D9%84%D9%8F-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A%D9%91%D8%A9-%D9%81%D9%8A-%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%81%D9%84%D8%A7%D8%B7%D9%88%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9/%D8%A7%D9%84%D9%85%D9%8F%D8%AB%D9%84%D9%8F-%D8%A7%D9%84%D8%A7%D9%84%D9%87%D9%8A%D9%91%D8%A9-%D9%81%D9%8A-%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D8%A7%D9%81%D9%84%D8%A7%D8%B7%D9%88%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 343 pages.",
+      "physical_pages": 343,
+      "catalog_pages": 334,
+      "page_count_match": false,
+      "page_count_delta": 9
     },
     "book-163": {
       "title_ar": "اللباب في تفسير الكتاب",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D9%84%D8%A8%D8%A7%D8%A8-%D9%81%D9%8A-%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%83%D8%AA%D8%A7%D8%A8.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D9%84%D8%A8%D8%A7%D8%A8-%D9%81%D9%8A-%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%83%D8%AA%D8%A7%D8%A8.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 480 pages.",
+      "physical_pages": 480,
+      "catalog_pages": 476,
+      "page_count_match": false,
+      "page_count_delta": 4
     },
     "book-164": {
       "title_ar": "أصول التفسير والتأويل",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D9%88%D9%8A%D9%84.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 514 pages.",
+      "physical_pages": 514,
+      "catalog_pages": 514,
+      "page_count_match": true,
+      "page_count_delta": 0
     },
     "book-165": {
       "title_ar": "الإعجاز بين النظرية والتطبيق",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%A5%D8%B9%D8%AC%D8%A7%D8%B2-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D8%B7%D8%A8%D9%8A%D9%82.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%A5%D8%B9%D8%AC%D8%A7%D8%B2-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D9%8A%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D8%B7%D8%A8%D9%8A%D9%82.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 197 pages.",
+      "physical_pages": 197,
+      "catalog_pages": 222,
+      "page_count_match": false,
+      "page_count_delta": -25
     },
     "book-166": {
       "title_ar": "التقوى في القرآن",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%AA%D9%82%D9%88%D9%89-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D8%A7%D9%84%D8%AA%D9%82%D9%88%D9%89-%D9%81%D9%8A-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 213 pages.",
+      "physical_pages": 213,
+      "catalog_pages": 239,
+      "page_count_match": false,
+      "page_count_delta": -26
     },
     "book-167": {
       "title_ar": "يوسف الصديق",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%8A%D9%88%D8%B3%D9%81-%D8%A7%D9%84%D8%B5%D8%AF%D9%8A%D9%82.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D9%88%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86/%D9%8A%D9%88%D8%B3%D9%81-%D8%A7%D9%84%D8%B5%D8%AF%D9%8A%D9%82.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 248 pages.",
+      "physical_pages": 248,
+      "catalog_pages": 246,
+      "page_count_match": false,
+      "page_count_delta": 2
     },
     "book-168": {
       "title_ar": "الراسخون في العلم",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B1%D8%A7%D8%B3%D8%AE%D9%88%D9%86-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D9%84%D9%85.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D8%B1%D8%A7%D8%B3%D8%AE%D9%88%D9%86-%D9%81%D9%8A-%D8%A7%D9%84%D8%B9%D9%84%D9%85.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 528 pages.",
+      "physical_pages": 528,
+      "catalog_pages": 526,
+      "page_count_match": false,
+      "page_count_delta": 2
     },
     "book-169": {
       "title_ar": "فلسفة الدين",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%84%D8%B3%D9%81%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D9%81%D9%84%D8%B3%D9%81%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 249 pages.",
+      "physical_pages": 249,
+      "catalog_pages": 244,
+      "page_count_match": false,
+      "page_count_delta": 5
     },
     "book-170": {
       "title_ar": "الولاية التكوينية حقيقتها ومظاهرها",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%88%D9%84%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D9%83%D9%88%D9%8A%D9%86%D9%8A%D8%A9-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7-%D9%88%D9%85%D8%B8%D8%A7%D9%87%D8%B1%D9%87%D8%A7.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%A7%D9%84%D9%88%D9%84%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D9%83%D9%88%D9%8A%D9%86%D9%8A%D8%A9-%D8%AD%D9%82%D9%8A%D9%82%D8%AA%D9%87%D8%A7-%D9%88%D9%85%D8%B8%D8%A7%D9%87%D8%B1%D9%87%D8%A7.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 276 pages.",
+      "physical_pages": 276,
+      "catalog_pages": 272,
+      "page_count_match": false,
+      "page_count_delta": 4
     },
     "book-171": {
       "title_ar": "بحوث في العقيدة1",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/b%20aqidah.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/b%20aqidah.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 254 pages.",
+      "physical_pages": 254,
+      "catalog_pages": 252,
+      "page_count_match": false,
+      "page_count_delta": 2
     },
     "book-172": {
       "title_ar": "دروس في التوحيد",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%AF%D8%B1%D9%88%D8%B3-%D9%81%D9%8A-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 456 pages.",
+      "physical_pages": 456,
+      "catalog_pages": 452,
+      "page_count_match": false,
+      "page_count_delta": 4
     },
     "book-173": {
       "title_ar": "علم الإمام, بحوث في حقيقة ومراتب علم الائمة المعصومين (ع)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D8%AF/%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 627 pages.",
+      "physical_pages": 627,
+      "catalog_pages": 628,
+      "page_count_match": false,
+      "page_count_delta": -1
     },
     "book-174": {
       "title_ar": "بحوث في العقيدة ج2",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/buhooth%20aqaediyah%202.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/buhooth%20aqaediyah%202.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 254 pages.",
+      "physical_pages": 254,
+      "catalog_pages": 245,
+      "page_count_match": false,
+      "page_count_delta": 9
     },
     "book-175": {
       "title_ar": "كمال الحيدري قراءة في السيرة والمنهج ج(2)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%83%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D8%AC2.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%83%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D8%AC2.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 632 pages.",
+      "physical_pages": 632,
+      "catalog_pages": 1166,
+      "page_count_match": false,
+      "page_count_delta": -534
     },
     "book-176": {
       "title_ar": "كمال الحيدري قراءة في السيرة والمنهج ج(1)",
       "candidate_url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%83%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D8%AC1.pdf",
       "status": "available",
       "url": "https://archive.alhaydari.com/ebook/ar/%D8%AA%D8%B1%D8%A7%D8%AC%D9%85/%D9%83%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AD%D9%8A%D8%AF%D8%B1%D9%8A-%D9%82%D8%B1%D8%A7%D8%A1%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D9%85%D9%86%D9%87%D8%AC-%D8%AC1.pdf",
-      "checked_at": "2026-10-03T09:24:31.074Z",
-      "note": "Verified direct PDF. Full byte-level audit on self-hosted runner; GitHub Actions run 37112926137 / job 111174193227"
+      "checked_at": "2026-10-04T09:35:58.738Z",
+      "note": "Physical page count verified on nexus-mac-arm64, run 37192638039: 579 pages.",
+      "physical_pages": 579,
+      "catalog_pages": 564,
+      "page_count_match": false,
+      "page_count_delta": 15
     }
-  }
+  },
+  "page_count_verified": 172,
+  "page_count_mismatches": 72,
+  "page_count_basis": "physical pages opened from complete verified PDF byte streams on nexus-mac-arm64; GitHub Actions run 37192638039"
 }
