@@ -126,3 +126,8 @@ Latest evidence: Nexus Actions run `37192187766`, successful rerun job `11140935
 The four verified-missing records remain `book-4`, `book-23`, `book-32`, and `book-43`. The previously unresolved `book-47`, `book-48`, and `book-49` were rechecked successfully after their source URLs were repaired; their verified physical counts are **442**, **404**, and **383** pages respectively.
 
 The generated audit payload is the runtime authority for source-PDF availability and physical page denominators. When production loads the new `PDF_AUDIT_VERSION`, `ensureCatalog` propagates the verified states and physical counts into Workbench D1.
+
+
+## Physical page-count audit closed
+
+Nexus self-hosted run `37192638039` physically opened/count-verified the Workbench source corpus against Workbench head `7d2b29f7629229773cd5665e9f4cde53e4c1269d`: **172 available / 4 missing / 0 unchecked / 172 physical page counts verified / 72 historical catalogue mismatches**. The 72 mismatched website/catalogue counts were reconciled to the physical PDF counts. Static acceptance now requires each available book's website page count to equal its audited physical count. The four genuinely missing records remain explicit: `book-4`, `book-23`, `book-32`, `book-43`.
