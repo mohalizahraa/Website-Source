@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS projects (
   catalog_date TEXT,
   assignee TEXT NOT NULL DEFAULT 'Unassigned' CHECK (assignee IN ('Zahraa','Mohammed','Brother','Both','Unassigned')),
   status TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started','in_progress','review','completed','published')),
-  priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low','normal','high','urgent')),
   source_url TEXT,
   source_pdf_url TEXT,
   pdf_status TEXT NOT NULL DEFAULT 'unchecked' CHECK (pdf_status IN ('unchecked','available','missing')),
