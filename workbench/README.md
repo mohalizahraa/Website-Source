@@ -9,6 +9,7 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - The deployed Workbench URL opens the shared workspace directly; there is no private-link/capability-key gate.
 - Either collaborator may edit or reassign any project. Assignee is organizational metadata, not an ACL.
 - Device identity is selected as `Zahraa` or `Mohammed`. It is used for activity attribution **and** to personalize the Dashboard's **My assigned projects** surface; `Both` assignments appear for either collaborator.
+- Shared runtime state auto-syncs while the Workbench is open: visible tabs poll the live D1-backed project/activity state every **15 seconds** and resync immediately when the tab regains focus/visibility. Local mutations still refresh immediately. Every derived surface—Dashboard counts, live translation feed, per-book progress, Projects/Board/Timeline, Stats, page-throughput pace, and projected finish—must recompute from the newest synchronized state rather than remain frozen at initial page load.
 - Workflow statuses: **Not Started → Translating → Needs Formatting → Needs Review → Publish Ready**. **Published** is tracked separately.
 - The Workbench preserves the archive's parchment / paper / oxblood / gold / sage visual language and Amiri + EB Garamond typography.
 - The primary Arabic-source action must open the direct PDF file. A catalogue detail/download page is never labeled as the Arabic PDF.
