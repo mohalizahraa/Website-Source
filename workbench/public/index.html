@@ -132,7 +132,21 @@
         <div id="projects-list" class="project-list"></div>
       </section>
 
-      <section id="board-view" class="view"><div id="board" class="board"></div></section>
+      <section id="board-view" class="view">
+        <div class="board-scope-toolbar">
+          <div class="board-scope-control">
+            <span class="panel-eyebrow">Board view</span>
+            <div class="board-scope-switch" role="group" aria-label="Board viewing scope">
+              <button type="button" data-board-scope="Zahraa" aria-pressed="false">Zahraa</button>
+              <button type="button" data-board-scope="Mohammed" aria-pressed="false">Mohammed</button>
+              <button type="button" data-board-scope="Shared" aria-pressed="true">Shared</button>
+            </div>
+          </div>
+          <span id="board-scope-summary" class="muted"></span>
+        </div>
+        <div id="board-unassigned" class="board-unassigned" hidden></div>
+        <div id="board" class="board"></div>
+      </section>
 
       <section id="timeline-view" class="view">
         <section class="timeline-shell">
@@ -230,6 +244,6 @@
   </svg>
 
   <div id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="/app.js?v=441d949"></script>
+  <script type="module" src="/app.js?v=1573056"></script>
 </body>
 </html>
