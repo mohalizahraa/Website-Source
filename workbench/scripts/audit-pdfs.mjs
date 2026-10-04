@@ -14,24 +14,45 @@ const DOWNLOAD_TIMEOUT_MS = 120000;
 const ATTEMPTS = 3;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-async function candidateFor(book) {
-  const override = PDF_CANDIDATE_OVERRIDES[book.catalog_id];
-  if (override?.url) return override.url;
-  if (override?.source_page) {
-    try {
-      const page = await fetch(override.source_page, {
-        redirect: 'follow',
-        headers: { 'user-agent': 'Mozilla/5.0 Haydari-Workbench-PDF-Discovery/2.0' },
-        signal: AbortSignal.timeout(DISCOVERY_TIMEOUT_MS),
-      });
-      if (page.ok) {
-        const html = await page.text();
-        const matches = [...html.matchAll(/https:\/\/download\.almohsinlibrary\.com\/[^"'<>\\s]+?\.pdf(?:\?[^"'<>\\s]*)?/gi)];
-        if (matches.length) return matches[0][0].replaceAll('&amp;', '&');
-      }
-    } catch {}
+function decodeHtmlUrl(value) {
+  return value
+    .replaceAll('&amp;', '&')
+    .replaceAll('&#038;', '&')
+    .replaceAll('&#x26;', '&');
+}
+
+async function discoverPdfCandidates(sourcePage) {
+  if (!sourcePage) return [];
+  try {
+    const page = await fetch(sourcePage, {
+      redirect: 'follow',
+      headers: { 'user-agent': 'Mozilla/5.0 Haydari-Workbench-PDF-Discovery/3.0' },
+      signal: AbortSignal.timeout(DISCOVERY_TIMEOUT_MS),
+    });
+    if (!page.ok) return [];
+    const html = await page.text();
+    const candidates = [];
+    for (const match of html.matchAll(/href=["']([^"']+?\.pdf(?:\?[^"']*)?)["']/gi)) {
+      try { candidates.push(new URL(decodeHtmlUrl(match[1]), page.url || sourcePage).href); } catch {}
+    }
+    for (const match of html.matchAll(/https?:\/\/[^"'<>\\s]+?\.pdf(?:\?[^"'<>\\s]*)?/gi)) {
+      try { candidates.push(new URL(decodeHtmlUrl(match[0]), page.url || sourcePage).href); } catch {}
+    }
+    return [...new Set(candidates)];
+  } catch {
+    return [];
   }
-  return book.pdf_url || null;
+}
+
+async function candidatesFor(book) {
+  const override = PDF_CANDIDATE_OVERRIDES[book.catalog_id];
+  const direct = [override?.url, book.pdf_url].filter(Boolean);
+  const sourcePages = [override?.source_page, book.detail_url].filter(Boolean);
+  const discovered = [];
+  for (const sourcePage of sourcePages) {
+    discovered.push(...await discoverPdfCandidates(sourcePage));
+  }
+  return [...new Set([...direct, ...discovered])];
 }
 
 async function preparePdfCounter(tempRoot) {
@@ -47,10 +68,17 @@ print(document.pageCount)
   await writeFile(sourcePath, source);
   execFileSync('xcrun', ['swiftc', '-framework', 'PDFKit', sourcePath, '-o', binaryPath], { stdio: 'inherit' });
   return filePath => {
-    const raw = execFileSync(binaryPath, [filePath], { encoding: 'utf8', timeout: 30000 }).trim();
-    const count = Number(raw);
-    if (!Number.isInteger(count) || count < 1) throw new Error(`Invalid PDFKit page count: ${raw}`);
-    return count;
+    try {
+      const raw = execFileSync(binaryPath, [filePath], { encoding: 'utf8', timeout: 30000 }).trim();
+      const count = Number(raw);
+      if (Number.isInteger(count) && count > 0) return count;
+    } catch {}
+    try {
+      const raw = execFileSync('mdls', ['-raw', '-name', 'kMDItemNumberOfPages', filePath], { encoding: 'utf8', timeout: 30000 }).trim();
+      const count = Number(raw);
+      if (Number.isInteger(count) && count > 0) return count;
+    } catch {}
+    throw new Error('Neither PDFKit nor macOS metadata could determine a physical page count');
   };
 }
 
@@ -153,13 +181,33 @@ async function worker() {
     const i = cursor++;
     if (i >= BOOK_CATALOG.length) return;
     const book = BOOK_CATALOG[i];
-    const candidate = await candidateFor(book);
-    const verified = await verifyAndCount(book, candidate, tempRoot, countPages);
+    const candidates = await candidatesFor(book);
+    let verified = { status: 'missing', final_url: null, physical_pages: null, size_bytes: null, note: 'No direct PDF candidate' };
+    let selectedCandidate = null;
+    let bestUnresolved = null;
+    for (const candidate of candidates) {
+      const attempt = await verifyAndCount(book, candidate, tempRoot, countPages);
+      if (attempt.status === 'available') {
+        verified = attempt;
+        selectedCandidate = candidate;
+        break;
+      }
+      if (attempt.status === 'unchecked') bestUnresolved = { attempt, candidate };
+      if (!bestUnresolved) {
+        verified = attempt;
+        selectedCandidate = candidate;
+      }
+    }
+    if (verified.status !== 'available' && bestUnresolved) {
+      verified = bestUnresolved.attempt;
+      selectedCandidate = bestUnresolved.candidate;
+    }
     const catalogPages = Number.isInteger(Number(book.pages)) ? Number(book.pages) : null;
     const physicalPages = Number.isInteger(verified.physical_pages) ? verified.physical_pages : null;
     results[book.catalog_id] = {
       title_ar: book.title_ar,
-      candidate_url: candidate,
+      candidate_url: selectedCandidate,
+      attempted_candidates: candidates,
       status: verified.status,
       url: verified.final_url,
       checked_at: new Date().toISOString(),
