@@ -66,3 +66,18 @@ The previous deployment blocker remains relevant until disproved: Cloudflare Pag
 ## Exact continuation
 
 Re-check the newest self-hosted Workbench static-acceptance run and production HTML after this UX commit. If production is still stale, preserve that as an explicit Cloudflare deployment blocker; do not claim branch state is live state.
+
+
+## Latest exact state after implementation
+
+- Six-part UX implementation commit: `7bbd61b581c782d78d5f007f6f30fd8880ed9c36`.
+- Follow-up Dashboard person-drilldown cleanup commit: `dfc4f6bf5bb18617e19efbcc8af0d2e75f0c01c7`.
+- Latest self-hosted Workbench static-acceptance run: `37190338758` on `dfc4f6bf`; state at verification: **queued**.
+- Fresh production verification after `dfc4f6bf`: **still stale**.
+  - live identity label remains `Using as`;
+  - live Board still contains only the old bare `#board` container;
+  - live Timeline has no collaboration-scope toolbar;
+  - live Activity has no filters.
+- GitHub combined status still exposes only the blocked Vercel status; no Cloudflare deployment status is attached.
+
+Truth boundary: the UX wave is **implemented on the workbench branch but not verified/deployed in production**. The next execution step is infrastructure/deployment recovery, not more UX design.
