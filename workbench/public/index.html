@@ -112,7 +112,6 @@
               <option value="none">Group: None</option>
               <option value="series">Group: Series / standalone</option>
             </select>
-            <label class="check"><input id="filter-blocked" type="checkbox" /> Blocked only</label>
             <label class="check"><input id="filter-missing-pdf" type="checkbox" /> Missing PDF only</label>
             <label class="check"><input id="filter-missing-cover" type="checkbox" /> Missing cover only</label>
             <label class="check"><input id="filter-no-english" type="checkbox" /> No English Book</label>
@@ -198,8 +197,7 @@
         <div id="cover-preview" class="full cover-preview"></div>
         <label class="full">Arabic PDF — direct file<input id="source-pdf-url" type="url" placeholder="Direct .pdf URL" /></label>
         <div id="pdf-state" class="full pdf-state"></div>
-        <label class="full check blocked-check"><input id="published" type="checkbox" /> Published</label>\n        <label class="full check blocked-check"><input id="blocked" type="checkbox" /> This project is blocked</label>
-        <label class="full">Blocker reason<input id="blocker-reason" /></label>
+        <label class="full check"><input id="published" type="checkbox" /> Published</label>
         <label class="full">Notes<textarea id="notes" rows="4"></textarea></label>
         <div id="completion-meta" class="full completion-meta"></div>
       </div>
