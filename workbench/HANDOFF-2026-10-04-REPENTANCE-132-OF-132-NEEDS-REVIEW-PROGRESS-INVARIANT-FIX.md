@@ -17,7 +17,7 @@ This **supersedes** `workbench/HANDOFF-2026-10-04-REPENTANCE-34-OF-131-WORKBENCH
 - live verified progress: **132/132**
 - live Workbench status: **completed / Needs Review**
 - English Doc: `https://docs.google.com/document/d/1xBIpS5TXEQT42_JuoKlu5CgW95_B2wenYSk8LN_wcRg/edit`
-- Google Doc revision after second thorough formatting pass: `ANLCKQlJZ7v3n5XjEuQdzrwYPg_aZ5KqZRX2DVuy227He_WnBcGss9n0IXXlfwtZyB_snUN4k6RULisSxs2npTCyu941VIiOc0FS97OFtaI`
+- Google Doc revision after second thorough formatting pass: `ANLCKQksZtCXp0cymOBAawCRBCDqrvcvv7hRi46Pyn1CuqXHqmb87amwa-BVWwT-yiDmbkgbPORu9sMGHk7Xc0EHIFDzNDSc0USs4fZOp4g`
 - native footnotes preserved: **170**
 - ordinary Arabic-letter residue in English body at verification: **0**
 
@@ -73,24 +73,26 @@ The next admissible book-local work is **review/QA**, not additional translation
 
 ## Second thorough formatting pass — completed
 
-The founder requested a second, more exhaustive formatting pass after the initial normalization. This pass re-audited the whole English manuscript rather than merely checking the font family.
+The founder requested a second, exhaustive formatting pass after the initial normalization. This pass audited both connector-visible structure and the rendered Google Docs PDF, not merely font family.
 
 Repairs/verification included:
 
 - restored the established **14 pt Amiri** main-body baseline through the substantive chapters;
-- kept denser back-matter typography separate from body prose;
-- normalized real chapter/section/subsection hierarchy with native Docs heading structure;
-- normalized chapter-opening topic pages against the Arabic source structure;
-- repaired Chapter Two’s opening outline so it no longer renders stray bullets absent from the source;
-- normalized every Qurʾānic bracketed quotation span to the established green treatment: **135/135** spans;
-- normalized all **170 native footnote paragraphs** to Amiri 10 pt with the established first-line indent;
-- normalized verse-index sūrah labels and hadith-index authority subheads;
-- repaired editorial-note styling;
-- fixed two severe paragraph spillovers before forced chapter breaks with keep-lines-together handling;
-- final exported PDF tightened from **110 to 109 pages** without content removal;
-- visually inspected the entire 110-page pre-final export in page contact sheets, then re-exported and re-inspected every affected page after the spillover repairs;
-- final connector readback: **0 ordinary Arabic-letter residue**, **0 non-Amiri body runs**, **0 footnote-formatting outliers**, **135/135 Qurʾānic spans green**.
+- kept back matter intentionally denser, with the final author-works list locally tightened rather than shrinking the book globally;
+- normalized actual Docs heading hierarchy for chapter/section/subsection structure while preserving the edition's custom Amiri presentation;
+- normalized all three chapter-opening topic pages against the Arabic source structure;
+- removed the inherited native bullets from Chapter Two's opening outline because the Arabic source presents those lines as plain centered topics;
+- converted **131 literal typed bullets** into native Google Docs bullet lists;
+- converted the **15 Principal Sources** and **21 Other Works** entries into separate native numbered lists;
+- normalized every Qurʾānic bracketed quotation span to the established green treatment: **135/135** opening-bracket spans covered across **112** Qurʾān-bearing paragraphs;
+- normalized all **170 native footnotes** to Amiri 10 pt with the established first-line indent;
+- normalized verse-index sūrah labels, hadith-index authority subheads, editorial notes, and back-matter headings;
+- eliminated the sparse intro continuation page, the sparse pre–Chapter Three continuation page, and the one-item trailing final page without removing content;
+- final exported PDF is **107 pages**;
+- visual QA inspected the complete rendered book: pages 1–8 and 107 on the final snapshot were directly re-inspected after the last local edits, while final pages 7–106 were pixel-identical to pages 8–107 of the immediately preceding fully inspected snapshot;
+- final connector readback: **0 ordinary Arabic-letter residue**, **0 non-Amiri body text runs**, **0 literal bullet markers**, **0 literal back-matter number prefixes**, **0 footnote-formatting outliers**, **112/112 Qurʾān-bearing paragraphs fully green**;
+- HTML export confirms native structure: **32 unordered lists, 2 ordered lists, 167 list items**, with all **21** Other Works entries in the final ordered list.
 
-The current Google Doc revision is `ANLCKQlJZ7v3n5XjEuQdzrwYPg_aZ5KqZRX2DVuy227He_WnBcGss9n0IXXlfwtZyB_snUN4k6RULisSxs2npTCyu941VIiOc0FS97OFtaI`.
+The current Google Doc revision is `ANLCKQksZtCXp0cymOBAawCRBCDqrvcvv7hRi46Pyn1CuqXHqmb87amwa-BVWwT-yiDmbkgbPORu9sMGHk7Xc0EHIFDzNDSc0USs4fZOp4g`.
 
-No additional translation text was added during this formatting pass.
+No translation wording was added or removed during this formatting pass.
