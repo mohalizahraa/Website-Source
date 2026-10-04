@@ -22,7 +22,7 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - `blocked` is a separate flag, not a status.
 
 - Assignment can be changed inline on a book: Zahraa / Mohammed / Both / Unassigned.
-- Priority is not part of the Workbench project model; projects are organized by workflow status, assignment, deadlines, and topic instead.
+- Priority is not part of the Workbench project model; projects are organized by workflow status, assignment, deadlines, and topic instead. The runtime schema migration removes the former legacy `priority` column rather than leaving it as hidden active state.
 - Start dates and deadlines can be set or cleared and are reflected automatically in a real horizontal Timeline: ranges span start→deadline, single-date projects render as milestones, overdue work is visually distinct, and undated active work remains in a separate section. Deadline removal is an explicit UI action rather than relying on a browser date-picker clear affordance; it is available inline, in the project editor, and for selected books in batch.
 - Every book always exposes an **English Book** action. If no translation Doc is linked yet, the action opens the linking flow; once linked, the same action opens that Google Doc.
 - **English Book access invariant:** a linked Google Doc must be shared as **Anyone with the link → Editor**. Restricted/private Docs are not valid Workbench English Book targets. The Workbench must validate new links and guard every open so no user is ever sent to Google's **Request access** screen; an existing restricted link is treated as an access defect that must be fixed, not as a usable English Book.
