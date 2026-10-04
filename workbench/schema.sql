@@ -53,6 +53,22 @@ CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_assignee ON projects(assignee);
 CREATE INDEX IF NOT EXISTS idx_activity_created_at ON activity(created_at DESC);
 
+CREATE TABLE IF NOT EXISTS translation_progress_checkpoints (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id INTEGER NOT NULL,
+  from_pages INTEGER NOT NULL,
+  to_pages INTEGER NOT NULL,
+  source_total_pages INTEGER NOT NULL,
+  source_page_basis TEXT NOT NULL DEFAULT 'physical_pdf',
+  source_pdf_sha256 TEXT NOT NULL,
+  google_doc_revision TEXT NOT NULL,
+  verification_note TEXT,
+  actor TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_translation_progress_project_created ON translation_progress_checkpoints(project_id, created_at DESC);
+
 
 CREATE TABLE IF NOT EXISTS project_covers (
   project_id INTEGER PRIMARY KEY,
