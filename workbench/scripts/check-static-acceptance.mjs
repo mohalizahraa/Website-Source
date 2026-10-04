@@ -20,6 +20,7 @@ const coverSourcesSource = await fs.readFile(new URL('functions/_cover_sources.j
 const stylesSource = await fs.readFile(new URL('public/styles.css', root), 'utf8');
 const headersSource = await fs.readFile(new URL('public/_headers', root), 'utf8');
 const projectPatchSource = await fs.readFile(new URL('functions/api/projects/[id].js', root), 'utf8');
+const revisionSource = await fs.readFile(new URL('functions/api/revision.js', root), 'utf8');
 
 
 const marker = 'export const BOOK_CATALOG = ';
@@ -115,11 +116,15 @@ assert(coverSourcesSource.includes('book-1') && coverSourcesSource.includes('boo
 assert(stylesSource.includes('--type-action:11px') && stylesSource.includes('.english-book-button{font-family:"Inter"'), 'Shared action geometry contract is missing.');
 assert(!stylesSource.includes('.english-book-button{font:inherit}'), 'English Book font inheritance regression remains.');
 assert(indexSource.includes('id="timeline-jump-today"'), 'Timeline Today control is missing.');
-assert(indexSource.includes('/app.js?v=20261004-bilingual-public') && indexSource.includes('/styles.css?v=20261004-bilingual-public'), 'Workbench asset cache-busting version is stale.');
+assert(indexSource.includes('/app.js?v=20261004-live-revision') && indexSource.includes('/styles.css?v=20261004-live-revision'), 'Workbench asset cache-busting version is stale.');
 assert(headersSource.includes('/app.js') && headersSource.includes('/styles.css') && headersSource.includes('Cache-Control: no-cache'), 'Workbench JS/CSS freshness headers are missing.');
 assert(appSource.includes('timeline-due-marker'), 'Timeline due marker is missing.');
 assert(appSource.includes('async function setProjectDeadline(id, value)'), 'Shared deadline mutation helper is missing.');
 assert(appSource.includes('function renderTranslationLive()'), 'Live translation progress renderer is missing.');
+assert(appSource.includes('const LIVE_REVISION_MS = 2000') && appSource.includes('const LIVE_REVISION_RETRY_MS = 1000'), 'Near-real-time revision polling cadence regressed.');
+assert(appSource.includes("api('/api/revision')") && appSource.includes('function scheduleLiveRevisionPoll('), 'Revision-gated live sync is missing.');
+assert(appSource.includes("cache: options.cache || 'no-store'"), 'Workbench API reads do not explicitly bypass browser caches.');
+assert(revisionSource.includes('MAX(id)') && revisionSource.includes('FROM activity'), 'Live revision endpoint is not derived from shared activity state.');
 assert(appSource.includes('function bookTitleMarkup(project') && appSource.includes('function activityBookTitleMarkup(activity)'), 'Whole-site bilingual book-title projection helpers are missing.');
 assert(appSource.includes('live-translation-copy">\${bookTitleMarkup(p,{compact:true})}') && appSource.includes('timeline-label-title">\${bookTitleMarkup(p,{compact:true})}') && appSource.includes('activityBookTitleMarkup(a)'), 'One or more secondary surfaces regressed to Arabic-only book titles.');
 assert(appSource.includes("p.assignee===state.actor || p.assignee==='Both'"), 'Live progress is not scoped to the selected collaborator.');

@@ -19,10 +19,12 @@ const savedViewScope = localStorage.getItem('haydariViewScope') || localStorage.
 const savedMobileBoardStatus = localStorage.getItem('haydariBoardStatus');
 const savedActivityActor = localStorage.getItem('haydariActivityActor');
 const savedActivityType = localStorage.getItem('haydariActivityType');
-const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', viewScope: VIEW_SCOPES.includes(savedViewScope) ? savedViewScope : 'Shared', mobileBoardStatus: STATUS_ORDER.includes(savedMobileBoardStatus) ? savedMobileBoardStatus : 'in_progress', activityActorFilter: ACTIVITY_ACTORS.includes(savedActivityActor) ? savedActivityActor : 'all', activityTypeFilter: ACTIVITY_TYPES.includes(savedActivityType) ? savedActivityType : 'all', pendingWorkOnLink: null };
-const LIVE_SYNC_MS = 15000;
+const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', liveRevision: null, pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', viewScope: VIEW_SCOPES.includes(savedViewScope) ? savedViewScope : 'Shared', mobileBoardStatus: STATUS_ORDER.includes(savedMobileBoardStatus) ? savedMobileBoardStatus : 'in_progress', activityActorFilter: ACTIVITY_ACTORS.includes(savedActivityActor) ? savedActivityActor : 'all', activityTypeFilter: ACTIVITY_TYPES.includes(savedActivityType) ? savedActivityType : 'all', pendingWorkOnLink: null };
+const LIVE_REVISION_MS = 2000;
+const LIVE_REVISION_RETRY_MS = 1000;
 let liveSyncTimer = null;
 let liveSyncInFlight = false;
+let liveRevisionInFlight = false;
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -44,6 +46,7 @@ async function authenticatedFetch(path, options = {}) {
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
+    cache: options.cache || 'no-store',
     headers: {
       'content-type': 'application/json',
       'x-workbench-actor': state.actor,
@@ -1431,12 +1434,22 @@ function sharedDataSignature(projects, activity, paceEvents) {
   ]);
 }
 
+async function fetchLiveRevision() {
+  const data=await api('/api/revision');
+  const revision=Number(data.revision || 0);
+  return Number.isFinite(revision) ? revision : 0;
+}
+
 async function fetchSharedData() {
+  // Read the revision token first. If a mutation lands between this read and
+  // the full payload, the next cheap revision poll may cause one redundant
+  // refresh, but it cannot hide a newer mutation behind a newer token.
+  const revision=await fetchLiveRevision();
   const [projects, activity] = await Promise.all([api('/api/projects'), api('/api/activity')]);
   const nextProjects=projects.projects || [];
   const nextActivity=activity.activity || [];
   const nextPaceEvents=activity.pace_events || nextActivity.filter(a=>a.action==='translation progress');
-  return {projects:nextProjects,activity:nextActivity,paceEvents:nextPaceEvents};
+  return {projects:nextProjects,activity:nextActivity,paceEvents:nextPaceEvents,revision};
 }
 
 function applySharedData(next,{force=false}={}) {
@@ -1445,6 +1458,7 @@ function applySharedData(next,{force=false}={}) {
   state.projects=next.projects;
   state.activity=next.activity;
   state.paceEvents=next.paceEvents;
+  state.liveRevision=Number(next.revision ?? state.liveRevision ?? 0);
   state.liveSignature=signature;
   if (changed) render();
   return changed;
@@ -1455,26 +1469,49 @@ async function loadData() {
   applySharedData(next,{force:true});
 }
 
-async function syncSharedData() {
-  if (document.hidden || liveSyncInFlight) return;
+async function syncSharedData({allowHidden=false}={}) {
+  if ((!allowHidden && document.hidden) || liveSyncInFlight) return false;
   liveSyncInFlight=true;
   try {
     const next=await fetchSharedData();
     applySharedData(next);
+    return true;
   } catch {
-    // Background sync is best-effort; a transient network miss should not
-    // interrupt the person currently working in the open workspace.
+    return false;
   } finally {
     liveSyncInFlight=false;
   }
 }
 
+async function pollLiveRevision() {
+  if (document.hidden || liveRevisionInFlight) return true;
+  liveRevisionInFlight=true;
+  try {
+    const revision=await fetchLiveRevision();
+    if (state.liveRevision === null || revision !== state.liveRevision) {
+      return await syncSharedData();
+    }
+    return true;
+  } catch {
+    return false;
+  } finally {
+    liveRevisionInFlight=false;
+  }
+}
+
+function scheduleLiveRevisionPoll(delay=LIVE_REVISION_MS) {
+  if (liveSyncTimer) clearTimeout(liveSyncTimer);
+  liveSyncTimer=setTimeout(async ()=>{
+    const ok=await pollLiveRevision();
+    scheduleLiveRevisionPoll(ok ? LIVE_REVISION_MS : LIVE_REVISION_RETRY_MS);
+  },delay);
+}
+
 function startLiveSync() {
-  if (liveSyncTimer) clearInterval(liveSyncTimer);
-  liveSyncTimer=setInterval(syncSharedData,LIVE_SYNC_MS);
-  window.addEventListener('focus',syncSharedData);
+  scheduleLiveRevisionPoll();
+  window.addEventListener('focus',()=>syncSharedData({allowHidden:true}));
   document.addEventListener('visibilitychange',()=>{
-    if (!document.hidden) syncSharedData();
+    if (!document.hidden) syncSharedData({allowHidden:true});
   });
 }
 
