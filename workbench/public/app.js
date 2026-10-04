@@ -12,7 +12,10 @@ const TITLE_COLLATOR = new Intl.Collator(['ar','en'], { sensitivity:'base', nume
 const savedActor = localStorage.getItem('haydariActor');
 const savedProjectSort = localStorage.getItem('haydariProjectSort');
 const savedProjectGrouping = localStorage.getItem('haydariProjectGrouping');
-const state = { projects: [], activity: [], paceEvents: [], pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', pendingWorkOnLink: null };
+const state = { projects: [], activity: [], paceEvents: [], liveSignature: '', pdfAudit: null, coverMap: {}, seriesMap: {groups:{},books:{}}, coverObjectUrls: new Map(), coverLoads: new Map(), selectedIds: new Set(), view: 'dashboard', actor: ['Zahraa', 'Mohammed'].includes(savedActor) ? savedActor : 'Zahraa', projectSort: SORT_VALUES.includes(savedProjectSort) ? savedProjectSort : 'updated', projectGrouping: savedProjectGrouping === 'series' ? 'series' : 'none', pendingWorkOnLink: null };
+const LIVE_SYNC_MS = 15000;
+let liveSyncTimer = null;
+let liveSyncInFlight = false;
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -1191,12 +1194,64 @@ async function saveEnglishBook(event) {
   }
 }
 
-async function loadData() {
+function sharedDataSignature(projects, activity, paceEvents) {
+  const projectState=projects.map(p=>[
+    p.id,p.updated_at,p.status,p.assignee,p.translated_pages,p.translation_progress_at,
+    p.start_date,p.due_date,p.google_doc_url,p.cover_url,p.has_uploaded_cover,
+    p.published_at,p.pdf_status
+  ]);
+  return JSON.stringify([
+    projectState,
+    activity.map(a=>a.id),
+    paceEvents.map(a=>a.id)
+  ]);
+}
+
+async function fetchSharedData() {
   const [projects, activity] = await Promise.all([api('/api/projects'), api('/api/activity')]);
-  state.projects = projects.projects || [];
-  state.activity = activity.activity || [];
-  state.paceEvents = activity.pace_events || state.activity.filter(a=>a.action==='translation progress');
-  render();
+  const nextProjects=projects.projects || [];
+  const nextActivity=activity.activity || [];
+  const nextPaceEvents=activity.pace_events || nextActivity.filter(a=>a.action==='translation progress');
+  return {projects:nextProjects,activity:nextActivity,paceEvents:nextPaceEvents};
+}
+
+function applySharedData(next,{force=false}={}) {
+  const signature=sharedDataSignature(next.projects,next.activity,next.paceEvents);
+  const changed=force || signature!==state.liveSignature;
+  state.projects=next.projects;
+  state.activity=next.activity;
+  state.paceEvents=next.paceEvents;
+  state.liveSignature=signature;
+  if (changed) render();
+  return changed;
+}
+
+async function loadData() {
+  const next=await fetchSharedData();
+  applySharedData(next,{force:true});
+}
+
+async function syncSharedData() {
+  if (document.hidden || liveSyncInFlight) return;
+  liveSyncInFlight=true;
+  try {
+    const next=await fetchSharedData();
+    applySharedData(next);
+  } catch {
+    // Background sync is best-effort; a transient network miss should not
+    // interrupt the person currently working in the open workspace.
+  } finally {
+    liveSyncInFlight=false;
+  }
+}
+
+function startLiveSync() {
+  if (liveSyncTimer) clearInterval(liveSyncTimer);
+  liveSyncTimer=setInterval(syncSharedData,LIVE_SYNC_MS);
+  window.addEventListener('focus',syncSharedData);
+  document.addEventListener('visibilitychange',()=>{
+    if (!document.hidden) syncSharedData();
+  });
 }
 
 async function refreshProjects() {
@@ -1231,6 +1286,7 @@ async function init() {
     state.pdfAudit = health.pdfs || null;
     await Promise.all([loadCoverMap(),loadSeriesMap()]);
     await loadData();
+    startLiveSync();
     if (state.pdfAudit?.unchecked) auditPdfs().catch(error => toast(`PDF verification paused: ${error.message}`));
   } catch (e) {
     toast(`Could not load workspace: ${e.message}`);
