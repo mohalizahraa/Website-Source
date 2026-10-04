@@ -19,7 +19,7 @@ concurrency:
 jobs:
   audit:
     runs-on: self-hosted
-    timeout-minutes: 15
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Audit direct PDF candidates
+      - name: Audit PDFs and physical page counts
         run: node workbench/scripts/audit-pdfs.mjs
       - name: Commit audit evidence
         run: |
@@ -38,7 +38,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add workbench/functions/_pdf_audit.js workbench/public/pdf-audit.json
-          git commit -m "Workbench: refresh verified PDF availability"
+          git commit -m "Workbench: refresh verified PDF availability and page counts"
           git fetch origin workbench
           git rebase origin/workbench
           git push origin HEAD:workbench

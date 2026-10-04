@@ -63,6 +63,8 @@ The four verified-missing records are:
 
 A filename ending in `.pdf` is not enough; availability is based on an actual retrievable PDF response. Transient fetch/server ambiguity is `unchecked`, not `missing`.
 
+**Physical-page denominator invariant:** for every available source PDF, the self-hosted corpus audit downloads the complete PDF and opens it with macOS PDFKit to record its physical page count. The Workbench runtime uses that verified physical count for the displayed project page count, translation X/Y denominator, pace/ETA workload, and progress validation. The catalogue's historical `pages` value is retained only as provenance/fallback; any mismatch is recorded in `public/pdf-audit.json` rather than silently trusted. A book whose PDF is missing cannot have its physical count independently verified and must not be represented as PDF-verified merely because catalogue metadata contains a page number.
+
 ## Cloudflare Pages + D1
 
 Recommended Git-integrated Pages settings:

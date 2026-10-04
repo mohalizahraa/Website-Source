@@ -238,18 +238,23 @@ export async function ensureCatalog(db) {
             ? candidateUrl
             : null;
 
+      const physicalPages = Number.isInteger(Number(evidence?.physical_pages)) && Number(evidence.physical_pages) > 0
+        ? Number(evidence.physical_pages)
+        : null;
       auditStatements.push(db.prepare(
         `UPDATE projects
             SET source_pdf_url = ?,
                 pdf_status = ?,
                 pdf_checked_at = ?,
-                pdf_check_note = ?
+                pdf_check_note = ?,
+                pages = COALESCE(?, pages)
           WHERE catalog_id = ?`
       ).bind(
         sourcePdfUrl,
         status,
         evidence?.checked_at || null,
         evidence?.note || null,
+        physicalPages,
         catalogId
       ));
     }
@@ -346,11 +351,17 @@ export async function recordActivity(db, projectId, actor, action, before, after
 export function normalizeProject(row) {
   const pdfStatus = row.pdf_status || (!row.source_pdf_url ? 'missing' : 'unchecked');
   const hasPdfUrl = Boolean(row.source_pdf_url);
+  const pageEvidence = row.catalog_id ? PDF_AUDIT[row.catalog_id] : null;
+  const verifiedPhysicalPages = Number.isInteger(Number(pageEvidence?.physical_pages)) && Number(pageEvidence.physical_pages) > 0
+    ? Number(pageEvidence.physical_pages)
+    : null;
   const { priority: _legacyPriority, blocked: _legacyBlocked, blocker_reason: _legacyBlockerReason, ...project } = row;
   return {
     ...project,
     assignee: row.assignee === 'Brother' ? 'Mohammed' : row.assignee,
     has_uploaded_cover: Boolean(row.has_uploaded_cover),
+    page_count_verified: verifiedPhysicalPages !== null && Number(row.pages) === verifiedPhysicalPages,
+    page_count_basis: verifiedPhysicalPages !== null ? 'physical_pdf' : 'catalog_metadata',
     pdf_status: pdfStatus,
     pdf_available: pdfStatus === 'available' && hasPdfUrl,
     pdf_missing: pdfStatus === 'missing' || (!hasPdfUrl && pdfStatus !== 'unchecked'),

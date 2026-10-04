@@ -67,6 +67,13 @@ const counts = auditRows.reduce((acc, [id, evidence]) => {
 assert((counts.available || 0) === 172, `Expected 172 available PDFs, found ${counts.available || 0}.`);
 assert((counts.missing || 0) === 4, `Expected 4 missing PDFs, found ${counts.missing || 0}.`);
 assert((counts.unchecked || 0) === 0, `Expected 0 unchecked PDFs, found ${counts.unchecked || 0}.`);
+const pageCountRows = auditRows.filter(([, evidence]) => Number.isInteger(Number(evidence.physical_pages)) && Number(evidence.physical_pages) > 0);
+assert(pageCountRows.length === 172, `Expected physical page counts for all 172 available PDFs, found ${pageCountRows.length}.`);
+for (const [id, evidence] of auditRows.filter(([, evidence]) => evidence.status === 'available')) {
+  assert(Number.isInteger(Number(evidence.physical_pages)) && Number(evidence.physical_pages) > 0, `Available PDF ${id} lacks a verified physical page count.`);
+}
+assert(pdfAudit.page_count_verified === 172, `Expected page_count_verified=172, found ${pdfAudit.page_count_verified}.`);
+assert(Number.isInteger(pdfAudit.page_count_mismatches) && pdfAudit.page_count_mismatches >= 0, 'PDF audit mismatch accounting is missing.');
 
 const expectedMissing = new Set(['book-4', 'book-23', 'book-32', 'book-43']);
 const actualMissing = new Set(auditRows.filter(([, evidence]) => evidence.status === 'missing').map(([id]) => id));
@@ -146,6 +153,8 @@ for (const id of Object.keys(seriesMap.books || {})) assert(catalogIds.has(id), 
 assert(appSource.includes("review: 'Needs Formatting'") && appSource.includes("completed: 'Needs Review'") && appSource.includes("published: 'Publish Ready'"), 'Production-stage labels are missing.');
 assert(indexSource.includes('id="published"'), 'Separate Published control is missing.');
 assert(libSource.includes("'production-stages-v2'"), 'Status-model migration is missing.');
+assert(libSource.includes('pages = COALESCE(?, pages)') && libSource.includes('physical_pages'), 'Verified physical PDF page counts are not applied to Workbench runtime denominators.');
+assert(appSource.includes('PDF count unverified'), 'Unverified fallback page counts are not labeled honestly in the Projects surface.');
 assert(!indexSource.includes('>In Progress</option>') && !indexSource.includes('>Review</option>') && !indexSource.includes('>Completed</option>'), 'Legacy status labels remain in the UI.');
 
-console.log('Workbench static acceptance passed: 176 books, 10 topics, 176 covers, 172 available PDFs, 4 missing, 0 unchecked.');
+console.log(`Workbench static acceptance passed: 176 books, 10 topics, 176 covers, 172 available PDFs, 4 missing, 0 unchecked, 172 physical page counts verified, ${pdfAudit.page_count_mismatches} catalog/page mismatches reconciled at runtime.`);

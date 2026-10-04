@@ -113,3 +113,8 @@ Current remediation boundary: the connected Google Drive action can inspect perm
 ## Static asset cache regression repaired
 
 Production HTML had advanced to the collaborative UX build while `/app.js?v=uxwave6` still served the older cached JavaScript, which prevented the newly committed bilingual-title projection from reaching users. The fix adds a fresh shared asset version to JS/CSS and a Cloudflare Pages `public/_headers` rule requiring cache revalidation. Production verification must check the unique current asset URL, not merely the HTML shell.
+
+
+## Full-corpus physical PDF page-count audit
+
+Founder requested a whole-website source-page denominator audit. The prior 176-book PDF audit proved availability only and did not count pages. The audit pipeline is now extended so the self-hosted macOS runner downloads and opens every available source PDF with native PDFKit, records the physical page count and catalogue delta, and applies verified physical counts to Workbench D1 when the audit version advances. Static acceptance requires page-count evidence for all 172 available PDFs. The four verified-missing PDFs remain explicitly outside the physically verifiable denominator until a real PDF is recovered.

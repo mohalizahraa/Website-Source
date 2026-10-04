@@ -353,7 +353,8 @@ function projectMarkup(p, compact=false, selectable=false) {
 
   const info=seriesInfo(p);
   const seriesFact=seriesPartText(info);
-  const facts = [seriesFact, p.pages ? `${p.pages} pages` : '', !info && p.volumes && p.volumes > 1 ? `${p.volumes} volumes` : ''].filter(Boolean).join(' · ');
+  const pageFact = p.pages ? (p.page_count_verified ? `${p.pages} pages` : `${p.pages} pages (catalog; PDF count unverified)`) : '';
+  const facts = [seriesFact, pageFact, !info && p.volumes && p.volumes > 1 ? `${p.volumes} volumes` : ''].filter(Boolean).join(' · ');
   return `<article class="project-row ${selectable && state.selectedIds.has(p.id) ? 'selected' : ''}" data-project-id="${p.id}">
     <div class="cover-cell">${selectable ? `<label class="select-book" title="Select book"><input class="select-book-input" type="checkbox" data-select-project="${p.id}" ${state.selectedIds.has(p.id)?'checked':''} aria-label="Select ${escapeHtml(p.title_ar)}"><span aria-hidden="true"></span></label>` : ''}${coverMarkup(p)}</div>
     <div class="project-main">
