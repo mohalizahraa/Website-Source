@@ -28,8 +28,6 @@ CREATE TABLE IF NOT EXISTS projects (
   cover_url TEXT,
   start_date TEXT,
   due_date TEXT,
-  blocked INTEGER NOT NULL DEFAULT 0 CHECK (blocked IN (0,1)),
-  blocker_reason TEXT,
   notes TEXT,
   completed_at TEXT,
   completed_by TEXT,

@@ -2,7 +2,7 @@ import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalize
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','source_url','source_pdf_url','google_doc_url','cover_url',
-  'start_date','due_date','translated_pages','blocked','blocker_reason','notes'
+  'start_date','due_date','translated_pages','notes'
 ]);
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
 const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
@@ -64,7 +64,7 @@ export async function onRequestPatch(context) {
   const values = [];
   for (const [key, raw] of Object.entries(body)) {
     if (!fields.has(key)) continue;
-    const value = key === 'blocked' ? (raw ? 1 : 0) : (raw === '' ? null : raw);
+    const value = raw === '' ? null : raw;
     updates.push(`${key} = ?`);
     values.push(value);
   }
