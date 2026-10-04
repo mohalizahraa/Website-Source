@@ -135,3 +135,8 @@ A second official-site sweep recovered the seven-book **مفاهيم قرآني�
 Each project can store a source-PDF page counter (`translated_pages`) against its authoritative catalogue page denominator. The Dashboard exposes one compact **Live translation progress** panel with active books and the five most recent page updates; project/assigned cards show a subtle per-book bar only after translation has begun. Translation-progress changes are written to Activity as a dedicated event, so the Activity view remains an auditable chronological feed without turning every screen into a social-feed surface.
 
 Page progress is source-relative: **X/Y means X physical pages of the authoritative Arabic PDF have been processed into the English translation target**, not Google Doc pages. A positive first progress update automatically moves a Not Started book to Translating, but page count alone does not certify formatting, semantic review, or publication readiness.
+
+
+### Assigned-workload progress baseline — 2026-10-04
+
+The selected collaborator's assigned books now show source-page progress even at **0/Y**. The Dashboard live translation panel shows the complete assigned workload for the current `Using as` identity (including `Both`), with active work sorted first, rather than hiding books until translation begins. Assigned project cards likewise retain a quiet 0% progress track from the beginning.

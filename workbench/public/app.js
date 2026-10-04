@@ -427,17 +427,16 @@ function paceModel() {
   };
 }
 
-function translationProgressMarkup(p, compact=false) {
+function translationProgressMarkup(p, compact=false, showZero=false) {
   const done=Math.max(0,Number(p.translated_pages || 0));
   const total=Math.max(0,Number(p.pages || 0));
-  if (!done || !total) return '';
+  if (!total || (!showZero && !done)) return '';
   const percent=Math.min(100,Math.round((done/total)*100));
-  return `<div class="book-translation-progress ${compact?'compact':''}" aria-label="${done} of ${total} source pages translated">
+  return `<div class="book-translation-progress ${compact?'compact':''} ${done===0?'zero':''}" aria-label="${done} of ${total} source pages translated">
     <div class="book-progress-copy"><span>${done}/${total} pages translated</span><strong>${percent}%</strong></div>
     <div class="book-progress-track"><span style="width:${percent}%"></span></div>
   </div>`;
 }
-
 function assignedProjectMarkup(p) {
   const due = p.due_date ? dateText(p.due_date) : 'No deadline';
   return `<article class="assigned-card" data-project-id="${p.id}">
@@ -450,7 +449,7 @@ function assignedProjectMarkup(p) {
       <div class="title-ar">${escapeHtml(p.title_ar)}</div>
       ${p.title_en ? `<div class="title-en">${escapeHtml(p.title_en)}</div>` : ''}
       <div class="assigned-meta">${escapeHtml(due)}${p.assignee === 'Both' ? ' · Shared' : ''}</div>
-      ${translationProgressMarkup(p,true)}
+      ${translationProgressMarkup(p,true,true)}
       <div class="entry-actions assigned-actions">
         ${workOnBookMarkup(p)}
         ${googleDocLinkMarkup(p)}
@@ -465,25 +464,32 @@ function parseActivityJson(raw) {
   try { return JSON.parse(raw); } catch { return null; }
 }
 function renderTranslationLive() {
-  const active=state.projects
-    .filter(p=>Number(p.translated_pages || 0)>0 && Number(p.translated_pages || 0)<Number(p.pages || 0))
-    .sort((a,b)=>String(b.translation_progress_at || '').localeCompare(String(a.translation_progress_at || '')));
+  const assigned=state.projects
+    .filter(p=>p.assignee===state.actor || p.assignee==='Both')
+    .sort((a,b)=>{
+      const ap=Number(a.translated_pages || 0), bp=Number(b.translated_pages || 0);
+      if (Boolean(bp) !== Boolean(ap)) return Number(Boolean(bp))-Number(Boolean(ap));
+      const recent=String(b.translation_progress_at || '').localeCompare(String(a.translation_progress_at || ''));
+      if (recent) return recent;
+      return TITLE_COLLATOR.compare(a.title_ar || '',b.title_ar || '');
+    });
   const latest=state.activity.filter(a=>a.action==='translation progress').slice(0,5);
-  const activeMarkup=active.length ? active.map(p=>{
+  $('live-progress-summary').textContent=`${assigned.length} assigned · updates live`;
+  const assignedMarkup=assigned.length ? assigned.map(p=>{
     const done=Number(p.translated_pages || 0), total=Number(p.pages || 0);
     const percent=total ? Math.min(100,Math.round(done/total*100)) : 0;
-    return `<button type="button" class="live-translation-row" data-live-project="${p.id}">
+    return `<button type="button" class="live-translation-row ${done===0?'zero':''}" data-live-project="${p.id}">
       <div class="live-translation-copy"><span dir="rtl">${escapeHtml(p.title_ar)}</span><strong>${done}/${total} pages</strong></div>
       <div class="live-translation-track"><span style="width:${percent}%"></span></div>
     </button>`;
-  }).join('') : '<div class="live-empty">No book is actively translating yet.</div>';
+  }).join('') : '<div class="live-empty">No books are assigned here yet.</div>';
   const feedMarkup=latest.length ? latest.map(a=>{
     const after=parseActivityJson(a.after_json) || {};
     const done=Number(after.translated_pages || 0), total=Number(after.pages || 0);
     const when=new Date(a.created_at.replace(' ','T')+'Z');
     return `<div class="translation-feed-item"><span class="translation-feed-dot"></span><div><strong>${done}/${total} pages</strong><span dir="rtl">${escapeHtml(a.title_ar || '')}</span></div><time>${when.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>`;
   }).join('') : '<div class="live-empty subtle">Page updates will appear here as translation advances.</div>';
-  $('live-translation-active').innerHTML=activeMarkup;
+  $('live-translation-active').innerHTML=assignedMarkup;
   $('live-translation-feed').innerHTML=feedMarkup;
   $('live-translation-active').querySelectorAll('[data-live-project]').forEach(button=>button.addEventListener('click',()=>openProject(Number(button.dataset.liveProject))));
 }

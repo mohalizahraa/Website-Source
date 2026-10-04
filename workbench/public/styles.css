@@ -259,3 +259,10 @@ input[type=file]::file-selector-button:hover{background:rgba(184,146,90,.1)}
 .translation-page-input{display:flex;align-items:center;gap:8px}.translation-page-input input{width:96px!important}.translation-page-input span{font-size:10px;color:var(--sage);font-weight:400}
 .activity-translation{background:rgba(184,146,90,.055)}
 @media(max-width:720px){.live-translation-copy{align-items:flex-start;flex-direction:column;gap:2px}.translation-feed-item>div{align-items:flex-start;flex-direction:column;gap:1px}}
+
+
+/* Zero-state progress remains visible for the full assigned workload. */
+.book-translation-progress.zero .book-progress-track,.live-translation-row.zero .live-translation-track{background:rgba(184,146,90,.12)}
+.book-translation-progress.zero .book-progress-copy,.live-translation-row.zero .live-translation-copy{color:var(--sage)}
+.live-translation-row.zero{background:rgba(255,248,234,.34)}
+.live-translation-row.zero:hover{background:rgba(255,248,234,.6)}
