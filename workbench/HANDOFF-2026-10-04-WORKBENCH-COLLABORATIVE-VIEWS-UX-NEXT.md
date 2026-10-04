@@ -3,260 +3,203 @@
 Status: restart-safe continuation projection for the Haydari Translation Workbench UX work.  
 Repository: `mohalizahraa/Website-Source`  
 Branch: `workbench`  
-Implementation head before this handoff: `d5c19597183c6b620f8c293b78e23f3879044cd1`
+Current implemented code wave: guarded English Book opens + founder-approved Board viewing scope.  
+Current live-deployment state: **repo implementation complete; production Cloudflare Pages still serving the prior Board markup at last verification**.
 
-This handoff does **not** replace the current Repentance completion handoff. Book-local truth remains owned by:
+This handoff does **not** replace book-local truth. Repentance remains owned by:
 
 - `workbench/HANDOFF-2026-10-04-REPENTANCE-132-OF-132-NEEDS-REVIEW-PROGRESS-INVARIANT-FIX.md`
 
-Repentance is complete at **132/132** and **Needs Review**. Do not resume stale translation checkpoints.
+Repentance is complete at **132/132**, fully formatted, and **Needs Review**. Do not resume stale translation checkpoints.
 
-## 1. Current product direction
+## 1. Founder-approved collaboration model — implemented in repo
 
-The founder noticed that the Board currently mixes all assignees into one Kanban and proposed that collaborators should be able to see:
+The founder approved separate Board viewing scopes:
 
-- Zahraa's work;
-- Mohammed's work;
-- a shared/team view.
+- **Zahraa** — books assigned to Zahraa plus `Both`;
+- **Mohammed** — books assigned to Mohammed plus `Both`;
+- **Shared** — Zahraa + Mohammed + `Both` across the normal five status columns, with `Unassigned` retained visibly as a distinct team inbox.
 
-The recommended Board model was:
+The Board scope is independent of the global actor identity. Changing the Board view never changes assignment or mutation attribution.
 
-- **Zahraa** — books assigned to Zahraa **plus `Both`**;
-- **Mohammed** — books assigned to Mohammed **plus `Both`**;
-- **Shared** — the combined team board, with shared/team work visible together and Unassigned kept visible rather than silently lost.
+Implementation details now present on `workbench`:
 
-The global identity control remains a separate concept: it determines actor attribution and personal Dashboard behavior. Board viewing scope must not silently mutate assignments or actor identity.
+- Board-local segmented control: `Zahraa | Mohammed | Shared`;
+- locally remembered `haydariBoardScope`;
+- default scope: `Shared`;
+- individual scopes include `Both`;
+- Shared scope keeps `Unassigned` visible in a separate team-inbox section;
+- five workflow columns and drag/drop status semantics remain intact;
+- responsive styling is included for the scope control and Unassigned queue.
 
-The founder responded positively (“Ooh nice. Yeah”), so treat the **Board-scoping direction as founder-approved**, while exact microcopy/layout remains implementation-owned unless later corrected.
+Canonical product contract was updated in `workbench/README.md`.
 
-The Board scope has **not yet been implemented** as of this handoff.
+Relevant commits:
 
-## 2. Current Board implementation
+- `15730564d4aad9e60a9b70fd8fc447c1e71128f0` — guarded English Book opens + Board scope client logic;
+- `e8125701b2d55a497dce62cdffaaebe01d01aa75` — Board scope markup;
+- `31a57dc7694ef7056f884eedc4ee204e0e489057` — Board scope / Unassigned styling;
+- `f6520994dbfd36bd8859d751861ccb106a92d1dd` — Board scope canonical README contract.
 
-Current `renderBoard()` in `workbench/public/app.js`:
+## 2. English Book access-guard regression — repaired in repo
 
-- applies only global search text;
-- then divides the full matching project set into the five workflow columns;
-- has no local assignee/team scope;
-- supports desktop drag/drop for status changes;
-- compact Board cards expose assignee and deadline quick controls but not a tap-friendly status control.
+The canonical invariant remains:
 
-Current global actor state is persisted in `localStorage` as `haydariActor` and currently personalizes:
+> a linked English Book must be access-checked before opening so a collaborator is never sent to Google's Request access screen.
 
-- Dashboard assigned-project surfaces;
-- Dashboard live translation progress;
-- Projects “My assignments”.
-
-The Board does not currently react to actor identity except indirectly through API attribution on mutations.
-
-## 3. Recommended next UX wave
-
-### A. Founder-approved Board scope
-
-Add a Board-local segmented scope control:
-
-> Zahraa | Mohammed | Shared
-
-Behavior:
-
-- Zahraa = `assignee === Zahraa || assignee === Both`;
-- Mohammed = `assignee === Mohammed || assignee === Both`;
-- Shared = Zahraa + Mohammed + Both; keep Unassigned visible as a distinct queue/section rather than making it disappear;
-- scope changes **view only**, never assignee or actor identity;
-- remember the chosen Board/view scope locally on that device;
-- preserve the five existing status columns and their drag/status semantics.
-
-### B. Recommended: use the same view-scope concept on Timeline
-
-The Timeline is another coordination surface and currently shows every dated project.
-
-Recommended:
-
-- reuse the same `Zahraa | Mohammed | Shared` viewing scope;
-- individual views include `Both`;
-- Shared shows the team schedule;
-- Unassigned dated work remains visible distinctly;
-- use one reusable “view scope” owner rather than separate ad-hoc filtering logic per screen.
-
-Do **not** automatically scope the corpus-wide Stats model unless that is separately approved; Stats currently has different semantics.
-
-### C. Recommended: disambiguate identity from viewing scope
-
-Once local view scope exists, `Using as` becomes easy to confuse with “whose projects am I looking at?”
-
-Recommended:
-
-- rename the global control to something explicit such as **Editing as** or **Identity**;
-- local collaboration controls should use **View** / **Viewing** language;
-- changing identity continues to control attribution + personalized Dashboard;
-- changing view scope controls only what a Board/Timeline surface displays.
-
-### D. Recommended: make Dashboard summaries navigational
-
-The Dashboard's **Right now** and **By person** rows are currently inert summaries.
-
-Recommended:
-
-- clicking Zahraa/Mohammed/Both from **By person** opens the corresponding scoped Board or Projects view;
-- clicking **Needs review**, **With deadlines**, **Missing PDF**, etc. opens the relevant filtered destination;
-- this turns existing information into low-click navigation without creating a new priority/“what should I do next” system.
-
-This respects the founder's existing decision **not** to convert Dashboard into an automatically prioritized task list.
-
-### E. Recommended: Activity filters, not Activity prose expansion
-
-Activity currently renders one unfiltered chronological feed.
-
-Recommended lightweight controls:
-
-- All / Zahraa / Mohammed / System;
-- optionally event type such as translation progress vs project changes;
-- retain the current terse event wording.
-
-Do **not** revive the previously rejected semantic field-by-field Activity prose expansion.
-
-### F. Recommended: make shared ownership legible at scan speed
-
-On compact Board cards, assignment is currently visible mainly in a small select lower on the card.
-
-Recommended:
-
-- add a small assignee chip/badge near the status metadata;
-- render `Both` as human-facing **Shared**;
-- Shared scope should make Unassigned work visibly distinct.
-
-This improves scanning without introducing another data model.
-
-### G. Recommended: make Board fully usable on iPhone/touch
-
-The current Board is five `minmax(220px)` columns in a horizontal scroller and status changes primarily rely on drag/drop.
-
-Recommended mobile behavior:
-
-- use status tabs/chips or one status column at a time on narrow screens rather than requiring a five-column pan;
-- provide a tap-friendly status change action on each Board card so drag/drop is never the only practical status control;
-- preserve desktop drag/drop as an enhancement.
-
-This aligns with the existing Workbench mobile usability contract.
-
-### H. Recommended: suspicious-date warning
-
-A live data incident put **Our Ethics** at deadline `2023-01-18`, stretching the whole Timeline back to 2023.
-
-That record was repaired and a live verification found **zero pre-2026 start/deadline values** afterward.
-
-Do not ban historical dates globally; legitimate overdue/backdated work may exist.
-
-Recommended instead:
-
-- when a newly entered deadline is unusually far in the past, show an inline warning/confirmation such as **“This deadline is in the past — keep it?”**;
-- keep valid historical dates possible.
-
-This catches likely mistypes without corrupting legitimate schedule semantics.
-
-## 4. Urgent existing regression discovered during this UX review
-
-The canonical README still requires:
-
-> linked English Books must be access-checked before opening so users are not sent to Google's Request access screen.
-
-The server-side guard still exists:
+The server-side guard already existed at:
 
 - `workbench/functions/api/english-book/[id].js`
 
-But the **current browser client bypasses it**:
+The prior browser client bypassed it through direct `google_doc_url` navigation. That regression is now repaired in `workbench/public/app.js`.
 
-- `googleDocLinkMarkup(p)` renders a direct `<a href="google_doc_url">`;
-- `startWorkOnBook(id)` navigates directly with `window.location.assign(project.google_doc_url)`;
-- post-link continuation also navigates directly to the supplied URL.
+Current browser behavior:
 
-This is a **real implementation regression against an already-canonical invariant**, not a new UX recommendation.
+- linked **English Book** actions resolve through `/api/english-book/:id` before navigation;
+- **Work on Book** resolves the English Book through the guard before navigating and only then releases the reserved Arabic-PDF window;
+- post-link continuation validates the saved link and resolves through the same guard before navigation;
+- direct project-URL navigation and direct linked-Doc anchors were removed.
 
-Repair it before or alongside the collaborative-view wave:
+Static source verification after the edit confirmed:
 
-- restore guarded resolution through `/api/english-book/:id` before every English Book open;
-- preserve the create/link flow;
-- ensure Work on Book still opens the canonical Arabic PDF plus the verified English Book;
-- do not reintroduce the prior JavaScript syntax-corruption incident while restoring the guard;
-- syntax-check the exact final `app.js` and verify the deployed user path.
+- final `app.js` parses;
+- no direct `window.location.assign(project.google_doc_url)` remains;
+- no linked English Book anchor points directly at `google_doc_url`;
+- all remaining English Book navigation values are returned by the guard endpoint.
 
-## 5. Timeline incident — repaired state
+## 3. Verification state
 
-The 2023 Timeline stretch was traced to one erroneous live D1 value:
+### Repo/static
 
-- project 80 / `book-72` / **Our Ethics**
-- bad deadline: `2023-01-18`
+Manual exact-source checks passed for the new Board semantics and English Book routing.
 
-Activity proved that date had been manually written from a previously-null deadline.
+The repository's self-hosted **Workbench static acceptance** run for the latest code-changing commit is:
 
-The bad deadline was cleared through the live Workbench API with a guard that refused to mutate unless the current value was still exactly `2023-01-18`.
+- run `37189437051`;
+- head `31a57dc7694ef7056f884eedc4ee204e0e489057`;
+- state at last check: **pending**.
 
-Verification run:
+Earlier runs for the immediately preceding commits were cancelled by the workflow's existing `cancel-in-progress` concurrency behavior.
 
-- repo: `mohalizahraa/userpkm`
-- branch: `tmp/workbench-pdf-audit-20261003`
-- run: `37183848131`
-- conclusion: success
+Do not claim the full acceptance workflow passed until that self-hosted run reaches success.
 
-Verified live dated projects afterward:
+### Production deployment
 
-- Repentance: due `2026-10-05`;
-- The Infallibility of the Prophets in the Noble Qurʾān: due `2026-10-03`;
-- pre-2026 dated projects: **0**.
+The Workbench is documented as a Cloudflare Pages Git-integrated deployment:
 
-Do not misdiagnose that incident as a Timeline calculation bug; it was a bad live deadline value.
+- production branch: `workbench`;
+- root: `workbench`;
+- output: `public`;
+- Functions: `functions`;
+- D1 binding: `DB`.
 
-## 6. Current Repentance state / return edge
+Fresh production checks against:
 
-Repentance is no longer an active translation task.
+- `https://haydari-translation-workbench.pages.dev/`
 
-Current authority:
+still returned the **old** Board markup:
 
-- project 3 / `book-123`;
-- authoritative physical denominator: **132**;
-- verified progress: **132/132**;
-- status: **Needs Review**;
-- full formatting pass complete;
-- 170 native footnotes preserved;
-- ordinary Arabic-letter residue in English body: 0 at verification.
+`<section class="view" id="board-view"><div class="board" id="board"></div></section>`
 
-If the UX tangent completes and book work resumes, the next Repentance-local action is **human review/QA**, not translation.
+rather than the new Board scope toolbar.
 
-## 7. Other suspended-open infrastructure loops
+GitHub combined commit status on the new commits reports only a failing **Vercel** status pointing to Vercel's blocked-deployment page. No Cloudflare deployment status is attached. The repository contains no Cloudflare deployment workflow or Wrangler deploy command; production currently depends on the external Cloudflare Git integration.
 
-Keep these visible but do not let them hijack the UX wave:
+Therefore the truthful current state is:
 
-- Google Drive public sharing: the underlying “Anyone with the link → Editor” permission remains separate from Workbench routing/access validation unless independently verified fixed;
-- permanent self-hosted runner capacity/routing remains an infrastructure loop, though userpkm self-hosted runners successfully supported Workbench PDF/progress/timeline work;
-- founder zero-paid-GitHub-compute policy remains absolute.
+> **implemented and statically checked in the repo; not yet verified live.**
 
-## 8. Existing founder constraints that still govern this UX work
+Do not silently equate branch state with production state.
 
-Do not undo these current product decisions:
+## 4. Next deployment action / blocker
+
+The next agent-owned action is to re-check production and the self-hosted acceptance run.
+
+If production remains stale, the unresolved blocker is the external Cloudflare Pages Git integration / deployment state. Do not invent credentials or claim deployment access that is not available. If a supported Cloudflare control surface or credential-backed deploy path becomes available, deploy the current `workbench` branch without changing the D1 data model and verify the actual user path afterward.
+
+Do not fall back to Railway. Founder platform policy blocks Railway.
+
+## 5. Pending UX recommendations — founder approval required
+
+These were recommendations from the prior UX review and remain **unapproved**. Do not implement them merely because Board scope was approved.
+
+### A. Reuse viewing scope on Timeline + clarify identity wording
+
+Recommended:
+
+- reuse the `Zahraa | Mohammed | Shared` view-scope primitive on Timeline;
+- individual Timeline views include `Both`;
+- Shared shows team schedule and keeps Unassigned dated work distinct;
+- rename global `Using as` to clearer identity/attribution wording such as **Editing as** or **Identity** so it cannot be confused with view scope.
+
+### B. Dashboard drill-down navigation
+
+Make existing Dashboard summaries navigational:
+
+- By person → corresponding scoped Board/Projects view;
+- Needs review / deadlines / missing PDF etc. → matching filtered destination.
+
+Do **not** turn Dashboard into an automatic priority/task-recommendation engine.
+
+### C. Activity filters
+
+Add lightweight filters such as:
+
+- All / Zahraa / Mohammed / System;
+- optional event-type filtering.
+
+Keep the current terse activity wording; do not revive semantic field-by-field prose.
+
+### D. Scan-speed ownership badges
+
+Add a small assignee chip near compact Board-card metadata.
+
+- render `Both` as human-facing **Shared**;
+- retain the actual assignment value `Both` in data.
+
+### E. Mobile Board status navigation
+
+Make Board status usable without horizontal five-column panning or drag-only interaction:
+
+- one status column at a time / status tabs on narrow screens;
+- tap-friendly status change control on each card;
+- desktop drag/drop remains an enhancement.
+
+### F. Suspicious-date warning
+
+When a newly entered deadline is unusually far in the past, show a non-blocking confirmation such as:
+
+> This deadline is in the past — keep it?
+
+Do not globally ban historical dates.
+
+## 6. Existing founder constraints still governing
+
+Do not undo these:
 
 - no automatic “what should I work on next?” Dashboard prioritizer;
 - no semantic field-by-field Activity narration;
 - no priority/blocker metadata resurrection;
 - no new Workbench project creation unless explicitly requested;
-- preserve the archival parchment/oxblood/gold/sage identity while keeping modern touch/form affordances;
+- preserve the archival parchment / oxblood / gold / sage identity while keeping modern touch/form affordances;
 - mobile/iPhone paths must remain practical;
 - shared state remains live-synced;
 - assignment is organizational metadata, not an ACL;
-- `Both` means shared assignment.
+- `Both` means shared assignment;
+- zero paid GitHub compute; self-hosted runners only for GitHub Actions execution;
+- Railway remains blocked.
 
-## 9. Recommended implementation order after approval checkpoint
+## 7. Suspended infrastructure loops
 
-1. Repair the already-authorized English Book access-guard regression.
-2. Implement founder-approved Board view scope.
-3. Generalize the same view-scope primitive to Timeline and disambiguate global identity wording.
-4. Add Dashboard drill-down navigation.
-5. Add Activity filtering.
-6. Add scan-speed assignee badges / Shared treatment.
-7. Improve mobile Board status navigation/control.
-8. Add non-blocking suspicious-date warning.
+Keep visible without letting them hijack the UX wave:
 
-The recommendations beyond the Board direction have **not yet been founder-approved**. Present them for approval before durable product promotion/implementation unless the founder explicitly approves all in the continuation chat.
+- Google Drive “Anyone with the link → Editor” permissions remain a separate sharing-state concern from Workbench guard routing unless independently verified;
+- permanent self-hosted runner capacity/routing remains an infrastructure loop.
 
-## Restart sentence
+## Exact continuation
 
-Freshly load `mohalizahraa/operator-protocol/AGENTS.md`, Core, the materially routed owners/profiles, `workbench/README.md`, the current `workbench/public/index.html`, `app.js`, and `styles.css`. Treat Repentance as **132/132 Needs Review**. Treat Board scoping (`Zahraa | Mohammed | Shared`) as the approved next collaborative-view direction. Before implementing optional UX recommendations, present the consolidated pending list for founder approval. Independently repair the existing English Book access-guard regression because it violates an already-canonical Workbench invariant.
+1. Re-check `37189437051` and the production `#board-view`.
+2. If production is current, verify Board scope and guarded English Book behavior on the deployed surface.
+3. If production is still stale, preserve the Cloudflare Git-integration blocker exactly; do not claim live completion.
+4. Ask the founder to approve/reject the six pending UX recommendation groups above.
+5. Implement only the approved groups, then run static + deployed verification.
