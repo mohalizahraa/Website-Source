@@ -20,6 +20,18 @@ const els = {
   form: $('project-form'), toast: $('toast'),
 };
 
+const PRODUCTION_HOST = 'haydari-translation-workbench.pages.dev';
+
+function redirectPreviewToProduction() {
+  const host = location.hostname.toLowerCase();
+  if (host === PRODUCTION_HOST) return false;
+  if (host.endsWith(`.${PRODUCTION_HOST}`)) {
+    location.replace(`https://${PRODUCTION_HOST}${location.pathname}${location.search}${location.hash}`);
+    return true;
+  }
+  return false;
+}
+
 function clearLegacyAccessKey() {
   localStorage.removeItem('haydariWorkbenchKey');
   if (location.hash.startsWith('#key=')) history.replaceState(null, '', location.pathname + location.search);
@@ -57,6 +69,19 @@ function toast(message) {
   els.toast.textContent = message; els.toast.classList.add('show');
   setTimeout(() => els.toast.classList.remove('show'), 1800);
 }
+
+function setWorkspaceError(error=null) {
+  const panel = $('workspace-error');
+  const detail = $('workspace-error-detail');
+  if (!panel) return;
+  const failed = Boolean(error);
+  panel.hidden = !failed;
+  document.body.classList.toggle('workspace-data-unavailable', failed);
+  if (failed && detail) {
+    detail.textContent = 'The Workbench could not load its live project data. The values normally shown below are placeholders, not a confirmed database state.';
+  }
+}
+
 
 function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 function dateText(value) { return value ? new Date(`${value}T12:00:00Z`).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : 'No deadline'; }
@@ -1178,6 +1203,7 @@ async function loadData() {
   const [projects, activity] = await Promise.all([api('/api/projects'), api('/api/activity')]);
   state.projects = projects.projects || [];
   state.activity = activity.activity || [];
+  setWorkspaceError(null);
   render();
 }
 
@@ -1203,7 +1229,9 @@ async function auditPdfs() {
 }
 
 async function init() {
+  if (redirectPreviewToProduction()) return;
   clearLegacyAccessKey();
+  setWorkspaceError(null);
   els.actor.value = state.actor;
   syncActorSwitch();
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
@@ -1215,7 +1243,8 @@ async function init() {
     await loadData();
     if (state.pdfAudit?.unchecked) auditPdfs().catch(error => toast(`PDF verification paused: ${error.message}`));
   } catch (e) {
-    toast(`Could not load workspace: ${e.message}`);
+    setWorkspaceError(e);
+    toast('Workspace data could not be loaded');
   }
 }
 
@@ -1226,6 +1255,7 @@ document.querySelectorAll('[data-actor-choice]').forEach(button=>button.addEvent
   els.actor.dispatchEvent(new Event('change',{bubbles:true}));
 }));
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
+$('retry-workspace')?.addEventListener('click',()=>init());
 $('view-my-projects')?.addEventListener('click',()=>{
   $('filter-assignee').value='__mine__';
   setView('projects');
