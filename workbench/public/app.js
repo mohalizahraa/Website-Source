@@ -496,6 +496,7 @@ function openProjectsPreset(preset) {
 
 function openPersonWork(person) {
   if (person === 'Zahraa' || person === 'Mohammed') {
+    els.search.value='';
     setViewScope(person);
     setView('board');
     renderBoard();
