@@ -1,4 +1,4 @@
-import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate, verifyGoogleDocLinkAccess } from '../../_lib.js';
 
 const validStatuses = new Set(['not_started','in_progress','review','completed','published']);
 const validAssignees = new Set(['Zahraa','Mohammed','Brother','Both','Unassigned']);
@@ -22,6 +22,10 @@ export async function onRequestPost(context) {
   const priority = validPriorities.has(body.priority) ? body.priority : 'normal';
   const googleDocUrl = normalizeGoogleDocUrl(body.google_doc_url);
   if (googleDocUrl === false) return json({ error: 'English Book must be a Google Docs document link.' }, 400);
+  if (googleDocUrl) {
+    const access = await verifyGoogleDocLinkAccess(googleDocUrl);
+    if (!access.accessible) return json({ error: 'English Book must be shared as Anyone with the link → Editor before it can be linked.' }, 400);
+  }
   const coverUrl = normalizeHttpUrl(body.cover_url);
   if (coverUrl === false) return json({ error: 'Cover image must use an http(s) URL.' }, 400);
   if (!validIsoDate(body.start_date) || !validIsoDate(body.due_date)) return json({ error: 'Dates must use YYYY-MM-DD.' }, 400);
