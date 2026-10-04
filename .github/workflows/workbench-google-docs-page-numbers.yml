@@ -1,0 +1,50 @@
+name: Workbench Google Docs page numbers
+
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - ".github/workflows/workbench-google-docs-page-numbers.yml"
+      - "workbench/scripts/google-docs-page-numbers.mjs"
+      - "workbench/page-number-request.txt"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbench-google-docs-page-numbers
+  cancel-in-progress: false
+
+jobs:
+  page-numbers:
+    runs-on: [self-hosted, nexus-mac-arm64]
+    timeout-minutes: 15
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/workbench-playwright-browsers
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workbench
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Load request
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc_url="$(sed -n '1p' workbench/page-number-request.txt)"
+          test -n "$doc_url"
+          echo "DOC_URL=$doc_url" >> "$GITHUB_ENV"
+      - name: Verify driver syntax
+        run: node --check workbench/scripts/google-docs-page-numbers.mjs
+      - name: Install ephemeral browser driver
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install chromium
+      - name: Insert native upper-right page numbers
+        run: node workbench/scripts/google-docs-page-numbers.mjs
+      - name: Remove ephemeral browser payload
+        if: always()
+        run: |
+          rm -rf /tmp/workbench-playwright-browsers
+          rm -rf node_modules/playwright node_modules/playwright-core node_modules/.bin/playwright
