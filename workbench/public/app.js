@@ -20,18 +20,6 @@ const els = {
   form: $('project-form'), toast: $('toast'),
 };
 
-const PRODUCTION_HOST = 'haydari-translation-workbench.pages.dev';
-
-function redirectPreviewToProduction() {
-  const host = location.hostname.toLowerCase();
-  if (host === PRODUCTION_HOST) return false;
-  if (host.endsWith(`.${PRODUCTION_HOST}`)) {
-    location.replace(`https://${PRODUCTION_HOST}${location.pathname}${location.search}${location.hash}`);
-    return true;
-  }
-  return false;
-}
-
 function clearLegacyAccessKey() {
   localStorage.removeItem('haydariWorkbenchKey');
   if (location.hash.startsWith('#key=')) history.replaceState(null, '', location.pathname + location.search);
@@ -69,19 +57,6 @@ function toast(message) {
   els.toast.textContent = message; els.toast.classList.add('show');
   setTimeout(() => els.toast.classList.remove('show'), 1800);
 }
-
-function setWorkspaceError(error=null) {
-  const panel = $('workspace-error');
-  const detail = $('workspace-error-detail');
-  if (!panel) return;
-  const failed = Boolean(error);
-  panel.hidden = !failed;
-  document.body.classList.toggle('workspace-data-unavailable', failed);
-  if (failed && detail) {
-    detail.textContent = 'The Workbench could not load its live project data. The values normally shown below are placeholders, not a confirmed database state.';
-  }
-}
-
 
 function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 function dateText(value) { return value ? new Date(`${value}T12:00:00Z`).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : 'No deadline'; }
@@ -137,7 +112,7 @@ function coverMarkup(p, compact=false) {
 }
 function googleDocLinkMarkup(p) {
   return p.google_doc_url
-    ? `<button class="mini-link secondary-link english-book-link" type="button" data-open-english="${p.id}">English Book</button>`
+    ? `<a class="mini-link secondary-link english-book-link" href="${escapeHtml(p.google_doc_url)}" target="_blank" rel="noopener">English Book</a>`
     : `<button class="mini-link secondary-link english-book-button" type="button" data-link-english="${p.id}">English Book · link</button>`;
 }
 async function setProjectDeadline(id, value) {
@@ -346,24 +321,7 @@ function bindProjectClicks(root=document) {
   bindQuickActions(root);
 }
 
-async function resolveEnglishBook(id) {
-  return api(`/api/english-book/${id}`);
-}
-
-function openEnglishBook(id) {
-  const reservedWindow=window.open('about:blank','_blank');
-  if (reservedWindow) reservedWindow.opener=null;
-  resolveEnglishBook(id).then(result => {
-    if (reservedWindow) reservedWindow.location.replace(result.url);
-    else window.location.assign(result.url);
-  }).catch(error => {
-    if (reservedWindow) reservedWindow.close();
-    toast(error.message);
-    openEnglishBookDialog(id);
-  });
-}
-
-async function startWorkOnBook(id) {
+function startWorkOnBook(id) {
   const project=state.projects.find(p=>p.id===id);
   if (!project) return;
   if (!project.google_doc_url) {
@@ -371,17 +329,11 @@ async function startWorkOnBook(id) {
     toast('Link the English Book first');
     return;
   }
-  const pdfWindow=project.pdf_available ? window.open('about:blank','_blank') : null;
-  if (pdfWindow) pdfWindow.opener=null;
-  try {
-    const result=await resolveEnglishBook(id);
-    if (pdfWindow) pdfWindow.location.replace(`/api/pdf/${project.id}`);
-    window.location.assign(result.url);
-  } catch(error) {
-    if (pdfWindow) pdfWindow.close();
-    toast(error.message);
-    openEnglishBookDialog(id,true);
+  if (project.pdf_available) {
+    const pdfWindow=window.open(`/api/pdf/${project.id}`,'_blank');
+    if (pdfWindow) pdfWindow.opener=null;
   }
+  window.location.assign(project.google_doc_url);
 }
 
 function bindQuickActions(root=document) {
@@ -408,10 +360,6 @@ function bindQuickActions(root=document) {
     event.stopPropagation();
     try { await setProjectDeadline(Number(button.dataset.clearDeadline),null); }
     catch (error) { toast(error.message); }
-  }));
-  root.querySelectorAll('[data-open-english]').forEach(button => button.addEventListener('click', event => {
-    event.stopPropagation();
-    openEnglishBook(Number(button.dataset.openEnglish));
   }));
   root.querySelectorAll('[data-link-english]').forEach(button => button.addEventListener('click', event => {
     event.stopPropagation();
@@ -1013,12 +961,9 @@ async function saveProject(event) {
     title_ar: $('title-ar').value.trim(), title_en: $('title-en').value.trim(), assignee: $('assignee').value,
     status: $('status').value, priority: $('priority').value, start_date: $('start-date').value, due_date: $('due-date').value,
     translated_pages: Number($('translated-pages').value || 0),
-    cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
+    google_doc_url: $('google-doc-url').value.trim(), cover_url: $('cover-url').value.trim(), source_pdf_url: $('source-pdf-url').value.trim(),
     published: $('published').checked, blocked: $('blocked').checked, blocker_reason: $('blocker-reason').value.trim(), notes: $('notes').value.trim(),
   };
-  const googleDocUrl=$('google-doc-url').value.trim();
-  const currentProject=id ? state.projects.find(project=>project.id===id) : null;
-  if (!id || googleDocUrl !== (currentProject?.google_doc_url || '')) payload.google_doc_url=googleDocUrl;
   try {
     if (id) await api(`/api/projects/${id}`, {method:'PATCH', body:JSON.stringify(payload)});
     else await api('/api/projects', {method:'POST', body:JSON.stringify(payload)});
@@ -1186,9 +1131,8 @@ async function saveEnglishBook(event) {
     state.pendingWorkOnLink=null;
     await loadData();
     if (continueWork) {
-      const verified=await resolveEnglishBook(id);
       if (reservedPdfWindow) reservedPdfWindow.location.replace(`/api/pdf/${id}`);
-      window.location.assign(verified.url);
+      window.location.assign(url);
       return;
     }
     if (reservedPdfWindow) reservedPdfWindow.close();
@@ -1203,7 +1147,6 @@ async function loadData() {
   const [projects, activity] = await Promise.all([api('/api/projects'), api('/api/activity')]);
   state.projects = projects.projects || [];
   state.activity = activity.activity || [];
-  setWorkspaceError(null);
   render();
 }
 
@@ -1229,9 +1172,7 @@ async function auditPdfs() {
 }
 
 async function init() {
-  if (redirectPreviewToProduction()) return;
   clearLegacyAccessKey();
-  setWorkspaceError(null);
   els.actor.value = state.actor;
   syncActorSwitch();
   if ($('sort-projects')) $('sort-projects').value = state.projectSort;
@@ -1243,8 +1184,7 @@ async function init() {
     await loadData();
     if (state.pdfAudit?.unchecked) auditPdfs().catch(error => toast(`PDF verification paused: ${error.message}`));
   } catch (e) {
-    setWorkspaceError(e);
-    toast('Workspace data could not be loaded');
+    toast(`Could not load workspace: ${e.message}`);
   }
 }
 
@@ -1255,7 +1195,6 @@ document.querySelectorAll('[data-actor-choice]').forEach(button=>button.addEvent
   els.actor.dispatchEvent(new Event('change',{bubbles:true}));
 }));
 document.querySelectorAll('[data-jump-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.jumpView)));
-$('retry-workspace')?.addEventListener('click',()=>init());
 $('view-my-projects')?.addEventListener('click',()=>{
   $('filter-assignee').value='__mine__';
   setView('projects');
