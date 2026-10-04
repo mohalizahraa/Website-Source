@@ -277,3 +277,10 @@ input[type=file]::file-selector-button:hover{background:rgba(184,146,90,.1)}
 .project-card .quick-field input{box-sizing:border-box;max-width:100%}
 .project-card .quick-date-row{width:100%;align-items:stretch;flex-direction:column;gap:4px}
 .project-card .quick-clear-date{align-self:flex-start;max-width:100%;white-space:normal;text-align:left;padding-left:0}
+
+
+/* Touch-board sizing: keep Kanban columns readable even when mobile Safari uses a wide layout viewport. */
+@media (hover:none) and (pointer:coarse){
+  .board{grid-template-columns:repeat(5,82vw);scroll-snap-type:x proximity}
+  .board-col{scroll-snap-align:start}
+}
