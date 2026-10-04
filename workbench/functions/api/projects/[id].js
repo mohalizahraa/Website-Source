@@ -1,4 +1,4 @@
-import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate } from '../../_lib.js';
+import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate, verifyGoogleDocLinkAccess } from '../../_lib.js';
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','priority','source_url','source_pdf_url','google_doc_url','cover_url',
@@ -38,6 +38,12 @@ export async function onRequestPatch(context) {
   if (body.google_doc_url !== undefined) {
     const normalized = normalizeGoogleDocUrl(body.google_doc_url);
     if (normalized === false) return json({ error: 'English Book must be a Google Docs document link.' }, 400);
+    if (normalized) {
+      const access = await verifyGoogleDocLinkAccess(normalized);
+      if (!access.accessible) {
+        return json({ error: 'English Book must be shared as Anyone with the link → Editor before it can be linked.' }, 400);
+      }
+    }
     body.google_doc_url = normalized || '';
   }
   if (body.cover_url !== undefined) {
