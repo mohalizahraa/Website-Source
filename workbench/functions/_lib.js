@@ -154,6 +154,51 @@ export async function ensureCatalog(db) {
     }
   }
 
+  const managedEnglishRouting = await db.prepare(
+    "SELECT value FROM workbench_meta WHERE key='english_book_routing_v2_2026_10_04'"
+  ).first();
+  if (managedEnglishRouting?.value !== 'applied') {
+    const managed = [
+      ['book-80',  'https://docs.google.com/document/d/1KJBqjZ41Zasg_LqrKNr4wJXZCkpOcJ77PXQal2KU1qM/edit'],
+      ['book-67',  'https://docs.google.com/document/d/1C8ZOE14w9mUF27hBowwnk42d_fG2cl32R2T5GAeepS8/edit'],
+      ['book-123', 'https://docs.google.com/document/d/1xBIpS5TXEQT42_JuoKlu5CgW95_B2wenYSk8LN_wcRg/edit'],
+      ['book-132', 'https://docs.google.com/document/d/15MMgcj6TPtdCotBecPUJW9xX59-Py_ODsHqRqh_dDLc/edit'],
+      ['book-2',   'https://docs.google.com/document/d/1H4wfN_tAi4seppBApq2KoDgYrzrK2GZQOW2CllvDeSg/edit'],
+      ['book-1',   'https://docs.google.com/document/d/1DmCHtfaYsWwWKavXipTrWZo9oq0E4tq2FZVySoSa18A/edit'],
+      ['book-97',  'https://docs.google.com/document/d/1fOo0Y8M1UcaKHR-odP87jGRRlCAT3x9i6AVX7qi6lB0/edit'],
+      ['book-99',  'https://docs.google.com/document/d/1AWIyWa5nGXmmGXfM9YqxnggeaKInLt0z9D2hD6mmz9k/edit'],
+      ['book-117', 'https://docs.google.com/document/d/1OKZtuUcgsqYxjKMBtQCtwuwSWJyeVHrW098EIgCs3xA/edit'],
+      ['book-107', 'https://docs.google.com/document/d/1iiiuDLR_NV8mUjg4RMTxZRgt94l5w3masRqPQJZtsog/edit'],
+      ['book-131', 'https://docs.google.com/document/d/175AdOpqDeN1ul2PStNR_-QWLgjOM4VxesOukEBobjSI/edit'],
+      ['book-122', 'https://docs.google.com/document/d/1-uFLmhiFV_G4lFsYhiEA9iAFpoeKMirptUloqinWN9M/edit'],
+    ];
+
+    const operations = [];
+    for (const [catalogId, url] of managed) {
+      operations.push(
+        db.prepare(
+          "UPDATE projects SET google_doc_url=NULL, updated_at=CURRENT_TIMESTAMP WHERE google_doc_url=? AND catalog_id<>?"
+        ).bind(url, catalogId)
+      );
+      operations.push(
+        db.prepare(
+          "UPDATE projects SET google_doc_url=?, updated_at=CURRENT_TIMESTAMP WHERE catalog_id=?"
+        ).bind(url, catalogId)
+      );
+    }
+    operations.push(
+      db.prepare(
+        "UPDATE projects SET status='in_progress', completed_at=NULL, published_at=NULL, updated_at=CURRENT_TIMESTAMP WHERE catalog_id='book-123' AND COALESCE(translated_pages,0) < COALESCE(pages,131)"
+      )
+    );
+    operations.push(
+      db.prepare(
+        "INSERT INTO workbench_meta(key,value) VALUES('english_book_routing_v2_2026_10_04','applied') ON CONFLICT(key) DO UPDATE SET value=excluded.value"
+      )
+    );
+    for (let i = 0; i < operations.length; i += 80) await db.batch(operations.slice(i, i + 80));
+  }
+
   const auditCurrent = await db.prepare("SELECT value FROM workbench_meta WHERE key = 'pdf_audit_version'").first();
   if (auditCurrent?.value !== PDF_AUDIT_VERSION) {
     const auditStatements = [];
