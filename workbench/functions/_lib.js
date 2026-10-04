@@ -154,6 +154,41 @@ export function normalizeGoogleDocUrl(raw) {
   } catch { return false; }
 }
 
+export function googleDocIdFromUrl(raw) {
+  const normalized = normalizeGoogleDocUrl(raw);
+  if (!normalized || normalized === false) return null;
+  try {
+    const match = new URL(normalized).pathname.match(/^\/document\/d\/([^/]+)/);
+    return match?.[1] || null;
+  } catch { return null; }
+}
+
+export async function verifyGoogleDocLinkAccess(raw) {
+  const id = googleDocIdFromUrl(raw);
+  if (!id) return { accessible: false, reason: 'invalid' };
+  const probe = `https://docs.google.com/document/d/${encodeURIComponent(id)}/export?format=txt`;
+  try {
+    const response = await fetch(probe, {
+      method: 'GET',
+      redirect: 'manual',
+      headers: { 'user-agent': 'Haydari-Translation-Workbench/1.0' },
+    });
+    if (response.ok) return { accessible: true, reason: 'public' };
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (location) {
+        const target = new URL(location, probe);
+        if (target.hostname.endsWith('googleusercontent.com')) return { accessible: true, reason: 'public' };
+        if (target.hostname === 'accounts.google.com') return { accessible: false, reason: 'restricted' };
+      }
+    }
+    if ([401, 403, 404].includes(response.status)) return { accessible: false, reason: 'restricted' };
+    return { accessible: false, reason: 'unverified' };
+  } catch {
+    return { accessible: false, reason: 'unverified' };
+  }
+}
+
 export function normalizeHttpUrl(raw) {
   if (raw === null || raw === undefined || raw === '') return null;
   try {
