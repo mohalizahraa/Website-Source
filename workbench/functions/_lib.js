@@ -37,6 +37,24 @@ export async function ensureCatalog(db) {
   await db.prepare(
     "UPDATE projects SET pdf_status='missing', pdf_check_note=COALESCE(pdf_check_note,'No direct PDF candidate in catalog') WHERE (source_pdf_url IS NULL OR source_pdf_url='') AND pdf_status='unchecked'"
   ).run();
+  const englishDocLinks = await db.prepare("SELECT value FROM workbench_meta WHERE key='zahraa_english_doc_links_v1'").first();
+  if (englishDocLinks?.value !== 'applied') {
+    await db.batch([
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1KJBqjZ41Zasg_LqrKNr4wJXZCkpOcJ77PXQal2KU1qM/edit", 1),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1C8ZOE14w9mUF27hBowwnk42d_fG2cl32R2T5GAeepS8/edit", 2),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1xBIpS5TXEQT42_JuoKlu5CgW95_B2wenYSk8LN_wcRg/edit", 3),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/15MMgcj6TPtdCotBecPUJW9xX59-Py_ODsHqRqh_dDLc/edit", 4),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1H4wfN_tAi4seppBApq2KoDgYrzrK2GZQOW2CllvDeSg/edit", 5),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1DmCHtfaYsWwWKavXipTrWZo9oq0E4tq2FZVySoSa18A/edit", 6),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1fOo0Y8M1UcaKHR-odP87jGRRlCAT3x9i6AVX7qi6lB0/edit", 7),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1AWIyWa5nGXmmGXfM9YqxnggeaKInLt0z9D2hD6mmz9k/edit", 8),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1OKZtuUcgsqYxjKMBtQCtwuwSWJyeVHrW098EIgCs3xA/edit", 9),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/1iiiuDLR_NV8mUjg4RMTxZRgt94l5w3masRqPQJZtsog/edit", 10),
+      db.prepare("UPDATE projects SET google_doc_url = CASE WHEN google_doc_url IS NULL OR google_doc_url = '' THEN ? ELSE google_doc_url END WHERE id = ?").bind("https://docs.google.com/document/d/175AdOpqDeN1ul2PStNR_-QWLgjOM4VxesOukEBobjSI/edit", 11),
+      db.prepare("INSERT INTO workbench_meta(key,value) VALUES('zahraa_english_doc_links_v1','applied') ON CONFLICT(key) DO UPDATE SET value=excluded.value")
+    ]);
+  }
+
   const current = await db.prepare("SELECT value FROM workbench_meta WHERE key = 'catalog_version'").first();
 
   const statements = [];
