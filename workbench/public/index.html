@@ -184,7 +184,7 @@
         <label>Status<select id="status"><option value="not_started">Not Started</option><option value="in_progress">Translating</option><option value="review">Needs Formatting</option><option value="completed">Needs Review</option><option value="published">Publish Ready</option></select></label>
         
         <label>Start date<input id="start-date" type="date" /></label>
-        <div class="field-group"><label for="translated-pages">Translation progress</label><div class="translation-page-input"><input id="translated-pages" type="number" min="0" step="1" /><span id="translated-pages-total">source pages</span></div></div>
+        <div class="field-group"><label for="translated-pages">Verified translation progress <span class="field-note">synced from source→Doc checkpoints</span></label><div class="translation-page-input"><input id="translated-pages" type="number" min="0" step="1" readonly aria-readonly="true" /><span id="translated-pages-total">source pages</span></div></div>
         <div class="field-group"><label for="due-date">Deadline</label><div class="date-input-actions"><input id="due-date" type="date" /><button id="clear-due-date" type="button" class="text-button date-clear-button">Remove deadline</button></div></div>
         <label class="full">English Book — Google Doc<input id="google-doc-url" type="url" placeholder="https://docs.google.com/document/..." /></label>
         <label class="full">Book cover image URL <span class="field-note">optional override</span><input id="cover-url" type="url" placeholder="https://.../cover.jpg" /></label>
