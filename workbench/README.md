@@ -169,3 +169,6 @@ The stored Workbench counter is a synchronized checkpoint projection, **not inde
 ### Assigned-workload progress baseline — 2026-10-04
 
 The selected collaborator's assigned books now show source-page progress even at **0/Y**. The Dashboard live translation panel shows the complete assigned workload for the current `Using as` identity (including `Both`), with active work sorted first, rather than hiding books until translation begins. Assigned project cards likewise retain a quiet 0% progress track from the beginning.
+
+
+**Latest full-corpus physical audit (2026-10-04):** Nexus self-hosted run `37192638039` physically counted all **172 available PDFs**; **4** records remain genuinely missing, **0** remain unchecked, and **72 historical catalogue page-count mismatches** were reconciled to the physical PDF counts. Static acceptance requires every available book's website page count to equal its audited physical PDF count.
