@@ -13,9 +13,10 @@ export async function ensureCatalog(db) {
   await db.prepare('CREATE TABLE IF NOT EXISTS project_covers (project_id INTEGER PRIMARY KEY, mime_type TEXT NOT NULL, image_bytes BLOB NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE)').run();
   const existingColumns = await db.prepare('PRAGMA table_info(projects)').all();
   const names = new Set((existingColumns.results || []).map(row => row.name));
-  if (names.has('priority')) {
-    await db.prepare('ALTER TABLE projects DROP COLUMN priority').run();
-    names.delete('priority');
+  for (const obsolete of ['priority','blocked','blocker_reason']) {
+    if (!names.has(obsolete)) continue;
+    await db.prepare(`ALTER TABLE projects DROP COLUMN ${obsolete}`).run();
+    names.delete(obsolete);
   }
   for (const [name, type] of CATALOG_COLUMNS) {
     if (!names.has(name)) await db.prepare(`ALTER TABLE projects ADD COLUMN ${name} ${type}`).run();
