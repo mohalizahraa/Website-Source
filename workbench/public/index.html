@@ -37,6 +37,15 @@
       <button id="new-project" class="primary">+ Project</button>
     </div>
 
+    <section id="workspace-error" class="workspace-error" role="alert" aria-live="assertive" hidden>
+      <div>
+        <span class="rubric">Live data unavailable</span>
+        <h2>Project data did not load</h2>
+        <p id="workspace-error-detail">The Workbench could not load its live project data. The values normally shown below are placeholders, not a confirmed database state.</p>
+      </div>
+      <button id="retry-workspace" type="button" class="primary">Retry</button>
+    </section>
+
     <div class="section-heading">
       <span class="rubric">Shared workspace</span>
       <h2 id="view-title">Dashboard</h2>
