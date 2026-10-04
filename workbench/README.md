@@ -19,8 +19,6 @@ Internal collaborative work manager for translating Sayyid Kamal al-Haydari's bo
 - **Publish Ready** means translation, formatting, and Zahraa's human review are finished.
 - Translation progress numerator = `Needs Formatting + Needs Review + Publish Ready`.
 - Publication progress numerator = books independently marked **Published**.
-- `blocked` is a separate flag, not a status.
-
 - Assignment can be changed inline on a book: Zahraa / Mohammed / Both / Unassigned.
 - Priority is not part of the Workbench project model; projects are organized by workflow status, assignment, deadlines, and topic instead. The runtime schema migration removes the former legacy `priority` column rather than leaving it as hidden active state.
 - Start dates and deadlines can be set or cleared and are reflected automatically in a real horizontal Timeline: ranges span start→deadline, single-date projects render as milestones, overdue work is visually distinct, and undated active work remains in a separate section. Deadline removal is an explicit UI action rather than relying on a browser date-picker clear affordance; it is available inline, in the project editor, and for selected books in batch.

@@ -81,9 +81,9 @@ export async function ensureCatalog(db) {
     statements.push(db.prepare(
       `INSERT INTO projects (
          title_ar,title_en,catalog_id,translit,author,author_ar,category,topic_en,topic_ar,source_url,source_pdf_url,package_url,pages,volumes,catalog_date,
-         assignee,status,blocked,pdf_status,pdf_check_note
+         assignee,status,pdf_status,pdf_check_note
        )
-       SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'Unassigned','not_started',0,
+       SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'Unassigned','not_started',
               CASE WHEN ? IS NULL OR ? = '' THEN 'missing' ELSE 'unchecked' END,
               CASE WHEN ? IS NULL OR ? = '' THEN 'No direct PDF candidate in catalog' ELSE NULL END
        WHERE NOT EXISTS (SELECT 1 FROM projects WHERE catalog_id = ? OR title_ar = ?)`
@@ -330,11 +330,10 @@ export async function recordActivity(db, projectId, actor, action, before, after
 export function normalizeProject(row) {
   const pdfStatus = row.pdf_status || (!row.source_pdf_url ? 'missing' : 'unchecked');
   const hasPdfUrl = Boolean(row.source_pdf_url);
-  const { priority: _legacyPriority, ...project } = row;
+  const { priority: _legacyPriority, blocked: _legacyBlocked, blocker_reason: _legacyBlockerReason, ...project } = row;
   return {
     ...project,
     assignee: row.assignee === 'Brother' ? 'Mohammed' : row.assignee,
-    blocked: Boolean(row.blocked),
     has_uploaded_cover: Boolean(row.has_uploaded_cover),
     pdf_status: pdfStatus,
     pdf_available: pdfStatus === 'available' && hasPdfUrl,
