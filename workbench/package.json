@@ -3,10 +3,13 @@
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev public",
-    "check": "node --check public/app.js && node --check functions/_lib.js && node --check functions/api/health.js && node --check functions/api/activity.js && node --check functions/api/pdf-audit.js && node --check 'functions/api/pdf/[id].js' && node --check functions/api/projects/index.js && node --check 'functions/api/projects/[id].js' && node --check scripts/audit-pdfs.mjs && node --check scripts/fetch-covers.mjs && node --check 'functions/api/cover/[id].js'",
+    "check": "node --check public/app.js && node --check functions/_lib.js && node --check functions/api/health.js && node --check functions/api/activity.js && node --check functions/api/pdf-audit.js && node --check 'functions/api/pdf/[id].js' && node --check functions/api/projects/index.js && node --check 'functions/api/projects/[id].js' && node --check scripts/audit-pdfs.mjs && node --check scripts/fetch-covers.mjs && node --check 'functions/api/cover/[id].js' && node --check 'functions/api/source-text/[id].js'",
     "check:acceptance": "npm run check && node scripts/check-static-acceptance.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
+  },
+  "dependencies": {
+    "pdfjs-serverless": "^1.3.1"
   }
 }
