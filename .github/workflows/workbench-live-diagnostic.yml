@@ -1,4 +1,4 @@
-name: Workbench live diagnostic
+name: Workbench assignment repair
 
 on:
   push:
@@ -11,21 +11,67 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
+  repair-assignments:
     runs-on: self-hosted
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: Probe live Workbench APIs
+      - name: Repair accidental Shared assignments
         shell: bash
         run: |
           set -euo pipefail
           base='https://haydari-translation-workbench.pages.dev'
-          for path in /api/health /api/projects; do
-            echo "=== $path ==="
-            tmp="$(mktemp)"
-            code="$(curl -sS -o "$tmp" -w '%{http_code}' --max-time 20 "$base$path" || true)"
-            echo "HTTP $code"
-            head -c 2000 "$tmp" || true
-            echo
-            rm -f "$tmp"
-          done
+          before="$RUNNER_TEMP/workbench-projects-before.json"
+          ids="$RUNNER_TEMP/workbench-both-ids.txt"
+          after="$RUNNER_TEMP/workbench-projects-after.json"
+
+          curl -fsS --retry 3 --retry-delay 2 --max-time 30 "$base/api/projects" -o "$before"
+
+          python3 - "$before" "$ids" <<'PY'
+          import json, sys
+          from collections import Counter
+          src, out = sys.argv[1], sys.argv[2]
+          data = json.load(open(src, encoding='utf-8'))
+          projects = data.get('projects', [])
+          counts = Counter(p.get('assignee') for p in projects)
+          print('Pre-repair assignment counts:', dict(counts))
+          if len(projects) != 176:
+              raise SystemExit(f'FAIL CLOSED: expected 176 projects, found {len(projects)}')
+          if counts.get('Mohammed', 0) != 20:
+              raise SystemExit(f"FAIL CLOSED: expected 20 Mohammed assignments, found {counts.get('Mohammed', 0)}")
+          if counts.get('Unassigned', 0) != 0:
+              raise SystemExit(f"FAIL CLOSED: expected 0 Unassigned projects, found {counts.get('Unassigned', 0)}")
+          if counts.get('Zahraa', 0) + counts.get('Both', 0) != 156:
+              raise SystemExit(
+                  'FAIL CLOSED: Zahraa + Shared must equal 156 before this repair; '
+                  f"found {counts.get('Zahraa', 0)} + {counts.get('Both', 0)}"
+              )
+          unexpected = {k: v for k, v in counts.items() if k not in {'Zahraa','Mohammed','Both','Unassigned'}}
+          if unexpected:
+              raise SystemExit(f'FAIL CLOSED: unexpected assignee values: {unexpected}')
+          both_ids = [str(p['id']) for p in projects if p.get('assignee') == 'Both']
+          with open(out, 'w', encoding='utf-8') as f:
+              f.write('\n'.join(both_ids))
+              if both_ids:
+                  f.write('\n')
+          print(f'Projects to move Shared -> Zahraa: {len(both_ids)}')
+          PY
+
+          while IFS= read -r id; do
+            [ -n "$id" ] || continue
+            curl -fsS --retry 3 --retry-delay 1 --max-time 30               -X PATCH               -H 'content-type: application/json'               -H 'x-workbench-actor: Zahraa'               --data '{"assignee":"Zahraa"}'               "$base/api/projects/$id" >/dev/null
+          done < "$ids"
+
+          curl -fsS --retry 3 --retry-delay 2 --max-time 30 "$base/api/projects" -o "$after"
+
+          python3 - "$after" <<'PY'
+          import json, sys
+          from collections import Counter
+          data = json.load(open(sys.argv[1], encoding='utf-8'))
+          projects = data.get('projects', [])
+          counts = Counter(p.get('assignee') for p in projects)
+          print('Post-repair assignment counts:', dict(counts))
+          expected = {'Zahraa': 156, 'Mohammed': 20}
+          if len(projects) != 176 or dict(counts) != expected:
+              raise SystemExit(f'REPAIR VERIFICATION FAILED: expected 176 with {expected}, got {len(projects)} with {dict(counts)}')
+          print('VERIFIED: 176 projects = Zahraa 156 + Mohammed 20; Shared 0; Unassigned 0.')
+          PY
