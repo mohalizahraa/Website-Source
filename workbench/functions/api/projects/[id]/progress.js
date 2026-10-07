@@ -1,4 +1,5 @@
 import { actorFromRequest, ensureCatalog, json, normalizeProject } from '../../../_lib.js';
+import { syncTranslationFocusForProject } from '../../../_translation.js';
 
 function idFrom(context) {
   const n = Number(context.params.id);
@@ -149,5 +150,6 @@ export async function onRequestPatch(context) {
     'SELECT * FROM translation_progress_checkpoints WHERE project_id = ? AND created_at = ? ORDER BY id DESC LIMIT 1'
   ).bind(id, now).first();
 
+  await syncTranslationFocusForProject(context.env.DB, after, actor);
   return json({ project: normalizeProject(after), checkpoint });
 }
