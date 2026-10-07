@@ -7,6 +7,62 @@ function idFrom(context) {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
+const MAX_SOURCE_HASH_BYTES = 64 * 1024 * 1024;
+
+function hex(bytes) {
+  return [...new Uint8Array(bytes)].map(value => value.toString(16).padStart(2,'0')).join('');
+}
+
+async function bootstrapSourcePdfSha256(project) {
+  if (project?.pdf_status !== 'available' || !project?.source_pdf_url) {
+    return { error: 'Cannot bootstrap source identity without a verified available source PDF.' };
+  }
+
+  let response;
+  try {
+    response = await fetch(project.source_pdf_url, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'accept': 'application/pdf,*/*;q=0.8',
+        'accept-encoding': 'identity',
+        'user-agent': 'Haydari-Translation-Workbench/1.0',
+      },
+    });
+  } catch {
+    return { error: 'Could not reach the verified source PDF while bootstrapping source identity.' };
+  }
+
+  if (!response.ok) {
+    try { await response.body?.cancel(); } catch {}
+    return { error: `Verified source PDF returned HTTP ${response.status} while bootstrapping source identity.` };
+  }
+
+  const contentType=(response.headers.get('content-type') || '').toLowerCase();
+  if (!contentType.includes('application/pdf')) {
+    try { await response.body?.cancel(); } catch {}
+    return { error: 'Verified source no longer returns a PDF while bootstrapping source identity.' };
+  }
+
+  const declaredSize=Number(response.headers.get('content-length') || 0);
+  if (declaredSize > MAX_SOURCE_HASH_BYTES) {
+    try { await response.body?.cancel(); } catch {}
+    return { error: 'Verified source PDF is too large for the in-request source-identity bootstrap.' };
+  }
+
+  const bytes=new Uint8Array(await response.arrayBuffer());
+  if (
+    bytes.byteLength < 1000 ||
+    bytes.byteLength > MAX_SOURCE_HASH_BYTES ||
+    bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46
+  ) {
+    return { error: 'Verified source PDF failed source-identity bootstrap validation.' };
+  }
+
+  const digest=await crypto.subtle.digest('SHA-256',bytes);
+  return { sha256: hex(digest) };
+}
+
 async function readMarker(context) {
   await ensureCatalog(context.env.DB);
   const id=idFrom(context);
@@ -47,12 +103,16 @@ export async function onRequestPost(context) {
   const latest=await context.env.DB.prepare(
     'SELECT source_pdf_sha256 FROM translation_progress_checkpoints WHERE project_id = ? ORDER BY id DESC LIMIT 1'
   ).bind(id).first();
-  const sourceHash=String(latest?.source_pdf_sha256 || '').toLowerCase();
+  let sourceHash=String(latest?.source_pdf_sha256 || '').toLowerCase();
   if (!/^[a-f0-9]{64}$/.test(sourceHash)) {
-    return json({
-      error:'Verified marker sync cannot bootstrap source identity. Publish one direct source-hash checkpoint first.',
-      current_translated_pages:current,
-    },409);
+    const bootstrapped=await bootstrapSourcePdfSha256(project);
+    if (!bootstrapped.sha256) {
+      return json({
+        error:bootstrapped.error || 'Could not bootstrap verified source identity.',
+        current_translated_pages:current,
+      },409);
+    }
+    sourceHash=bootstrapped.sha256;
   }
 
   const headers=new Headers(context.request.headers);
