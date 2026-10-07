@@ -107,13 +107,18 @@ export async function setTranslationFocus(db, assignee, projectId) {
 
 export async function syncTranslationFocusForProject(db, project, actor = 'Unknown') {
   if (!project?.id) return;
-  await db.prepare('DELETE FROM translation_focus WHERE project_id = ?').bind(project.id).run();
-  if (project.status !== 'in_progress') return;
+
+  if (project.status !== 'in_progress') {
+    await db.prepare('DELETE FROM translation_focus WHERE project_id = ?').bind(project.id).run();
+    return;
+  }
 
   if (TRANSLATORS.has(project.assignee)) {
+    await db.prepare('DELETE FROM translation_focus WHERE project_id = ? AND assignee <> ?').bind(project.id, project.assignee).run();
     await setTranslationFocus(db, project.assignee, project.id);
     return;
   }
+
   if (project.assignee === 'Both' && TRANSLATORS.has(actor)) {
     await setTranslationFocus(db, actor, project.id);
   }
