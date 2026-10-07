@@ -155,6 +155,26 @@ A second official-site sweep recovered the seven-book **مفاهيم قرآني�
 - Timeline now uses workflow-status color on bars, explicit due-end markers for ranges, and a `Today` control that centers the current date without changing project data.
 
 
+## Translation-agent fast start / resume contract — 2026-10-06
+
+The PDF access bridge remains the canonical way to cross a runtime boundary when an agent needs the source bytes, but it is no longer the whole startup contract.
+
+For a named project, `GET /api/projects/<id>/translation-context` returns one composite, no-cache resume payload containing:
+
+- project identity and workflow phase;
+- canonical Workbench PDF route, underlying canonical PDF URL, verified physical-page denominator, and latest source-PDF SHA-256 when checkpointed;
+- linked English Google Doc identity and latest stored checkpoint revision;
+- stored D1 progress **plus the latest verified public `WBPROGRESS` marker when it is safely usable**, so a fresh agent does not resume from a stale dashboard counter;
+- the exact next physical source page, progress marker, and `[[NEXT_BATCH]]` continuation sentinel;
+- any durable source-recovery pack: clean text witness type/URL, alternate public recovery routes, page-alignment guidance, known source-access defects, and resume note;
+- whether this project is the explicit current translation focus for a collaborator.
+
+For an unnamed “continue translating” request, `GET /api/translations/current?assignee=Zahraa` (or Mohammed/Brother) is the one-hop entry point. It prefers the explicit D1 `translation_focus` pointer and falls back only to the most recently active assigned Translating project. `PATCH /api/translations/current` sets the explicit focus after validating assignment and workflow state. Verified page progress and project lifecycle changes also keep focus synchronized automatically.
+
+Reusable source-access discoveries belong in `translation_source_packs`, not in chat memory. `GET/PATCH /api/projects/<id>/source-pack` persists only recovery/resume knowledge that is not already owned by the project, PDF audit, checkpoint ledger, or Google Doc. The canonical Arabic PDF remains the semantic and physical-page authority; a transcript/mirror/OCR route is a recovery witness and must be aligned back to that PDF before progress advances.
+
+This architecture intentionally avoids a second progress counter or a second source authority. The fast-start API is a consolidated projection over existing owners plus the minimal new focus/source-recovery state needed to eliminate repeated rediscovery.
+
 ## Live source-page translation progress — 2026-10-04
 
 Each project can store a source-PDF page counter (`translated_pages`) against its authoritative catalogue page denominator. The Dashboard exposes one compact **Live translation progress** panel for the selected `Using as` identity: its assigned books (including `Both`) plus up to the five most recent page updates from those same currently assigned books. It must not leak another collaborator's assigned-book progress into the selected identity's feed. Project/assigned cards show a subtle per-book bar only after translation has begun. Translation-progress changes are written to Activity as a dedicated event, so the Activity view remains an auditable chronological feed without turning every screen into a social-feed surface.
