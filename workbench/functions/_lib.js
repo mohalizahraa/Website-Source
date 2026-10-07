@@ -26,6 +26,24 @@ export async function ensureCatalog(db) {
     FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
   )`).run();
   await db.prepare('CREATE INDEX IF NOT EXISTS idx_translation_progress_project_created ON translation_progress_checkpoints(project_id, created_at DESC)').run();
+  await db.prepare(`CREATE TABLE IF NOT EXISTS translation_focus (
+    assignee TEXT PRIMARY KEY CHECK (assignee IN ('Zahraa','Mohammed','Brother')),
+    project_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+  )`).run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_translation_focus_project ON translation_focus(project_id)').run();
+  await db.prepare(`CREATE TABLE IF NOT EXISTS translation_source_packs (
+    project_id INTEGER PRIMARY KEY,
+    source_text_kind TEXT,
+    source_text_url TEXT,
+    recovery_routes_json TEXT NOT NULL DEFAULT '[]',
+    page_alignment_note TEXT,
+    known_issues TEXT,
+    resume_note TEXT,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+  )`).run();
   const existingColumns = await db.prepare('PRAGMA table_info(projects)').all();
   const names = new Set((existingColumns.results || []).map(row => row.name));
   for (const obsolete of ['priority','blocked','blocker_reason']) {
@@ -218,6 +236,45 @@ export async function ensureCatalog(db) {
       )
     );
     for (let i = 0; i < operations.length; i += 80) await db.batch(operations.slice(i, i + 80));
+  }
+
+  // Bootstrap an explicit per-translator focus only when none exists yet.
+  // This derives from current runtime state and never overwrites a later explicit focus.
+  for (const assignee of ['Zahraa','Mohammed','Brother']) {
+    await db.prepare(`
+      INSERT INTO translation_focus(assignee, project_id, updated_at)
+      SELECT ?, id, CURRENT_TIMESTAMP
+      FROM projects
+      WHERE status='in_progress' AND (assignee=? OR assignee='Both')
+      ORDER BY COALESCE(translation_progress_at, updated_at, created_at) DESC, id DESC
+      LIMIT 1
+      ON CONFLICT(assignee) DO NOTHING
+    `).bind(assignee, assignee).run();
+  }
+
+  // Public source-recovery seed for book-2. Live refinements belong in D1 and
+  // this seed never overwrites a source pack once agents have updated it.
+  const tawassul = await db.prepare("SELECT id FROM projects WHERE catalog_id='book-2' LIMIT 1").first();
+  if (tawassul?.id) {
+    const routes = JSON.stringify([
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/47258/', label:'Official tawassul lecture transcript', note:'Clean Arabic recovery witness for the blind-man / tawassul discussion.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/05/47568/', label:'Official tawassul lecture transcript', note:'Clean Arabic recovery witness for the continuation of the tawassul argument.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/05/47818/', label:'Official tawassul lecture transcript', note:'Clean Arabic recovery witness for later tawassul evidence.' }
+    ]);
+    await db.prepare(`
+      INSERT INTO translation_source_packs(
+        project_id, source_text_kind, source_text_url, recovery_routes_json,
+        page_alignment_note, known_issues, resume_note, updated_at
+      ) VALUES(?, 'official-transcript-series', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(project_id) DO NOTHING
+    `).bind(
+      tawassul.id,
+      'https://alhaydari.com/ar/2013/04/47258/',
+      routes,
+      'Canonical physical PDF remains the page and semantic authority. Use official alhaydari.com lecture transcripts only as clean recovery witnesses, and align recovered wording back to the canonical PDF before advancing physical-page progress.',
+      'The canonical PDF text layer becomes heavily garbled in later sections. Do not translate damaged glyph extraction by guess; switch to the stored official transcript recovery routes and verify against the PDF.',
+      'Resume from the highest verified WBPROGRESS marker and the [[NEXT_BATCH]] sentinel in the linked English Google Doc.'
+    ).run();
   }
 
   const auditCurrent = await db.prepare("SELECT value FROM workbench_meta WHERE key = 'pdf_audit_version'").first();
