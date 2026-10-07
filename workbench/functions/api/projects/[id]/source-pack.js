@@ -51,14 +51,19 @@ export async function onRequestPatch(context) {
   let recoveryRoutes;
   try { recoveryRoutes=normalizeRoutes(body.recovery_routes); }
   catch (error) { return json({error:error.message},400); }
-  const next={
-    source_text_kind:body.source_text_kind!==undefined?optionalText(body.source_text_kind,160):before.source_text_kind,
-    source_text_url:body.source_text_url!==undefined?sourceTextUrl:before.source_text_url,
-    recovery_routes:recoveryRoutes!==undefined?recoveryRoutes:before.recovery_routes,
-    page_alignment_note:body.page_alignment_note!==undefined?optionalText(body.page_alignment_note):before.page_alignment_note,
-    known_issues:body.known_issues!==undefined?optionalText(body.known_issues):before.known_issues,
-    resume_note:body.resume_note!==undefined?optionalText(body.resume_note):before.resume_note,
-  };
+  let next;
+  try {
+    next={
+      source_text_kind:body.source_text_kind!==undefined?optionalText(body.source_text_kind,160):before.source_text_kind,
+      source_text_url:body.source_text_url!==undefined?sourceTextUrl:before.source_text_url,
+      recovery_routes:recoveryRoutes!==undefined?recoveryRoutes:before.recovery_routes,
+      page_alignment_note:body.page_alignment_note!==undefined?optionalText(body.page_alignment_note):before.page_alignment_note,
+      known_issues:body.known_issues!==undefined?optionalText(body.known_issues):before.known_issues,
+      resume_note:body.resume_note!==undefined?optionalText(body.resume_note):before.resume_note,
+    };
+  } catch (error) {
+    return json({error:error.message},400);
+  }
   await context.env.DB.prepare(`
     INSERT INTO translation_source_packs(project_id,source_text_kind,source_text_url,recovery_routes_json,page_alignment_note,known_issues,resume_note,updated_at)
     VALUES(?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
