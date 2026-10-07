@@ -1493,9 +1493,21 @@ async function syncVerifiedTranslationMarkers() {
   lastMarkerSyncAt=now;
 
   const candidates=state.projects
-    .filter(p=>p.status==='in_progress' && p.google_doc_url && Number(p.translated_pages || 0) > 0)
-    .sort((a,b)=>String(b.translation_progress_at || '').localeCompare(String(a.translation_progress_at || '')))
-    .slice(0,3);
+    .filter(p=>
+      p.google_doc_url &&
+      (
+        p.status==='in_progress' ||
+        (p.status==='not_started' && (p.assignee===state.actor || p.assignee==='Both'))
+      )
+    )
+    .sort((a,b)=>{
+      const active=Number(b.status==='in_progress')-Number(a.status==='in_progress');
+      if (active) return active;
+      const recent=String(b.translation_progress_at || '').localeCompare(String(a.translation_progress_at || ''));
+      if (recent) return recent;
+      return Number(a.id)-Number(b.id);
+    })
+    .slice(0,12);
 
   if (!candidates.length) return true;
   markerSyncInFlight=true;
