@@ -69,6 +69,26 @@ CREATE TABLE IF NOT EXISTS translation_progress_checkpoints (
 );
 CREATE INDEX IF NOT EXISTS idx_translation_progress_project_created ON translation_progress_checkpoints(project_id, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS translation_focus (
+  assignee TEXT PRIMARY KEY CHECK (assignee IN ('Zahraa','Mohammed','Brother')),
+  project_id INTEGER NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_translation_focus_project ON translation_focus(project_id);
+
+CREATE TABLE IF NOT EXISTS translation_source_packs (
+  project_id INTEGER PRIMARY KEY,
+  source_text_kind TEXT,
+  source_text_url TEXT,
+  recovery_routes_json TEXT NOT NULL DEFAULT '[]',
+  page_alignment_note TEXT,
+  known_issues TEXT,
+  resume_note TEXT,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
 
 CREATE TABLE IF NOT EXISTS project_covers (
   project_id INTEGER PRIMARY KEY,
