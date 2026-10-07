@@ -257,9 +257,14 @@ export async function ensureCatalog(db) {
   const tawassul = await db.prepare("SELECT id FROM projects WHERE catalog_id='book-2' LIMIT 1").first();
   if (tawassul?.id) {
     const routes = JSON.stringify([
-      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/47258/', label:'Official tawassul lecture transcript', note:'Clean Arabic recovery witness for the blind-man / tawassul discussion.' },
-      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/05/47568/', label:'Official tawassul lecture transcript', note:'Clean Arabic recovery witness for the continuation of the tawassul argument.' },
-      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/05/47818/', label:'Official tawassul lecture transcript', note:'Clean Arabic recovery witness for later tawassul evidence.' }
+      { kind:'official-series-index', url:'https://alhaydari.com/ar/category/articles/mtarhat-articles/%D9%85%D8%AE%D8%AA%D8%A7%D8%B1%D8%A7%D8%AA-%D9%85%D9%86-%D9%85%D9%82%D8%A7%D9%85%D8%A7%D8%AA-%D8%A7%D9%84%D9%85%D8%B5%D8%B7%D9%81%D9%89-%D9%80-%D9%85%D9%82%D8%A7%D9%84%D8%A7%D8%AA/', label:'Official transcript-series index', note:'Stable discovery root for the full “Legitimacy of tawassul through the Prophet in his life and after his death” transcript sequence.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/46909/', label:'Official tawassul lecture transcript — episode 5', note:'Clean Arabic recovery witness for the standing/person discussion.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/46986/', label:'Official tawassul lecture transcript — episode 6', note:'Clean Arabic recovery witness for the continuation of the tawassul discussion.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/46994/', label:'Official tawassul lecture transcript — episode 7', note:'Clean Arabic recovery witness for Ibn Taymiyyah’s denial and the opening of the hadith evidence.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/47081/', label:'Official tawassul lecture transcript — episode 8', note:'Clean Arabic recovery witness for the hadith evidence sequence.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/04/47258/', label:'Official tawassul lecture transcript — episode 9', note:'Clean Arabic recovery witness for the blind-man hadith discussion.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/05/47568/', label:'Official tawassul lecture transcript — episode 11', note:'Clean Arabic recovery witness for the continuation of the tawassul argument.' },
+      { kind:'official-transcript', url:'https://alhaydari.com/ar/2013/05/47818/', label:'Official tawassul lecture transcript — episode 12', note:'Clean Arabic recovery witness for later tawassul evidence.' }
     ]);
     await db.prepare(`
       INSERT INTO translation_source_packs(
