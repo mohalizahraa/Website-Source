@@ -1,5 +1,10 @@
 # Haydari Workbench
 
+> **NON-PRODUCTION HISTORICAL COPY**
+>
+> The live Haydari Translation Workbench is owned by `mohalizahraa/operator-translation` on `main` under `workbench/` and deploys to Cloudflare Pages.
+> This `Website-Source/workbench` tree contains an accidental historical fast-start implementation and is **not** the runtime/deployment authority.
+> Do not deploy, extend, or use this copy to infer current Workbench behavior. Reconcile any historically useful detail into the production owner instead.
 Internal collaborative work manager for translating Sayyid Kamal al-Haydari's books. This is intentionally separate from the public archive/publication surface.
 
 ## Product contract
