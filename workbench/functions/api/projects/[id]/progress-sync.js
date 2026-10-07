@@ -82,8 +82,12 @@ async function readMarker(context) {
 }
 
 export async function onRequestGet(context) {
+  const url=new URL(context.request.url);
+  if (url.searchParams.get('apply') === 'verified-marker') {
+    return onRequestPost(context);
+  }
   const result=await readMarker(context);
-  return json(result.data,result.status);
+  return json({...result.data, sync_contract:'verified-marker-v2'},result.status);
 }
 
 export async function onRequestPost(context) {
