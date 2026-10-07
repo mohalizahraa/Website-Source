@@ -1,4 +1,5 @@
 import { actorFromRequest, ensureCatalog, json, normalizeGoogleDocUrl, normalizeHttpUrl, normalizeProject, recordActivity, validIsoDate, verifyGoogleDocLinkAccess } from '../../_lib.js';
+import { syncTranslationFocusForProject } from '../../_translation.js';
 
 const fields = new Set([
   'title_ar','title_en','assignee','status','source_url','source_pdf_url','google_doc_url','cover_url',
@@ -116,5 +117,6 @@ export async function onRequestPatch(context) {
   ).bind(...values).first();
 
   await recordActivity(context.env.DB, id, actor, 'updated project', before, after);
+  await syncTranslationFocusForProject(context.env.DB, after, actor);
   return json({ project: normalizeProject(after) });
 }
