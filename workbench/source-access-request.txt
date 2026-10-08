@@ -1,3 +1,3 @@
-9
-# Workbench project 9 — canonical Arabic PDF source handoff for the Tabatabai full-book translation.
+10
+# Workbench project 10 — canonical Arabic PDF source handoff for the Religious Marjaʿ Sayyid Kamal al-Ḥaydarī translation, pages 251–296.
 # Workflow fetches only through https://haydari-translation-workbench.pages.dev/api/pdf/<id>.
