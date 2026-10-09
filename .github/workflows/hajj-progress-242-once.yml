@@ -1,0 +1,62 @@
+name: Publish Hajj source-verified 242 checkpoint (one-time)
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - .github/workflows/hajj-progress-242-once.yml
+permissions:
+  contents: read
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Sync 242 source-verified pages and source ledger
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json
+          base="https://haydari-translation-workbench.pages.dev/api/projects/11"
+          h={"user-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36",
+             "accept":"application/json","content-type":"application/json",
+             "referer":"https://haydari-translation-workbench.pages.dev/",
+             "origin":"https://haydari-translation-workbench.pages.dev",
+             "x-workbench-actor":"System"}
+          def get():
+              with urllib.request.urlopen(urllib.request.Request(base,headers=h),timeout=20) as r:
+                  return json.load(r)["project"]
+          p=get()
+          if p["id"]!=11 or p["pages"]!=298 or p["translated_pages"] not in (238,242) or p["status"]!="in_progress":
+              raise RuntimeError("Live project changed; abort without clobbering progress")
+          if "175AdOpqDeN1ul2PStNR_-QWLgjOM4VxesOukEBobjSI" not in (p.get("google_doc_url") or ""):
+              raise RuntimeError("Unexpected target Google Doc")
+          if p["translated_pages"]==238:
+              req=urllib.request.Request(base+"/progress-sync",data=b"{}",method="POST",headers=h)
+              with urllib.request.urlopen(req,timeout=30) as r: sync=json.load(r)
+          p=get()
+          if p["translated_pages"]!=242 or p["status"]!="in_progress":
+              raise RuntimeError("Progress marker did not reconcile to 242")
+          marker="[2026-10-08 HAJJ SOURCE PAGES 239-242 VERIFIED]"
+          if marker not in (p.get("notes") or ""):
+              addition=(marker+
+                 " Original Arabic PDF physical pp. 239-240 contain two complete prescribed "
+                 "devotional passages between the Night of Arafah and the Three Glorifications "
+                 "that were absent from the English scaffold. Both passages are now translated "
+                 "in original order, including invocation repetition counts, Sūrat al-Tawḥīd, "
+                 "Āyat al-Kursī, and the prayers for the Prophet and his Household. "
+                 "Physical pp. 240-242 were checked against the English glorification, praise, "
+                 "tahlīl and takbīr repeated phrases; the omitted note about their immense "
+                 "reward was restored. The following page 243 had a parallel-witness narrator "
+                 "introduction not present in this Arabic edition; it was removed. The quoted "
+                 "Quran 16:18 excerpt on source page 245 was moved into a green Amiri native "
+                 "footnote. These pp. 243-245 partial repairs do NOT verify those pages. "
+                 "Verified source-page checkpoint 242/298, 56 pages open from physical p. 243. "
+                 "No translation, formatting or human-review completion is claimed.")
+              data=json.dumps({"notes":(p.get("notes") or "")+"\n\n"+addition},ensure_ascii=False).encode("utf-8")
+              req=urllib.request.Request(base,data=data,method="PATCH",headers=h)
+              with urllib.request.urlopen(req,timeout=30) as r: json.load(r)
+          after=get()
+          if after["translated_pages"]!=242 or after["status"]!="in_progress" or marker not in (after.get("notes") or ""):
+              raise RuntimeError("Updated source ledger not confirmed by readback")
+          print("SUCCESS project 11 remains In Progress, source verified 242/298, source notes updated")
+          PY
