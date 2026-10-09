@@ -1,0 +1,52 @@
+name: Hajj 291 Verified Marker Sync (one time)
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - .github/workflows/hajj-291-selfhosted-sync-once.yml
+permissions:
+  contents: read
+jobs:
+  sync-progress:
+    runs-on: [self-hosted, nexus-mac-arm64]
+    timeout-minutes: 8
+    steps:
+      - name: Verify marker and publish one source checkpoint
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request
+          base="https://haydari-translation-workbench.pages.dev/api/projects/11"
+          headers={"user-agent":"Mozilla/5.0 (compatible; Haydari-Workbench-checkpoint/1.0)",
+           "accept":"application/json","content-type":"application/json",
+           "referer":"https://haydari-translation-workbench.pages.dev/",
+           "origin":"https://haydari-translation-workbench.pages.dev",
+           "x-workbench-actor":"System"}
+          def req(url,method="GET",payload=None):
+            request=urllib.request.Request(url,method=method,headers=headers,
+              data=(json.dumps(payload).encode() if payload is not None else None))
+            with urllib.request.urlopen(request,timeout=35) as r:return json.load(r)
+          before=req(base)["project"]
+          if before["id"]!=11 or before["pages"]!=298 or before["status"]!="in_progress" or before["translated_pages"] not in [276,291]:
+            raise RuntimeError("Stale or unexpected Workbench state. Refusing to mutate: "+str((before["translated_pages"],before["status"])))
+          marker=req(base+"/progress-sync?apply=verified-marker")
+          if marker.get("marker_pages")!=291 or marker.get("marker_total")!=298:
+            raise RuntimeError("Current live English Doc marker does not match 291/298")
+          if before["translated_pages"]==276:
+            req(base+"/progress-sync","POST",{})
+          after=req(base)["project"]
+          if after["translated_pages"]!=291 or after["status"]!="in_progress":raise RuntimeError("Post-write mismatch")
+          proof="[2026-10-09 HAJJ PHYSICAL SOURCE 277-291 CHECKED]"
+          if proof not in (after.get("notes") or ""):
+            additional=(proof+" Consecutive Arabic PDF source pages 277-291 were visually compared with the English "+
+              "Medina visitation and final-compiler section; Prophet grave entry orientation was restored on page 278, "+
+              "and the completion date corrected to Ramadan 6, 1433 AH on page 291. Existing original Quran and "+
+              "source footnotes in these pages were inspected. Separate earlier checks cover numbered catalogue pages 292-298 "+
+              "but those seven have not been promoted to the contiguous progress marker. "+
+              "The first-pass Translator Profile, exhaustive Quran note migration, native contents, dynamic page numbering, "+
+              "rendered layout QA and human review are NOT finished. Keep In Progress, do not mark ready for review.")
+            req(base,"PATCH",{"notes":(after.get("notes") or "")+"\\n\\n"+additional})
+          final=req(base)["project"]
+          assert final["translated_pages"]==291 and final["status"]=="in_progress" and proof in final.get("notes","")
+          print("VERIFIED: Hajj 291/298, in_progress, Workbench notes saved")
+          PY
