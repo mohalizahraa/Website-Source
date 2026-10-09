@@ -29,20 +29,15 @@ jobs:
       - name: Adapt existing verified UI drivers to Firefox and Linux keyboard
         shell: bash
         run: |
-          curl -fsSL --max-time 30 https://raw.githubusercontent.com/mohalizahraa/operator-protocol/main/scripts/google-docs-native-toc.mjs -o /tmp/hajj-native-toc.mjs
           cp workbench/scripts/google-docs-page-numbers.mjs /tmp/hajj-page-numbers.mjs
-          for f in /tmp/hajj-native-toc.mjs /tmp/hajj-page-numbers.mjs; do
+          for f in /tmp/hajj-page-numbers.mjs; do
             sed -i 's/import { chromium } from "playwright";/import { firefox } from "playwright";/' "$f"
             sed -i 's/chromium.launch/firefox.launch/g; s/Meta+/Control+/g' "$f"
           done
-          cp /tmp/hajj-native-toc.mjs ./hajj-native-toc.mjs
           cp /tmp/hajj-page-numbers.mjs ./hajj-page-numbers.mjs
-          node --check ./hajj-native-toc.mjs
           node --check ./hajj-page-numbers.mjs
       - name: Insert native dynamic header page numbers
         run: node ./hajj-page-numbers.mjs
-      - name: Insert native table of contents from English heading hierarchy
-        run: node ./hajj-native-toc.mjs
       - name: Remove temporary scripts and browser runtime
         if: always()
         run: rm -f ./hajj-native-toc.mjs ./hajj-page-numbers.mjs
