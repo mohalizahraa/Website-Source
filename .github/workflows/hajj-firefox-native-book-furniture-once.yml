@@ -1,0 +1,48 @@
+name: Hajj native Google Docs book furniture via Firefox (one-time)
+on:
+  push:
+    branches: [workbench]
+    paths: [.github/workflows/hajj-firefox-native-book-furniture-once.yml]
+permissions:
+  contents: read
+jobs:
+  hajj-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DOC_URL: https://docs.google.com/document/d/175AdOpqDeN1ul2PStNR_-QWLgjOM4VxesOukEBobjSI/edit
+      TOC_ACTION: insert
+      TOC_VARIANT: dots-page-numbers
+      CONTENTS_LABEL: CONTENTS
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workbench
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install temporary Firefox driver on free GitHub-hosted runner
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps firefox
+      - name: Adapt existing verified UI drivers to Firefox and Linux keyboard
+        shell: bash
+        run: |
+          curl -fsSL --max-time 30 https://raw.githubusercontent.com/mohalizahraa/operator-protocol/main/scripts/google-docs-native-toc.mjs -o /tmp/hajj-native-toc.mjs
+          cp workbench/scripts/google-docs-page-numbers.mjs /tmp/hajj-page-numbers.mjs
+          for f in /tmp/hajj-native-toc.mjs /tmp/hajj-page-numbers.mjs; do
+            sed -i 's/import { chromium } from "playwright";/import { firefox } from "playwright";/' "$f"
+            sed -i 's/chromium.launch/firefox.launch/g; s/Meta+/Control+/g' "$f"
+          done
+          cp /tmp/hajj-native-toc.mjs ./hajj-native-toc.mjs
+          cp /tmp/hajj-page-numbers.mjs ./hajj-page-numbers.mjs
+          node --check ./hajj-native-toc.mjs
+          node --check ./hajj-page-numbers.mjs
+      - name: Insert native dynamic header page numbers
+        run: node ./hajj-page-numbers.mjs
+      - name: Insert native table of contents from English heading hierarchy
+        run: node ./hajj-native-toc.mjs
+      - name: Remove temporary scripts and browser runtime
+        if: always()
+        run: rm -f ./hajj-native-toc.mjs ./hajj-page-numbers.mjs
