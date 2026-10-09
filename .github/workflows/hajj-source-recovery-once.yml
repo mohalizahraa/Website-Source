@@ -1,0 +1,35 @@
+name: Hajj authoritative Arabic PDF recovery (one-time)
+on:
+  push:
+    branches: [workbench]
+    paths:
+      - .github/workflows/hajj-source-recovery-once.yml
+permissions:
+  contents: read
+jobs:
+  recover-hajj-arabic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Fetch source PDF and verify identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLsS --connect-timeout 15 --max-time 95 --retry 1 --retry-delay 2 \
+            --header 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36' \
+            --header 'accept: application/pdf,*/*;q=0.8' \
+            --header 'referer: https://alhaydari.com/' \
+            --output hajj_arabic_source.pdf \
+            'https://archive.alhaydari.com/ebook/ar/%D8%A7%D9%84%D9%81%D9%82%D9%87/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%84%D8%AD%D8%AC.pdf'
+          head -c 4 hajj_arabic_source.pdf | grep -q '%PDF'
+          sha256sum hajj_arabic_source.pdf
+          echo '5e0a7395a4a439e493d647d95a2d58680880b27bc5e5043a16392c9b992c3c04  hajj_arabic_source.pdf' | sha256sum -c -
+          file hajj_arabic_source.pdf
+          ls -lh hajj_arabic_source.pdf
+      - name: Provide source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hajj-arabic-authoritative
+          path: hajj_arabic_source.pdf
+          retention-days: 1
+          if-no-files-found: error
